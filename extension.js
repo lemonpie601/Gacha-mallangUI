@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.45 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.46 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -397,9 +397,11 @@ ${T} .fstart, ${T} [data-into-battle], ${T} .btn-go {
   box-shadow: 0 0.28em 0 #8A5A00, inset 0 -0.25em 0 rgba(170, 110, 0, 0.35), inset 0 0.2em 0 rgba(255, 255, 255, 0.55) !important;
   font-family: var(--display) !important; }
 ${T} .fstart b, ${T} [data-into-battle] small { color: #5A3A10 !important; opacity: 0.85; }
-${T} .gf-arena button { transition: transform 90ms ease, box-shadow 90ms ease, filter 120ms ease; }
+${T} .gf-arena button { transition: transform 90ms ease, translate 90ms ease, box-shadow 90ms ease, filter 120ms ease; }
 ${T} .gf-arena button:hover:not(:disabled) { filter: brightness(1.04); }
-${T} .gf-arena button:active:not(:disabled) { transform: translateY(0.15em); }
+/* The press uses translate, which adds to the game's own transform. Setting transform replaced it: the outfit
+ * arrows (centred with translateY(-50%)) jumped down from under the finger, so a short tap was lost. */
+${T} .gf-arena button:active:not(:disabled) { translate: 0 0.15em; }
 
 /* The top bar and translucent HUD pieces: opaque so the text never sits on raw art. */
 ${T} .gf-bar { background: color-mix(in srgb, var(--gfx-ink) 85%, transparent) !important; border-bottom: 2.5px solid var(--gfx-line) !important; }
