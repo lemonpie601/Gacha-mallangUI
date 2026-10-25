@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.65 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.66 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -2254,7 +2254,16 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
               || /^\s*(?:생각|믿|추측|싶)/.test(after)) continue;
             for (const actor of actors) {
               if (event.enter) { if (!present.has(actor.name)) present.set(actor.name, actor); spoke.set(actor.name, turn); }
-              else { present.delete(actor.name); spoke.delete(actor.name); }
+              else {
+                // Moving nearby, following, or moving with the player does not end an in-person conversation.
+                // Ambiguous movement stays on stage; require evidence of leaving conversational reach.
+                const movement = action.slice(0, event.end);
+                const near = /(?:바로\s*뒤|곁|옆|근처|몇\s*걸음|한\s*걸음|뒤따라|따라(?:서|가|갔|나|왔|오)|나란히|대화를?\s*이어|말을?\s*이어|within earshot|followed|alongside)/i.test(movement);
+                const far = /(?:밖으로|문밖으로|(?:방|건물|가게|교실|집|막사|객실|술집)(?:을|를)\s*나|다른\s*(?:방|장소|건물)|멀리|시야\s*밖|시야에서|퇴장|대화가?\s*(?:끝|끊)|목소리가?\s*닿지|left the room|exited|departed)/i.test(movement);
+                const separatedHero = /(?:혼자|홀로|일행과\s*헤어|일행을\s*떠|퇴장|대화가?\s*(?:끝|끊))/i.test(movement);
+                if (!far || near || (actors.some((c) => c.prota) && actors.length > 1) || (actor.prota && !separatedHero)) continue;
+                present.delete(actor.name); spoke.delete(actor.name);
+              }
             }
           }
         }
@@ -2293,7 +2302,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const cgActive = vn.hasAttribute("data-cg") || largeUnknownArt || !!vn.querySelector('.vn-cg:not([hidden]), .vn-illustration:not([hidden]), .scene-cg:not([hidden]), [data-illustration]:not([hidden]), .vn-art-full:not([hidden])');
     const mode = choiceActive ? "choice" : cgActive ? "cg" : "dialogue";
     const slots = [];
-    const h = host(), cast = Array.isArray(h?._beatCast) ? h._beatCast : [];
+    const h = host(), heroName = h?._run?.protagonist?.name || world()?.cards?.find((c) => c.isProtagonist)?.name;
+    const cast = (Array.isArray(h?._beatCast) ? h._beatCast : []).map((c) => c.name === heroName && !c.prota ? { ...c, prota: true } : c);
     { const w = world(); if (w && w.state === "ready" && addExtras(w, cast)) setTimeout(() => paintSettings(), 0); }
     const segments = Array.isArray(h?._beat) ? h._beat : [];
     if (mode !== "cg" && segments.length && cast.length) {
@@ -4519,4 +4529,5 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   window[KEY] = disposeExtension;
   MARINARA?.onCleanup?.(disposeExtension);
 })();
+
 
