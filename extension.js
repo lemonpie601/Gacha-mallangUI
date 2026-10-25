@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.46 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.51 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -149,8 +149,9 @@
     };
     const lobbyScale = typeof p.lobbyScale === "number" && Number.isFinite(p.lobbyScale) ? Math.min(2, Math.max(0.5, p.lobbyScale)) : 1;
     const storyCast = [2, 3, 4, 5].includes(p.storyCast) ? p.storyCast : 3;
+    const boxOpacity = typeof p.boxOpacity === "number" && Number.isFinite(p.boxOpacity) ? Math.min(100, Math.max(20, Math.round(p.boxOpacity))) : 95;
     const style = typeof p.style === "string" ? p.style : undefined;
-    return { questViews: Object.fromEntries(Object.entries(p.questViews || {}).filter(([k,v]) => k && typeof v === "boolean")), font: FONT_CHOICES.includes(p.font) ? p.font : "Jua", colors, preset: typeof p.preset === "string" ? p.preset : "", opts, gen, home, homeScene, lobbyScale, storyCast, style };
+    return { questViews: Object.fromEntries(Object.entries(p.questViews || {}).filter(([k,v]) => k && typeof v === "boolean")), font: FONT_CHOICES.includes(p.font) ? p.font : "Jua", colors, preset: typeof p.preset === "string" ? p.preset : "", opts, gen, home, homeScene, lobbyScale, storyCast, boxOpacity, style };
   }
   let prefs = normalizePrefs((() => { try { return JSON.parse(localStorage.getItem(CACHE) || "null"); } catch { return null; } })());
 
@@ -464,13 +465,13 @@ ${T} .vn-who[data-thought]::after { content: ""; position: absolute; left: 12%; 
   background: #fff; border: 2px solid var(--gfx-line); box-shadow: -.55em .45em 0 -.08em #fff, -.55em .45em 0 .04em var(--gfx-line); pointer-events: none; }
 ${H("[data-gfx-box]")} .vn-box[data-thought] {
   background: radial-gradient(circle at 12% 0%, color-mix(in srgb, #D9CCF6 70%, transparent), transparent 45%),
-    color-mix(in srgb, #F6F1FF 95%, transparent) !important;
+    color-mix(in srgb, #F6F1FF var(--gfx-box-a, 95%), transparent) !important;
   border-style: dashed !important; border-color: #8E74C9 !important; border-radius: 34px !important;
   box-shadow: 0 0.3em 0 color-mix(in srgb, #8E74C9 70%, var(--gfx-line)), inset 0 0 0 0.28em color-mix(in srgb, #E5DAFB 70%, transparent) !important;
 }
 ${H("[data-gfx-box]")} .vn-box[data-thought] .vn-text { font-style: italic; color: #5E4A8C !important; }
 ${H("[data-gfx-box]")} .vn-box {
-  background: color-mix(in srgb, var(--gfx-card) 95%, transparent) !important;
+  background: color-mix(in srgb, var(--gfx-card) var(--gfx-box-a, 95%), transparent) !important;
   border: 3px solid var(--gfx-line) !important; border-radius: 22px !important; clip-path: none !important;
   box-shadow: 0 0.35em 0 var(--gfx-line), inset 0 0 0 0.28em color-mix(in srgb, var(--gfx-pick) 55%, transparent) !important;
   backdrop-filter: none !important;
@@ -508,15 +509,17 @@ ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
    (키 below 보통) keeps the same feet line and simply stands lower-headed. */
 .gfx-vn-cast .who { position: absolute; bottom: 9%; height: 84%; aspect-ratio: 0.68; translate: -50% 0; z-index: 1;
   filter: brightness(0.6) saturate(0.85); scale: 0.94; transform-origin: 50% 100%;
-  transition: left 560ms cubic-bezier(.4,0,.2,1), filter 250ms ease, scale 250ms ease, opacity 300ms ease; animation: gfx-cast-in 380ms ease both; }
+  transition: left 560ms cubic-bezier(.4,0,.2,1), height 450ms cubic-bezier(.4,0,.2,1), filter 250ms ease, scale 250ms ease, opacity 300ms ease; animation: gfx-cast-in 380ms ease both; }
 /* Four or five on stage stand a little smaller so they fit side by side. */
 .gfx-vn-cast[data-n="4"] .who { height: 76%; }
 .gfx-vn-cast[data-n="5"] .who { height: 68%; }
-.gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; transition: opacity 300ms ease, translate 300ms ease; }
+/* Leaving: the entrance animation's fill held translate in place, so only the fade ran; without it they sink as they fade. */
+.gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; animation: none; transition: opacity 340ms ease, translate 340ms cubic-bezier(.4,0,.2,1), left 560ms cubic-bezier(.4,0,.2,1); }
 .gfx-vn-cast .who[data-speaking] { filter: none; scale: 1; z-index: 2; }
-.gfx-vn-cast .who .body { position: absolute; inset: 0; display: grid; place-items: end center; transform-origin: 50% 100%; scale: calc(var(--hf, 1) * var(--cast-fit, 1)); animation: gfx-breathe 3.4s ease-in-out infinite; }
-.gfx-vn-cast .who[data-hop] .body { animation: gfx-talk-hop 380ms ease, gfx-breathe 3.4s ease-in-out 380ms infinite; }
-.gfx-vn-cast img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none !important; max-height: none !important; object-fit: contain; object-position: 50% 100%; filter: ${STICKER}; -webkit-user-drag: none; }
+.gfx-vn-cast .who .body { position: absolute; inset: 0; display: grid; place-items: end center; transform-origin: 50% 100%; scale: calc(var(--hf, 1) * var(--cast-fit, 1)); animation: gfx-breathe 3.4s ease-in-out infinite; transition: scale 450ms cubic-bezier(.4,0,.2,1); }
+/* The talk hop is on the picture, so the body's breathing carries on (restarting it was a visible jolt). */
+.gfx-vn-cast .who[data-hop] img { animation: gfx-talk-hop 380ms ease; transform-origin: 50% 100%; }
+.gfx-vn-cast img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none !important; max-height: none !important; object-fit: contain; object-position: 50% 100%; filter: ${STICKER}; -webkit-user-drag: none; transition: scale 320ms cubic-bezier(.4,0,.2,1); }
 .gfx-vn-cast img.portrait { padding: 0; box-sizing: border-box; object-fit: contain; object-position: center; background: #fff; border: 3px solid #fff; outline: 2.5px solid var(--gfx-line); border-radius: 18px; filter: none; }
 .gfx-vn-placeholder { position: absolute; inset: 15% 5% 0; display: flex; flex-direction: column; justify-content: end; align-items: center; color: var(--gfx-text); }
 .gfx-vn-placeholder svg { width: 85%; max-height: 85%; }
@@ -983,6 +986,9 @@ img.baked { filter: none !important; }
 .gfx-toggle[aria-pressed="true"] { border-color: var(--coral); }
 .gfx-toggle[aria-pressed="true"] b::before { content: "● "; color: var(--coral); }
 .gfx-toggle span { font-size: var(--t-tiny, 11px); color: var(--steel-faint); line-height: 1.4; }
+.gfx-box-alpha { display: flex; align-items: center; gap: .8em; margin-top: .4em; }
+.gfx-box-alpha input { flex: 1; max-width: 22em; accent-color: var(--gfx-accent, #F0763A); }
+.gfx-box-alpha b { min-width: 3em; font-weight: 400; }
 .gfx-field { display: flex; flex-direction: column; gap: 0.3em; margin-top: 0.7em; font-size: var(--t-xs, 12px); color: var(--steel-faint); }
 .gfx-field select, .gfx-field textarea { font: inherit; font-size: var(--t-xs, 12px); color: var(--text); background: var(--surface, #fff);
   border: 2px solid var(--steel-dark); border-radius: 10px; padding: 0.45em 0.6em; }
@@ -1241,6 +1247,8 @@ ${T} [data-screen="reveal"] .rv-foot { background: color-mix(in srgb, var(--gfx-
 /* Keep replacement plates hidden through game DOM redraws; CG remains untouched. */
 ${H("[data-gfx-story-sd]")} .vn:has(> .gfx-vn-cast):not([data-cg]) .vn-plate { visibility: hidden !important; }
 .gfx-vn-cast .who[data-protagonist] { z-index: 3; }
+/* A newcomer stays hidden until the line-up has placed it (it showed for a moment at an even-share spot first). */
+.gfx-vn-cast .who:not([data-placed]) { visibility: hidden; }
 ${AT} .ev-panel[data-gfx-attendance] .ev-day { color: #30251B !important; }
 ${AT} .ev-panel[data-gfx-attendance] .ev-day.done { color: var(--gfx-text) !important; }
 ${AT} .ev-panel[data-gfx-attendance] .ev-day.prize * { color: #30251B !important; }
@@ -1329,7 +1337,7 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
 
     const dark = lum(c.ink) < 0.45;
     let text = T + ", " + T + " .gf-arena, .gfx-load, :host([data-gfx-style=\"trickcal\"][data-gfx-ghost]) { " + COLOR_FIELDS.map(([k]) => "--gfx-" + k + ": " + c[k] + ";").join(" ")
-      + " --gfx-strong: " + (dark ? "var(--gfx-text)" : "var(--gfx-line)") + "; --gfx-pick-text: " + (lum(c.pick) > 0.5 ? "#241B24" : "#FFFFFF") + "; --gfx-accent-text: " + (lum(c.accent) > 0.5 ? "#241B24" : "#FFFFFF") + "; --gfx-jade-text: " + (dark ? "#86E3B8" : "#1C6B54") + "; }";
+      + " --gfx-box-a: " + prefs.boxOpacity + "%; --gfx-strong: " + (dark ? "var(--gfx-text)" : "var(--gfx-line)") + "; --gfx-pick-text: " + (lum(c.pick) > 0.5 ? "#241B24" : "#FFFFFF") + "; --gfx-accent-text: " + (lum(c.accent) > 0.5 ? "#241B24" : "#FFFFFF") + "; --gfx-jade-text: " + (dark ? "#86E3B8" : "#1C6B54") + "; }";
     const font = JSON.stringify(prefs.font || "Jua") + ', "Malgun Gothic", sans-serif';
     // Dark presets: no polka dots and no white disc behind the SD (both glared on 밤하늘).
     if (dark) text += '.gfx-load { background: linear-gradient(160deg, var(--gfx-sky1), var(--gfx-ink) 65%, var(--gfx-sky2)) !important; }'
@@ -1827,7 +1835,16 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
   function setSprite(img, url, flip) {
     const b = url ? bakeInfo(url) : null;
     const src = b ? b.url : url;
-    if (img.getAttribute("src") !== src) img.setAttribute("src", src);
+    const was = img.getAttribute("src");
+    if (was !== src && img._gfxNext !== src) {
+      if (!was || !img.complete || !img.isConnected || !img.closest(".gfx-vn-cast")) { img._gfxNext = null; img.setAttribute("src", src); }
+      else {
+        // Keep showing the old picture until the new one has decoded, then swap in one frame.
+        img._gfxNext = src;
+        const pre = new Image(); pre.src = src;
+        (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (img._gfxNext === src) { img._gfxNext = null; img.setAttribute("src", src); } });
+      }
+    }
     img.classList.toggle("baked", !!b);
     for (const k of ["mx", "ox", "my", "oy", "hf"]) { if (b) img.dataset[k] = String(b[k]); else delete img.dataset[k]; }
     // The character's own height: rules size sprites as a share of their box times --hf.
@@ -2236,20 +2253,31 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
       if (!W || !nodes.length) return;
       const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) * 0.86 / W * 100);
       if (widths.some((w) => !w)) return;
-      // Restore the grouped, overlapping story huddle requested by the user.
+      // The story huddle: the protagonist's side (those set to 주인공 옆) and everyone else are two groups with a
+      // clear gap between them, however many stand; inside a group neighbours overlap by a clear third of the
+      // narrower one (it was a fifth of the smallest on stage, which read as neither apart nor together).
       const groupOf = (n) => n.dataset.group || "b";
-      const room = 94, total = widths.reduce((a, b) => a + b, 0);
+      // The line-up keeps to the middle 82% of the stage: at 94% large SDs spread edge to edge and the
+      // protagonist (always left-most) stood against the left edge, most visibly when the cast changed on a
+      // narration line. What still does not fit is scaled down as a whole (--cast-fit) rather than spread out.
+      const room = 82, total = widths.reduce((a, b) => a + b, 0);
       const joins = nodes.slice(1).map((n, i) => groupOf(n) === groupOf(nodes[i]) ? "in" : "between");
-      const inCount = joins.filter((j) => j === "in").length, betweenCount = joins.length - inCount;
-      let overlap = Math.min(...widths) * 0.22, apart = 7;
-      const span = () => total - overlap * inCount + apart * betweenCount;
-      if (span() > room && betweenCount) apart = Math.max(1, apart - (span() - room) / betweenCount);
-      if (span() > room && inCount) overlap = Math.min(Math.min(...widths) * 0.45, overlap + (span() - room) / inCount);
-      let x = 50 - span() / 2;
+      const pairW = joins.map((_, i) => Math.min(widths[i], widths[i + 1]));
+      const betweenCount = joins.filter((j) => j === "between").length;
+      let ratio = 0.34, apart = 11;
+      const span = () => total + joins.reduce((s, j, i) => s + (j === "in" ? -pairW[i] * ratio : apart), 0);
+      // A full stage takes the room from the overlaps first; the gap keeps enough to still read as apart.
+      const inW = joins.reduce((s, j, i) => s + (j === "in" ? pairW[i] : 0), 0);
+      if (span() > room && inW) ratio = Math.min(0.5, ratio + (span() - room) / inW);
+      if (span() > room && betweenCount) apart = Math.max(4, apart - (span() - room) / betweenCount);
+      const fit = span() > room ? room / span() : 1;
+      let x = 50 - span() * fit / 2;
       nodes.forEach((n, i) => {
-        const center = x + widths[i] / 2;
-        x += widths[i] + (i < joins.length ? (joins[i] === "in" ? -overlap : apart) : 0);
-        n.style.setProperty("--cast-fit", "1");
+        // Everyone but the protagonist's side stands a little right of the centred line-up, and may poke past
+        // the right edge (see clampCastPosition): an off-centre stage, as asked.
+        const center = x + widths[i] * fit / 2 + (groupOf(n) === "b" ? 7 : 0);
+        x += (widths[i] + (i < joins.length ? (joins[i] === "in" ? -pairW[i] * ratio : apart) : 0)) * fit;
+        n.style.setProperty("--cast-fit", fit.toFixed(3));
         n.dataset.x = center.toFixed(2);
         // A newcomer appears where it belongs; only those already standing glide over.
         if (!n.dataset.placed) { n.dataset.placed = "1"; n.style.transition = "none"; requestAnimationFrame(() => { n.style.transition = ""; }); }
@@ -2263,7 +2291,8 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     const scale = Number(getComputedStyle(node).getPropertyValue("--hf")) || 1;
     const fit = Number(node.style.getPropertyValue("--cast-fit")) || 1;
     const half = Math.min(45, (node.offsetWidth * scale * fit / layer.clientWidth) * 50 + 1);
-    node.style.left = clamp(wanted, half, 100 - half).toFixed(2) + "%";
+    const pokeOut = node.dataset.group === "b" ? half * 0.45 : 0;
+    node.style.left = clamp(wanted, half, 100 - half + pokeOut).toFixed(2) + "%";
   }
   function paintVnCast(root, enabled, speaker, snapshot = storySnapshot(root, speaker)) {
     const vn = root.querySelector(".vn");
@@ -2313,13 +2342,17 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     for (const n of layer.querySelectorAll(":scope > .who:not([data-leaving])")) {
       if (ids.has(n.getAttribute("data-slot"))) continue;
       n.setAttribute("data-leaving", "");
-      setTimeout(() => n.remove(), 360);
+      setTimeout(() => n.remove(), 380);
     }
     slots.forEach((slot, i) => {
       const name = slot.name;
       let n = Array.from(layer.children).find((x) => x.getAttribute("data-slot") === slot.id && !x.hasAttribute("data-leaving"));
       if (!n) {
         n = el("div", "who");
+        // Pushed out: the newcomer steps in as the one leaving fades, not on top of them in the same frame.
+        if (layer.querySelector(":scope > .who[data-leaving]")) n.style.animationDelay = "180ms";
+        // Never left hidden: if the line-up could not measure it (stage hidden), it shows where it is.
+        setTimeout(() => { if (!n.dataset.placed) { n.dataset.placed = "1"; layoutCast(layer); } }, 700);
         n.setAttribute("data-slot", slot.id);
         n.setAttribute("data-name", name);
         const body = el("div", "body"), img = el("img");
@@ -2362,7 +2395,9 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
         if (im.naturalWidth && im.naturalHeight) n.style.aspectRatio = String(im.classList.contains("portrait") ? im.naturalWidth / im.naturalHeight : Math.min(1.1, im.naturalWidth / im.naturalHeight));
         layoutCast(layer);
       };
-      if (im.complete) fit(); else im.addEventListener("load", fit, { once: true });
+      // onload, not a one-off listener: a sprite swapped in later (after its picture decoded) refits too.
+      im.onload = fit;
+      if (im.complete) fit();
       const speaking = name === speaker;
       if (speaking !== n.hasAttribute("data-speaking")) {
         if (speaking) { n.setAttribute("data-speaking", ""); n.removeAttribute("data-hop"); void n.offsetWidth; n.setAttribute("data-hop", ""); }
@@ -3467,7 +3502,17 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     const cast = el("div", "st-chips");
     cast.style.marginTop = ".7em";
     for (const n of [2, 3, 4, 5]) cast.append(chip(n + "명", () => { prefs.storyCast = n; savePrefs(); paintSettings(); refresh(); }, { "data-gfx-cast": String(n) }));
-    p.append(grid, hint("스토리에 한 번에 서는 최대 인원 (넘으면 가장 오래 말하지 않은 인물이 물러납니다)"), cast);
+    // How much of the scene shows through the dialogue box (100% = solid).
+    const boxRow = el("label", "gfx-box-alpha");
+    const boxRange = el("input"); boxRange.type = "range"; boxRange.min = "20"; boxRange.max = "100"; boxRange.step = "5";
+    boxRange.value = String(prefs.boxOpacity); boxRange.setAttribute("data-gfx-box-alpha", ""); boxRange.setAttribute("aria-label", "대사칸 불투명도");
+    const boxValue = el("b", "", prefs.boxOpacity + "%");
+    on(boxRange, "input", () => { prefs.boxOpacity = Number(boxRange.value); boxValue.textContent = boxRange.value + "%"; paintVars(); });
+    on(boxRange, "change", () => savePrefs());
+    on(boxRow, "click", (e) => e.stopPropagation());
+    boxRow.append(boxRange, boxValue);
+    p.append(grid, hint("스토리에 한 번에 서는 최대 인원 (넘으면 가장 오래 말하지 않은 인물이 물러납니다)"), cast,
+      hint("대사칸 불투명도 (낮출수록 배경이 비쳐 보입니다)"), boxRow);
     return p;
   }
 
@@ -3858,6 +3903,7 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     for (const b of root.querySelectorAll("[data-gfx-opt]")) b.setAttribute("aria-pressed", String(!!prefs.opts[b.getAttribute("data-gfx-opt")]));
     for (const b of root.querySelectorAll("[data-gfx-size]")) b.setAttribute("aria-pressed", String(b.getAttribute("data-gfx-size") === prefs.gen.size));
     for (const select of root.querySelectorAll("[data-gfx-font-select]")) select.value = prefs.font;
+    for (const r of root.querySelectorAll("[data-gfx-box-alpha]")) if (r !== root.activeElement && r.value !== String(prefs.boxOpacity)) { r.value = String(prefs.boxOpacity); r.nextElementSibling.textContent = prefs.boxOpacity + "%"; }
     const fontText = fonts.status === "loading" ? "글꼴 목록을 확인하는 중입니다."
       : fonts.status === "ok" ? "설치된 글꼴 중에서 선택할 수 있습니다."
       : fonts.status === "fetching" ? "Google Fonts에서 글꼴을 받는 중입니다…"
