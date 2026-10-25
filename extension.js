@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.56 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.60 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -667,7 +667,9 @@ ${T} .gf-stage:has(> .gfx-load-host), ${T} .gf-arena:has(> .gfx-load-host) { pos
 .gfx-load-pop { position: absolute; top: 4%; right: 6%; font-size: calc(var(--u) * 2.6); color: var(--gfx-accent);
   text-shadow: 0 0 3px #fff, 0 0 6px #fff; animation: gfx-pop-text 600ms ease-out both; pointer-events: none; }
 @keyframes gfx-pop-text { from { opacity: 0; transform: translateY(30%) scale(0.6); } 40% { opacity: 1; transform: translateY(-20%) scale(1.15); } to { opacity: 0; transform: translateY(-80%) scale(1); } }
-.gfx-load-foot { position: absolute; left: 5%; right: 5%; bottom: 6%; display: flex; flex-direction: column; gap: calc(var(--u) * 6); }
+.gfx-load-foot { position: absolute; left: 5%; right: 5%; bottom: 6%; display: flex; flex-direction: column; gap: calc(var(--u) * 6); pointer-events: none; }
+.gfx-load-runner { pointer-events: auto; cursor: pointer; }
+.gfx-load-runner[data-squish] > :is(img, svg) { animation: gfx-squash 380ms ease; }
 .gfx-load-tip { position: relative; display: flex; align-items: center; gap: 0.7em; padding: 0.55em 1.1em;
   font-family: "Gowun Dodum", "Malgun Gothic", system-ui, sans-serif; font-size: calc(var(--u) * 2); line-height: 1.4;
   background: var(--gfx-card); border: 3px solid var(--gfx-line); border-radius: 18px; box-shadow: 0 0.22em 0 var(--gfx-line); }
@@ -1656,7 +1658,57 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
 `;
   }
 
+  const questPopupRoots = new Map();
+  const QUEST_POPUPS = "#gfq-01-toasts, #gfq-01-qtoasts, .gfq-01-ask";
+  function questPopupCss() {
+    const c = prefs.colors, font = JSON.stringify(prefs.font || "Jua") + ',"Malgun Gothic",sans-serif';
+    const line = lum(c.ink) < 0.45 ? `color-mix(in srgb, ${c.text} 30%, ${c.card})` : c.line;
+    const onAccent = lum(c.accent) > 0.5 ? "#241B24" : "#FFFFFF";
+    const P = ':is(#gfq-01-toasts,#gfq-01-qtoasts,.gfq-01-ask)[data-gfx-mallang]';
+    return `
+${P}{--paper:${c.card}!important;--ink:${c.text}!important;--sub:color-mix(in srgb,${c.text} 68%,${c.card})!important;--serif:${font}!important;--sans:${font}!important;color-scheme:${lum(c.ink) < 0.45 ? "dark" : "light"}}
+${P} .gfq-toast,${P}.gfq-01-ask{background:${c.card}!important;color:${c.text}!important;border:3px solid ${line}!important;border-radius:20px!important;box-shadow:0 5px 0 ${line},0 12px 30px #0003!important;font-family:${font}!important}
+${P} .gfq-toast{--k:${c.accent}!important;overflow:hidden}
+${P} .gfq-t-stub{background:linear-gradient(170deg,${c.sky1},${c.sky2})!important;color:${c.text}!important;border-right:3px dashed ${line}!important}
+${P} :is(.gfq-t-body b,.gfq-t-body span,.gfq-ask-msg){font-family:${font}!important;letter-spacing:0!important;color:${c.text}!important}
+${P} :is(.gfq-offer-row,.gfq-ask-row){flex-wrap:wrap;gap:8px}
+${P} button{font-family:${font}!important;border:2.5px solid ${line}!important;border-radius:14px!important;box-shadow:0 3px 0 ${line}!important}
+${P} :is(.gfq-offer-row,.gfq-ask-row) button{background:${c.accent}!important;color:${onAccent}!important}
+${P} :is(button[data-o=later],button[value=no]){background:${c.card}!important;color:${c.text}!important}
+${P} button[data-o=del]{background:${c.card}!important;color:#a3342a!important;border-color:#a3342a!important}
+${P} button:not(:disabled):active{translate:0 2px;box-shadow:0 1px 0 ${line}!important}
+${P} :is(input,textarea){background:color-mix(in srgb,${c.card} 92%,${c.ink})!important;color:${c.text}!important;border:2.5px solid ${line}!important;border-radius:12px!important;font-family:${font}!important}
+${P} :is(button,input,textarea):focus-visible{outline:3px solid ${c.pick}!important;outline-offset:3px}
+${P}.gfq-01-ask::backdrop{background:#0006}
+`;
+  }
+  function paintQuestPopups() {
+    if (disposed) return;
+    const panel = document.getElementById("gfq-01-panel");
+    let key = panel?.querySelector('[data-action="pick-world"][aria-checked="true"]')?.dataset.id;
+    if (!key) { try { key = JSON.parse(localStorage.getItem("gf-quest-v1") || "null")?.world; } catch {} }
+    const enabled = !!current && !!prefs.questViews[key || questLastWorld];
+    const fs = document.fullscreenElement || document.webkitFullscreenElement;
+    const roots = new Set([document, host()?.shadowRoot, fs?.shadowRoot].filter(Boolean));
+    for (const [root, observer] of questPopupRoots) if (root !== document && !root.host?.isConnected) { observer.disconnect(); questPopupRoots.delete(root); }
+    for (const root of roots) {
+      if (!questPopupRoots.has(root)) {
+        const observer = new MutationObserver((records) => {
+          if (records.some((r) => Array.from(r.addedNodes).some((n) => n.matches?.(QUEST_POPUPS) || n.querySelector?.(QUEST_POPUPS)))) paintQuestPopups();
+        });
+        observer.observe(root, { childList: true, subtree: true });
+        questPopupRoots.set(root, observer);
+      }
+      let style = root.querySelector('#gfx-quest-popup-mallang');
+      if (enabled) {
+        if (!style) { style = document.createElement('style'); style.id = 'gfx-quest-popup-mallang'; (root === document ? document.head : root).append(style); }
+        const css = questPopupCss(); if (style.textContent !== css) style.textContent = css;
+      } else style?.remove();
+      for (const popup of root.querySelectorAll(QUEST_POPUPS)) popup.toggleAttribute('data-gfx-mallang', enabled);
+    }
+  }
   function paintQuestTheme() {
+    paintQuestPopups();
     document.getElementById("gfx-quest-theme")?.remove();
     document.getElementById("gfx-quest-ui-switch")?.remove();
     document.querySelector("[data-gfx-quest-view]")?.remove();
@@ -1849,7 +1901,7 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     const tall = Number(sdEntry(nameOfUrl(url)).tall) || 1;
     const hf = String(+(Math.min(1.15, Math.max(0.6, tall))).toFixed(3));
     if (img.style.getPropertyValue("--hf") !== hf) img.style.setProperty("--hf", hf);
-    if (b && img.parentElement?.closest) { const box = img.closest(".gfx-lobby .who, .gfx-vn-cast .who"); if (box && box.style.getPropertyValue("--hf") !== hf) box.style.setProperty("--hf", hf); }
+    if (img.parentElement?.closest) { const box = img.closest(".gfx-lobby .who, .gfx-vn-cast .who"); if (box && box.style.getPropertyValue("--hf") !== hf) box.style.setProperty("--hf", hf); }
     if (img.dataset.raw !== url) img.dataset.raw = url;
     const scale = flip ? "-1 1" : "";
     if (img.style.scale !== scale) img.style.scale = scale;
@@ -2251,31 +2303,24 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
       if (!W || !nodes.length) return;
       const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) * 0.86 / W * 100);
       if (widths.some((w) => !w)) return;
-      // The story huddle: the protagonist's side (those set to 주인공 옆) and everyone else are two groups with a
-      // clear gap between them, however many stand; inside a group neighbours overlap by a clear third of the
-      // narrower one (it was a fifth of the smallest on stage, which read as neither apart nor together).
+      // Count everyone except the protagonist, including those standing beside them.
       const groupOf = (n) => n.dataset.group || "b";
-      // The line-up aims for the middle 82% of the stage: at 94% large SDs spread edge to edge and the
-      // protagonist (always left-most) stood against the left edge. It fits by overlapping more, never by
-      // shrinking the sprites.
-      const room = 82, total = widths.reduce((a, b) => a + b, 0);
+      const otherCount = nodes.filter((n) => !("protagonist" in n.dataset)).length;
+      const rightCount = nodes.filter((n) => groupOf(n) === "b").length;
+      const total = widths.reduce((a, b) => a + b, 0);
       const joins = nodes.slice(1).map((n, i) => groupOf(n) === groupOf(nodes[i]) ? "in" : "between");
       const pairW = joins.map((_, i) => Math.min(widths[i], widths[i + 1]));
-      const betweenCount = joins.filter((j) => j === "between").length;
-      // More on stage, more overlap: 34% for two, rising with each one more (never smaller sprites).
-      let ratio = Math.min(0.62, 0.34 + 0.08 * Math.max(0, nodes.length - 2)), apart = 11;
+      // Two others overlap 22%, three 34%, four 46%; allies close in at the same rate.
+      const ratio = Math.min(0.70, 0.22 + 0.12 * Math.max(0, otherCount - 2)), apart = 11;
       const span = () => total + joins.reduce((s, j, i) => s + (j === "in" ? -pairW[i] * ratio : apart), 0);
-      // A full stage takes the room from the overlaps first; the gap keeps enough to still read as apart.
-      const inW = joins.reduce((s, j, i) => s + (j === "in" ? pairW[i] : 0), 0);
-      if (span() > room && inW) ratio = Math.min(0.72, ratio + (span() - room) / inW);
-      if (span() > room && betweenCount) apart = Math.max(4, apart - (span() - room) / betweenCount);
+      const groupSpan = (group) => widths.reduce((s, w, i) => s + (groupOf(nodes[i]) === group ? w - (joins[i] === "in" ? pairW[i] * ratio : 0) : 0), 0);
       // The size stays; whatever still does not fit simply runs a little past the edges.
       const fit = 1;
       let x = 50 - span() * fit / 2;
+      // Mirror the centres of the two visible groups, accounting for the allies' combined width.
+      if (rightCount && rightCount < nodes.length) x -= (groupSpan("a") - groupSpan("b")) / 4;
       nodes.forEach((n, i) => {
-        // Everyone but the protagonist's side stands a little right of the centred line-up, and may poke past
-        // the right edge (see clampCastPosition): an off-centre stage, as asked.
-        const center = x + widths[i] * fit / 2 + (groupOf(n) === "b" ? 7 : 0);
+        const center = x + widths[i] * fit / 2 + (groupOf(n) === "b" ? Math.min(14, Math.max(0, rightCount - 1) * 3.5) : 0);
         x += (widths[i] + (i < joins.length ? (joins[i] === "in" ? -pairW[i] * ratio : apart) : 0)) * fit;
         n.style.setProperty("--cast-fit", fit.toFixed(3));
         n.dataset.x = center.toFixed(2);
@@ -2349,6 +2394,8 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
       let n = Array.from(layer.children).find((x) => x.getAttribute("data-slot") === slot.id && !x.hasAttribute("data-leaving"));
       if (!n) {
         n = el("div", "who");
+        // Set the inherited body scale before mounting, including uncached/raw sprites.
+        n.style.setProperty("--hf", sdUrl(name, slot.portrait) ? String(+Math.min(1.15, Math.max(0.6, Number(sdEntry(name).tall) || 1)).toFixed(3)) : "1");
         // Pushed out: the newcomer steps in as the one leaving fades, not on top of them in the same frame.
         if (layer.querySelector(":scope > .who[data-leaving]")) n.style.animationDelay = "180ms";
         // Never left hidden: if the line-up could not measure it (stage hidden), it shows where it is.
@@ -2446,7 +2493,8 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
       const screen = verdict.parentElement;
       let row = screen.querySelector(":scope > .gfx-team");
       const won = !verdict.closest(".root.lose");
-      const members = enabled && won ? Array.from(screen.querySelectorAll(".rs-b-row .nm")).map((n) => ({ name: n.textContent.trim(), url: sdUrl(n.textContent.trim()) })).filter((x) => x.url) : [];
+      const names = [protagonistName(), ...Array.from(screen.querySelectorAll(".rs-b-row .nm"), (n) => n.textContent.trim())];
+      const members = enabled && won ? [...new Set(names.filter(Boolean))].map((name) => ({ name, url: sdUrl(name) })).filter((x) => x.url) : [];
       const key = members.map((x) => x.url).join("|");
       if (row && row.getAttribute("data-key") === key) continue;
       row?.remove();
@@ -3234,15 +3282,18 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     const sds = anySd();
     hero.append(heroNode(pick(sds)));
     stage.append(el("i", "gfx-load-shadow"), hero);
-    on(stage, "click", (e) => {
+    const react = (target, e) => {
       e.stopPropagation();
-      stage.removeAttribute("data-squish");
-      void stage.offsetWidth;
-      stage.setAttribute("data-squish", "");
+      target.removeAttribute("data-squish");
+      void target.offsetWidth;
+      target.setAttribute("data-squish", "");
+      clearTimeout(target._gfxSquishTimer);
+      target._gfxSquishTimer = setTimeout(() => target.removeAttribute("data-squish"), 380);
       const pop = el("span", "gfx-load-pop", pick(["말랑!", "꾹!", "몰캉~", "뿌잉"]));
-      stage.append(pop);
+      target.append(pop);
       setTimeout(() => pop.remove(), 650);
-    });
+    };
+    on(stage, "click", (e) => react(stage, e));
     const foot = el("div", "gfx-load-foot");
     const tip = el("div", "gfx-load-tip");
     tip.append(el("b", "", "TIP"), el("span", "", pick(TIPS)));
@@ -3250,6 +3301,7 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     const fill = el("i", "gfx-load-fill");
     const runner = el("div", "gfx-load-runner");
     runner.append(heroNode(pick(sds)));
+    on(runner, "click", (e) => react(runner, e));
     bar.append(fill, runner, el("em", "gfx-load-pct", "0%"));
     foot.append(tip, bar);
     node.append(title, worldName, stage, foot);
@@ -4340,6 +4392,12 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     document.getElementById("gfx-quest-ui-switch")?.remove();
     document.getElementById("gfx-chapter-loading")?.remove();
     document.getElementById("gfx-quest-mallang")?.remove();
+    for (const [root, observer] of questPopupRoots) {
+      observer.disconnect();
+      root.querySelector('#gfx-quest-popup-mallang')?.remove();
+      for (const popup of root.querySelectorAll(QUEST_POPUPS)) popup.removeAttribute('data-gfx-mallang');
+    }
+    questPopupRoots.clear();
     questUnskin(document.getElementById("gfq-01-panel"));
     document.querySelector("[data-gfx-quest-theme]")?.remove();
     const h = host(), root = h?.shadowRoot;
@@ -4354,3 +4412,4 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
   window[KEY] = disposeExtension;
   MARINARA?.onCleanup?.(disposeExtension);
 })();
+

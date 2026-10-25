@@ -72,7 +72,7 @@ Marinara 전용 `marinara.storage`로 서버에 저장하고, 구형 런타임�
 Marinara의 **GitHub 확장 관리자**에 이 저장소 주소를 등록하고 설치 · 실행 승인합니다(전체 페이지 접근 필요).
 
 ```text
-https://github.com/lemonpie601/Gacha-mallangUI
+https://github.com/lemonpie601/Gacha-UI-2
 ```
 
 로컬 개발용: `node tools/install.mjs [포트]` — 같은 이름의 확장이 있으면 코드를 바꾸고 승인합니다(기본 포트 7861, 테스트 서버).
