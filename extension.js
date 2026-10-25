@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.52 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.56 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -507,12 +507,10 @@ ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
 .gfx-vn-cast { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; contain: layout paint style; }
 /* Feet a little above the bottom edge, so roughly the lower legs pass behind the box; a shorter character
    (키 below 보통) keeps the same feet line and simply stands lower-headed. */
-.gfx-vn-cast .who { position: absolute; bottom: 9%; height: 84%; aspect-ratio: 0.68; translate: -50% 0; z-index: 1;
+.gfx-vn-cast .who { position: absolute; bottom: 9%; height: 78%; aspect-ratio: 0.68; translate: -50% 0; z-index: 1;
   filter: brightness(0.6) saturate(0.85); scale: 0.94; transform-origin: 50% 100%;
   transition: left 560ms cubic-bezier(.4,0,.2,1), height 450ms cubic-bezier(.4,0,.2,1), filter 250ms ease, scale 250ms ease, opacity 300ms ease; animation: gfx-cast-in 380ms ease both; }
-/* Four or five on stage stand a little smaller so they fit side by side. */
-.gfx-vn-cast[data-n="4"] .who { height: 76%; }
-.gfx-vn-cast[data-n="5"] .who { height: 68%; }
+/* Every count stands at the same size: a fuller stage overlaps more instead of shrinking (see layoutCast). */
 /* Leaving: the entrance animation's fill held translate in place, so only the fade ran; without it they sink as they fade. */
 .gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; animation: none; transition: opacity 340ms ease, translate 340ms cubic-bezier(.4,0,.2,1), left 560ms cubic-bezier(.4,0,.2,1); }
 .gfx-vn-cast .who[data-speaking] { filter: none; scale: 1; z-index: 2; }
@@ -2257,20 +2255,22 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
       // clear gap between them, however many stand; inside a group neighbours overlap by a clear third of the
       // narrower one (it was a fifth of the smallest on stage, which read as neither apart nor together).
       const groupOf = (n) => n.dataset.group || "b";
-      // The line-up keeps to the middle 82% of the stage: at 94% large SDs spread edge to edge and the
-      // protagonist (always left-most) stood against the left edge, most visibly when the cast changed on a
-      // narration line. What still does not fit is scaled down as a whole (--cast-fit) rather than spread out.
+      // The line-up aims for the middle 82% of the stage: at 94% large SDs spread edge to edge and the
+      // protagonist (always left-most) stood against the left edge. It fits by overlapping more, never by
+      // shrinking the sprites.
       const room = 82, total = widths.reduce((a, b) => a + b, 0);
       const joins = nodes.slice(1).map((n, i) => groupOf(n) === groupOf(nodes[i]) ? "in" : "between");
       const pairW = joins.map((_, i) => Math.min(widths[i], widths[i + 1]));
       const betweenCount = joins.filter((j) => j === "between").length;
-      let ratio = 0.34, apart = 11;
+      // More on stage, more overlap: 34% for two, rising with each one more (never smaller sprites).
+      let ratio = Math.min(0.62, 0.34 + 0.08 * Math.max(0, nodes.length - 2)), apart = 11;
       const span = () => total + joins.reduce((s, j, i) => s + (j === "in" ? -pairW[i] * ratio : apart), 0);
       // A full stage takes the room from the overlaps first; the gap keeps enough to still read as apart.
       const inW = joins.reduce((s, j, i) => s + (j === "in" ? pairW[i] : 0), 0);
-      if (span() > room && inW) ratio = Math.min(0.5, ratio + (span() - room) / inW);
+      if (span() > room && inW) ratio = Math.min(0.72, ratio + (span() - room) / inW);
       if (span() > room && betweenCount) apart = Math.max(4, apart - (span() - room) / betweenCount);
-      const fit = span() > room ? room / span() : 1;
+      // The size stays; whatever still does not fit simply runs a little past the edges.
+      const fit = 1;
       let x = 50 - span() * fit / 2;
       nodes.forEach((n, i) => {
         // Everyone but the protagonist's side stands a little right of the centred line-up, and may poke past
