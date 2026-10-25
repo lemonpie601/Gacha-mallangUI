@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.51 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.52 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -504,7 +504,7 @@ ${T} .vn-plate[data-gfx-sd] > img.gfx-sd {
 
 /* The cast line-up: large SDs standing behind the dialogue box (the box is the game's, untouched). */
 ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
-.gfx-vn-cast { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.gfx-vn-cast { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; contain: layout paint style; }
 /* Feet a little above the bottom edge, so roughly the lower legs pass behind the box; a shorter character
    (키 below 보통) keeps the same feet line and simply stands lower-headed. */
 .gfx-vn-cast .who { position: absolute; bottom: 9%; height: 84%; aspect-ratio: 0.68; translate: -50% 0; z-index: 1;
@@ -516,7 +516,7 @@ ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
 /* Leaving: the entrance animation's fill held translate in place, so only the fade ran; without it they sink as they fade. */
 .gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; animation: none; transition: opacity 340ms ease, translate 340ms cubic-bezier(.4,0,.2,1), left 560ms cubic-bezier(.4,0,.2,1); }
 .gfx-vn-cast .who[data-speaking] { filter: none; scale: 1; z-index: 2; }
-.gfx-vn-cast .who .body { position: absolute; inset: 0; display: grid; place-items: end center; transform-origin: 50% 100%; scale: calc(var(--hf, 1) * var(--cast-fit, 1)); animation: gfx-breathe 3.4s ease-in-out infinite; transition: scale 450ms cubic-bezier(.4,0,.2,1); }
+.gfx-vn-cast .who .body { position: absolute; inset: 0; display: grid; place-items: end center; transform-origin: 50% 100%; scale: calc(var(--hf, 1) * var(--cast-fit, 1)); animation: gfx-breathe 3.4s ease-in-out infinite; will-change: transform; transition: scale 450ms cubic-bezier(.4,0,.2,1); }
 /* The talk hop is on the picture, so the body's breathing carries on (restarting it was a visible jolt). */
 .gfx-vn-cast .who[data-hop] img { animation: gfx-talk-hop 380ms ease; transform-origin: 50% 100%; }
 .gfx-vn-cast img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none !important; max-height: none !important; object-fit: contain; object-position: 50% 100%; filter: ${STICKER}; -webkit-user-drag: none; transition: scale 320ms cubic-bezier(.4,0,.2,1); }
@@ -608,7 +608,7 @@ ${T} .cbt[data-gfx-sd] > img.gfx-sd {
 ${H("[data-gfx-motion]")} .vn-plate:not([data-gfx-sd]) .vn-art > img { transform-origin: 50% 100%; animation: gfx-breathe 3.4s ease-in-out infinite; }
 ${H("[data-gfx-motion]")} .vn-plate[data-open="true"] { animation: gfx-pop 420ms cubic-bezier(.3,1.6,.5,1) both; transform-origin: 50% 100%; }
 ${H("[data-gfx-motion]")} .vn-plate[data-gfx-sd] > img.gfx-sd { animation: gfx-bob 1.9s ease-in-out infinite; }
-${H("[data-gfx-motion]")} .cbt[data-gfx-sd] > img.gfx-sd { animation: gfx-bob 1.7s ease-in-out infinite; }
+${H("[data-gfx-motion]")} .cbt[data-gfx-sd] > img.gfx-sd { animation: gfx-bob 1.7s ease-in-out infinite; will-change: transform; }
 ${H("[data-gfx-motion]")} .cbt.acting[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
 ${H("[data-gfx-motion]")} .cbt.hit[data-gfx-sd] > img.gfx-sd { animation: gfx-squash 320ms ease; }
 
@@ -2910,14 +2910,16 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     const p = clampToFloor(edge.left + Math.random() * (edge.right - edge.left), y);
     st.tx = p.x; st.ty = p.y;
   }
+  let roamPopupAt = 0, roamPopup = false;
   function roamTick(t) {
     roamFrame = 0;
     const lobby = gameRoot()?.querySelector(".gfx-lobby");
     if (!lobby || disposed) { roamLast = 0; return; }
     const dt = roamLast ? Math.min(0.1, (t - roamLast) / 1000) : 0;
     roamLast = t;
-    // A popup over the home (letters, the background picker) holds everyone still; checked once a frame.
-    const popup = !!gameRoot()?.querySelector("[data-chat-close], .hm-pk-wrap");
+    // A popup over the home (letters, the background picker) holds everyone still; checked every 250ms.
+    if (t - roamPopupAt > 250) { roamPopupAt = t; roamPopup = !!gameRoot()?.querySelector("[data-chat-close], .hm-pk-wrap"); }
+    const popup = roamPopup;
     for (const who of lobby.children) {
       if (!who.classList.contains("who")) continue;
       const st = roam.get(who.getAttribute("data-name"));
@@ -3340,10 +3342,10 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     else if (/^\s*Thought\s*$/i.test(t)) who.textContent = "속마음";
   }
   function tickLoading() {
-    if (disposed) return;
-    placeSdEditor();
+    if (disposed || document.hidden) return;
+    if (sdEditing) placeSdEditor();
     const h = host();
-    relabelThought(h);
+    if (h?._hudView === "beat") relabelThought(h);
     if (h?._hudView === "beat" && load) { load.popup?.remove(); load.node.remove(); load = null; chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0; }
     // The battle phase as a host attribute, for rules that differ before and during the fight.
     const phase = h && h._hudView === "combat" ? String(h._combatPhase || "") : "";
@@ -4214,6 +4216,7 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
   }
   function refreshBody() {
     if (disposed) return;
+    lastRefreshAt = performance.now();
     apply();
     const root = gameRoot();
     if (!root) return;
@@ -4236,10 +4239,15 @@ ${P} .gfq-muted,${P} small{color:var(--sub)!important}
     scheduled = false;
   }
   // Before the next paint, once per frame: the game's redraw and this extension's touches land in the same frame.
+  // Small changes (a damage number, a bar, a speaker) are gathered: at most one full pass every ~90ms. Running it
+  // on every frame of a battle's effects was the main source of stutter.
+  let lastRefreshAt = 0;
   function schedule() {
     if (disposed || scheduled) return;
     scheduled = true;
-    requestAnimationFrame(() => { scheduled = false; refresh(); });
+    const run = () => requestAnimationFrame(() => { scheduled = false; refresh(); });
+    const wait = 90 - (performance.now() - lastRefreshAt);
+    if (wait > 0) setTimeout(run, wait); else run();
   }
   const OWN_SELECTOR = "[data-gfx-ui], [data-gfx-plate], [data-gfx-set], .gfx-sd-list, .gfx-lobby, .gfx-team, .gfx-ev-mascot, .gfx-foe, .gfx-aff-layer, .gfx-vn-cast, .gfx-load-host, .gfx-tiles, .gfx-battle-tile, .gfx-forge-mascot, img.gfx-sd";
   function isOwnNode(node) {
