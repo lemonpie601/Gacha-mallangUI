@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.60 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.61 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -2219,20 +2219,54 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // (moving each speaker to the end swapped two characters on every line). Past the stage's limit the one who
     // has been quiet longest steps off.
     const present = new Map(), spoke = new Map();
+    // Only explicit subjects and completed/present actions change presence. Dialogue, intentions,
+    // reported speech, possessives and a name embedded inside another name are not stage directions.
+    const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const names = cast.map((c) => c.name).filter(Boolean).sort((a, b) => b.length - a.length).map(escape).join("|");
+    const subjectPattern = names ? new RegExp("(^|[^\\p{L}\\p{N}_])(" + names + ")(께서는|께서|은|는|이가|이|가|과|와|하고|및)?(?=\\s|[,，]|$)", "gu") : null;
+    const exitPattern = /(?:퇴장했다|퇴장한다|퇴장했습니다|나갔다|나간다|나갔습니다|떠났다|떠난다|떠났습니다|자리를\s*(?:떴다|뜬다|비웠다|비운다)|(?:방|문|문밖|건물|무대|현장|가게|교실|집|막사|객실|술집|복도)(?:을|를)?\s*나섰다|(?:시야|눈앞|모습|자취)(?:에서|를|가)?\s*(?:밖으로\s*)?(?:사라졌다|감췄다)|사라졌다|사라진다|\b(?:walked away|left the room|exited|departed|disappeared)\b)(?![\p{L}\p{N}_])/giu;
+    const enterPattern = /(?:들어왔다|들어온다|들어왔습니다|들어섰다|들어선다|다가왔다|다가온다|나타났다|나타난다|합류했다|합류한다|돌아왔다|돌아온다|\b(?:entered|arrived|joined|returned)\b)(?![\p{L}\p{N}_])/giu;
+    const narrate = (text, turn) => {
+      if (!subjectPattern) return;
+      const prose = text.replace(/"[^"\n]*"|“[^”]*”|‘[^’]*’|「[^」]*」|『[^』]*』|(?<![\p{L}])'[^'\n]*'(?![\p{L}])/gu, " ");
+      for (const sentence of prose.split(/[.!?。！？\n]+/)) {
+        if (/(?:어제|예전에|과거에|지난번에|기억\s*속|회상\s*속|\byesterday\b|\bused to\b)/i.test(sentence)) continue;
+        const mentions = Array.from(sentence.matchAll(subjectPattern), (m) => ({
+          actor: cast.find((c) => c.name === m[2]), start: m.index + m[1].length, end: m.index + m[0].length,
+          linked: /^(과|와|하고|및)$/.test(m[3] || "") || (!m[3] && /^[,，]/.test(sentence.slice(m.index + m[0].length)))
+        }));
+        for (let j = 0; j < mentions.length; j++) {
+          const subject = mentions[j]; if (subject.linked) continue;
+          const actors = [subject.actor];
+          for (let k = j - 1; k >= 0 && mentions[k].linked && /^[\s,，]*$/.test(sentence.slice(mentions[k].end, mentions[k + 1].start)); k--) actors.unshift(mentions[k].actor);
+          const action = sentence.slice(subject.end, mentions[j + 1]?.start ?? sentence.length);
+          // A second, non-character subject (e.g. their smile/voice) must not remove its owner.
+          if (/(?:미소|웃음|표정|목소리|기척|그림자|모습|분노|불안|빛|smile|voice|shadow)(?:이|가|은|는|\s)/i.test(action)) continue;
+          if (/(?:만약|혹시|\bif\b)/i.test(sentence.slice(0, subject.end))) continue;
+          const events = [...Array.from(action.matchAll(exitPattern), (m) => ({ at: m.index, end: m.index + m[0].length, enter: false })),
+            ...Array.from(action.matchAll(enterPattern), (m) => ({ at: m.index, end: m.index + m[0].length, enter: true }))].sort((a, b) => a.at - b.at);
+          for (const event of events) {
+            const before = action.slice(0, event.at).split(/[,;]|\band\b|\bbut\b/i).at(-1);
+            const after = action.slice(event.end);
+            if (/(?:\b(?:not|never|didn't|would|might|could)\b|(?:^|\s)(?:안|못)\s*$)/i.test(before)
+              || /^\s*(?:생각|믿|추측|싶)/.test(after)) continue;
+            for (const actor of actors) {
+              if (event.enter) { if (!present.has(actor.name)) present.set(actor.name, actor); spoke.set(actor.name, turn); }
+              else { present.delete(actor.name); spoke.delete(actor.name); }
+            }
+          }
+        }
+      }
+    };
     let place = "";
     for (let i = 0; i <= Math.min(at, segments.length - 1); i++) {
       const segment = segments[i] || {};
       if (segment.place && segment.place !== place) { present.clear(); spoke.clear(); place = segment.place; }
       const text = String(segment.text || "");
-      if (!segment.speaker) for (const actor of cast) {
-        const start = text.indexOf(actor.name);
-        if (start < 0) continue;
-        const action = text.slice(start + actor.name.length, start + actor.name.length + 65).split(/[.!?。\n]/)[0];
-        if (/(?:퇴장했|퇴장한|나갔|떠났|자리를 떠|사라졌|밖으로 나|물러났|walked away|left the room|exited|departed)/i.test(action)) present.delete(actor.name);
-        else if (/(?:들어왔|들어섰|다가왔|나타났|합류했|entered|arrived|joined)/i.test(action)) { if (!present.has(actor.name)) present.set(actor.name, actor); spoke.set(actor.name, i); }
-      }
       const actor = find(segment.speaker);
       if (actor) { if (!present.has(actor.name)) present.set(actor.name, actor); spoke.set(actor.name, i); }
+      if (!segment.speaker) narrate(text, i);
+      else for (const direction of text.matchAll(/\(([^()]*)\)|\[([^\[\]]*)\]|\*([^*]+)\*/g)) narrate(direction[1] || direction[2] || direction[3], i);
     }
     const all = Array.from(present.values());
     if (all.length <= max) return all;
@@ -2261,7 +2295,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const actors = storyCastAt(segments, at, cast, castMax());
       // A reply branch may use a different speaker than its parent beat.
       const speaking = cast.find((c) => c.name === speaker);
-      if (speaking && !actors.some((c) => c.name === speaking.name)) actors.push(speaking);
+      const parentSpeaker = String(segments[at]?.speaker || "").trim();
+      const sameSpeaker = parentSpeaker === speaker || (speaking?.prota && /^(you|player|protagonist|나|주인공)$/i.test(parentSpeaker))
+        || (parentSpeaker && speaking?.name.split(/\s+/).includes(parentSpeaker) && cast.filter((c) => c.name.split(/\s+/).includes(parentSpeaker)).length === 1);
+      // Do not re-add someone who explicitly leaves in their own final stage direction.
+      if (speaking && !sameSpeaker && !actors.some((c) => c.name === speaking.name)) actors.push(speaking);
       for (const actor of actors.slice(-castMax())) {
         const portrait = actor.art || world()?.cards.find((c) => c.name === actor.name)?.portrait || "";
         if (portrait) world()?.byPortrait.set(pathOf(portrait), actor.name);
