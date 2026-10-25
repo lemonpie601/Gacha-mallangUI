@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.61 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.10.65 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1195,7 +1195,7 @@ ${T} .u-art.mat svg { filter: drop-shadow(0 .1em 0 color-mix(in srgb, var(--gfx-
 /* Location change: the old cast steps out, a soft wipe names the new place. */
 .gfx-vn-cast-out { pointer-events: none; animation: gfx-cast-out 480ms ease forwards; }
 @keyframes gfx-cast-out { to { opacity: 0; translate: 0 6%; filter: blur(2px); } }
-.gfx-scene-wipe { position: absolute; inset: 0; z-index: 4; pointer-events: none; display: grid; place-items: center;
+.gfx-scene-wipe { position: absolute; inset: 0; z-index: 8; pointer-events: none; display: grid; place-items: center;
   background: radial-gradient(circle, color-mix(in srgb, var(--gfx-card) 55%, transparent), color-mix(in srgb, var(--gfx-ink) 85%, transparent));
   animation: gfx-wipe 1.45s ease forwards; }
 .gfx-scene-wipe > span { padding: .35em 1.2em; font-family: var(--display, "Jua"), sans-serif; font-size: calc(var(--f, 10px) * 1.6); color: var(--gfx-text);
@@ -1980,6 +1980,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const who = whoEl && !whoEl.hasAttribute("data-narration") ? whoEl.textContent.replace(/\s*\(.*?\)\s*$/, "").trim() : "";
     const plates = Array.from(root.querySelectorAll(".vn-plate"));
     const snapshot = storySnapshot(root, whoEl && whoEl.hasAttribute("data-narration") ? "" : who);
+    paintStoryScene(root, on, snapshot);
+    watchStoryScene(root);
     const replaced = new Set(snapshot.slots.map((s) => s.plate).filter(Boolean));
     // Only portraits represented by the reconciled current cast step aside. CG and closed slots stay untouched.
     for (const plate of plates) {
@@ -2261,7 +2263,12 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     let place = "";
     for (let i = 0; i <= Math.min(at, segments.length - 1); i++) {
       const segment = segments[i] || {};
-      if (segment.place && segment.place !== place) { present.clear(); spoke.clear(); place = segment.place; }
+      if (segment.place && segment.place !== place) {
+        // Follow the player's viewpoint across locations only if they are still present.
+        // An explicit departure remains authoritative; never summon an absent protagonist.
+        for (const [name, actor] of present) if (!actor.prota) { present.delete(name); spoke.delete(name); }
+        place = segment.place;
+      }
       const text = String(segment.text || "");
       const actor = find(segment.speaker);
       if (actor) { if (!present.has(actor.name)) present.set(actor.name, actor); spoke.set(actor.name, i); }
@@ -2270,7 +2277,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     }
     const all = Array.from(present.values());
     if (all.length <= max) return all;
-    const keep = new Set(all.slice().sort((a, b) => (spoke.get(b.name) ?? -1) - (spoke.get(a.name) ?? -1)).slice(0, max).map((c) => c.name));
+    const keep = new Set(all.slice().sort((a, b) => Number(!!b.prota) - Number(!!a.prota) || (spoke.get(b.name) ?? -1) - (spoke.get(a.name) ?? -1)).slice(0, max).map((c) => c.name));
     return all.filter((c) => keep.has(c.name));
   }
   function storySnapshot(root, speaker) {
@@ -2300,7 +2307,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         || (parentSpeaker && speaking?.name.split(/\s+/).includes(parentSpeaker) && cast.filter((c) => c.name.split(/\s+/).includes(parentSpeaker)).length === 1);
       // Do not re-add someone who explicitly leaves in their own final stage direction.
       if (speaking && !sameSpeaker && !actors.some((c) => c.name === speaking.name)) actors.push(speaking);
-      for (const actor of actors.slice(-castMax())) {
+      // A branch speaker takes an NPC slot, never the protagonist's reserved place.
+      while (actors.length > castMax()) {
+        let drop = actors.findIndex((c) => !c.prota && c.name !== speaker);
+        if (drop < 0) drop = actors.findIndex((c) => !c.prota);
+        actors.splice(Math.max(0, drop), 1);
+      }
+      for (const actor of actors) {
         const portrait = actor.art || world()?.cards.find((c) => c.name === actor.name)?.portrait || "";
         if (portrait) world()?.byPortrait.set(pathOf(portrait), actor.name);
         slots.push({ id: actor.name, name: actor.name, portrait, plate: open.find((p) => nameFromImg(activePlateImage(p)) === actor.name) || null });
@@ -2324,7 +2337,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const bgBox = root.querySelector(".vn-scene .vn-bg[data-on], .vn-scene .vn-bg, .vn-bg, .vn-back, [data-background]");
     const bg = bgImage?.getAttribute("src") || bgBox?.style.backgroundImage || (bgBox ? getComputedStyle(bgBox).backgroundImage : "") || "";
     const caption = (root.querySelector(".vn-caption")?.textContent || "").trim();
-    const place = segments[Number(h?._beatAt) || 0]?.place || "";
+    const count = (vn.querySelector(".vn-count")?.textContent || "").match(/\d+/);
+    const at = count ? Math.max(0, Number(count[0]) - 1) : Number(h?._beatAt) || 0;
+    const place = segments.slice(0, at + 1).reverse().find((s) => s?.place)?.place || "";
     return { mode, sceneKey: caption + "|" + place + "|" + bg, place: place || caption.split(/\s*·\s*/)[0] || "", slots: slots.slice(-castMax()) };
   }
   /* The line-up stands by each character's real width, not on even fifths of the stage: a small gap between
@@ -2377,6 +2392,54 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const pokeOut = node.dataset.group === "b" ? half * 0.45 : 0;
     node.style.left = clamp(wanted, half, 100 - half + pokeOut).toFixed(2) + "%";
   }
+  const storyScenes = new WeakMap();
+  let storySceneObserver = null, storySceneTargets = [];
+  function watchStoryScene(root) {
+    // Watch only scene metadata/backgrounds, not animated SDs or the typewriter text.
+    const targets = Array.from(root.querySelectorAll(".vn-scene, .vn-bg, .vn-back, .vn-caption, .vn-count, [data-background]"));
+    if (targets.length === storySceneTargets.length && targets.every((n, i) => n === storySceneTargets[i])) return;
+    storySceneObserver?.disconnect();
+    storySceneTargets = targets;
+    if (!targets.length) { storySceneObserver = null; return; }
+    storySceneObserver = new MutationObserver(() => {
+      if (disposed) return;
+      // Mutation delivery runs without a requestAnimationFrame or a window focus event.
+      paintStoryScene(root, !!current, storySnapshot(root, ""));
+    });
+    for (const target of targets) storySceneObserver.observe(target, {
+      childList: true, characterData: true, subtree: true, attributes: true,
+      attributeFilter: ["style", "class", "data-on", "src", "data-background", "hidden"]
+    });
+  }
+  function paintStoryScene(root, enabled, snapshot) {
+    const stage = root.querySelector(".vn");
+    let state = storyScenes.get(root);
+    if (!enabled || !stage) {
+      if (state) { clearTimeout(state.timer); state.wipe?.remove(); storyScenes.delete(root); }
+      return;
+    }
+    if (!state) { storyScenes.set(root, { key: snapshot.sceneKey, wipe: null, timer: null }); return; }
+    if (globalThis.document?.hidden) {
+      state.key = snapshot.sceneKey;
+      clearTimeout(state.timer); state.wipe?.remove(); state.wipe = null; state.timer = null;
+      return;
+    }
+    // The game may replace the entire VN node on a line change; the scene state belongs to its root.
+    if (state.wipe && state.wipe.parentElement !== stage) stage.append(state.wipe);
+    if (state.key === snapshot.sceneKey) return;
+    state.key = snapshot.sceneKey;
+    if (!prefs.opts.motion || snapshot.mode === "cg") return;
+    // Caption and background can arrive separately. Update the active transition instead of replaying it.
+    if (!state.wipe) {
+      state.wipe = el("div", "gfx-scene-wipe");
+      state.wipe.setAttribute("data-gfx-ui", "");
+      stage.append(state.wipe);
+      state.timer = setTimeout(() => { state.wipe?.remove(); state.wipe = null; state.timer = null; }, 1500);
+    }
+    const place = String(snapshot.place || "").trim();
+    state.wipe.replaceChildren();
+    if (place) state.wipe.append(el("span", "", place));
+  }
   function paintVnCast(root, enabled, speaker, snapshot = storySnapshot(root, speaker)) {
     const vn = root.querySelector(".vn");
     // The whole scene, not the strip above the box: the cast stands behind the dialogue box (the dock is above
@@ -2405,11 +2468,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         ghost.removeAttribute("data-key");
         layer.after(ghost);
         setTimeout(() => ghost.remove(), 520);
-        const place = String(snapshot.place || "").trim();
-        const wipe = el("div", "gfx-scene-wipe");
-        if (place) wipe.append(el("span", "", place));
-        stage.append(wipe);
-        setTimeout(() => wipe.remove(), 1500);
       }
       layer.replaceChildren();
       layer.setAttribute("data-scene", snapshot.sceneKey);
@@ -4361,6 +4419,12 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       if (root) {
         observer = new MutationObserver((records) => {
           formatDialogue(root);
+          // Rebind synchronously when the game replaces scene nodes, even if animation frames are paused.
+          const sceneNodes = ".vn, .vn-scene, .vn-bg, .vn-back, .vn-caption, .vn-count, [data-background]";
+          if (records.some((r) => [...r.addedNodes, ...r.removedNodes].some((n) => !isOwnNode(n) && (n.matches?.(sceneNodes) || n.querySelector?.(sceneNodes))))) {
+            paintStoryScene(root, !!current, storySnapshot(root, ""));
+            watchStoryScene(root);
+          }
           /* The game drew a new screen: dress it now, before the browser paints. Waiting for the next frame
            * let one frame of the game's own screen show first (the lobby, tiles and cards popped in a frame
            * late on every tab change). */
@@ -4391,6 +4455,10 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   const loadTick = setInterval(tickLoading, 120);
   const syncTick = setInterval(syncStored, 30000);
   on(window, "focus", syncStored);
+  on(document, "visibilitychange", () => {
+    const root = gameRoot();
+    if (root && document.hidden) paintStoryScene(root, !!current, storySnapshot(root, ""));
+  });
   // Going fullscreen puts the game above an editor opened before it: show the editor again to bring it back on top.
   on(document, "fullscreenchange", () => {
     for (const box of gameRoot()?.querySelectorAll("[data-gfx-sd-edit]:popover-open") || []) { box.hidePopover(); box.showPopover(); }
@@ -4416,6 +4484,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     clearInterval(interval);
     clearInterval(loadTick);
     clearInterval(syncTick);
+    storySceneObserver?.disconnect(); storySceneTargets = [];
     clearInterval(chatter);
     clearInterval(retryTimer);
     pageObserver.disconnect();
