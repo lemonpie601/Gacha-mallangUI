@@ -551,7 +551,7 @@ ${T} .vn[data-cg] .vn-cast { visibility: hidden !important; }
 ${T} .vn-plate:not([data-gfx-sd]) .vn-art > img { object-fit: contain !important; object-position: center bottom !important; width: 100% !important; height: 100% !important; transform: none !important; animation: none !important; }
 ${T} .vn-dock { position: relative; z-index: 5; max-height: 58%; }
 /* Choices float above the dialogue dock instead of adding height to its flow. */
-${T} .vn[data-gfx-choice] .vn-dock { overflow: visible; }
+${T} .vn[data-gfx-choice] .vn-dock { overflow: visible !important; }
 /* Sized in the game's own unit (--f follows the stage, as the dialogue text does), not in px or viewport units:
    those made a small and a full-screen stage show the same small, tightly packed buttons. */
 ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) {
