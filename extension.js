@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.11.16 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.0 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -669,42 +669,11 @@ ${T} .gf-stage:has(> .gfx-load-host), ${T} .gf-arena:has(> .gfx-load-host) { pos
 .gfx-load-world:empty { display: none; }
 .gfx-load-stage { position: absolute; left: 50%; top: 42%; translate: -50% -50%; width: calc(var(--u) * 34); height: calc(var(--u) * 34);
   display: grid; place-items: end center; cursor: pointer; }
-.gfx-load-games { position:absolute; z-index:5; top:12%; left:50%; translate:-50% 0; width:min(760px,96%); max-height:80%; overflow:auto; color:var(--gfx-text); font:clamp(12px,1.6vw,16px)/1.4 "Jua",sans-serif; }
-.forge-center[data-gfx-games] { position:relative; }
-.forge-center > .gfx-load-games { inset:12px 12px 12px auto; translate:none; width:min(820px,96%); max-height:none; display:flex; flex-direction:row-reverse; align-items:flex-start; gap:8px; pointer-events:none; overflow:hidden; }
-.forge-center > .gfx-load-games > * { pointer-events:auto; }
-.forge-center .gfx-game-nav { flex:0 0 110px; flex-direction:column; max-height:100%; overflow:auto; }
-.forge-center .gfx-game-content { flex:1; min-width:0; max-height:100%; overflow:auto; box-sizing:border-box; }
-.forge-center[data-game-large] > .gfx-load-games { width:calc(100% - 24px); }
-.forge-center .gfx-game-board { width:min(100%,58vh); }
-.forge-center[data-game-large] .gfx-game-board { width:min(100%,72vh); }
-@media(max-width:600px) { .forge-center .gfx-game-nav { flex-basis:76px; } .forge-center > .gfx-load-games { gap:4px; inset:8px 8px 8px auto; } .forge-center .gfx-load-games button { padding:6px 3px; } }
-.gfx-load[data-game-large] .gfx-load-games { width:min(1100px,98%); top:8%; max-height:88%; }
-.gfx-load[data-game-large] .gfx-game-board { width:min(100%,78vh); }
-.gfx-load-games select { font:inherit; border:2px solid var(--gfx-line); border-radius:10px; padding:7px; background:var(--gfx-card); color:var(--gfx-text); }
-.gfx-game-nav,.gfx-game-tools { display:flex; flex-wrap:wrap; justify-content:center; gap:7px; margin-bottom:8px; }
-.gfx-load-games button { font:inherit; color:var(--gfx-text); background:var(--gfx-card); border:2px solid var(--gfx-line); border-radius:10px; padding:7px 10px; cursor:pointer; }
-.gfx-load-games button[aria-pressed="true"] { background:var(--gfx-pick); }
-.gfx-load-games button:focus-visible { outline:3px solid var(--gfx-accent); outline-offset:1px; }
-.gfx-game-content:empty { display:none; }
-.gfx-game-content { background:var(--gfx-card); border:3px solid var(--gfx-line); border-radius:18px; padding:10px; }
-.gfx-game-info { min-height:2.8em; text-align:center; margin-bottom:5px; }
-.gfx-game-board { display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); gap:3px; width:min(100%,64vh); margin:auto; touch-action:none; user-select:none; }
-.gfx-game-board button { position:relative; padding:0; aspect-ratio:1; min-width:0; border-radius:6px; font-size:clamp(12px,2.3vh,22px); background:var(--gfx-pick); }
-.gfx-game-board button[data-open="true"] { background:var(--gfx-ink); }
-.gfx-game-board button[data-flag="true"] { font-size:0 !important; background:var(--gfx-card); }
-.gfx-game-board button[data-flag="true"]::before { content:""; position:absolute; left:34%; top:18%; height:62%; border-left:3px solid #432e23; }
-.gfx-game-board button[data-flag="true"]::after { content:""; position:absolute; left:calc(34% + 3px); top:18%; width:42%; height:36%; background:#e13f35; clip-path:polygon(0 0,100% 25%,0 100%); }
 .gfx-entry-load { display:grid; place-items:center; text-align:center; }
 .gfx-entry-card { padding:2em; border:3px solid var(--gfx-line); border-radius:28px; background:var(--gfx-card); color:var(--gfx-text); box-shadow:0 6px 0 var(--gfx-line); max-width:85%; }
 .gfx-entry-card h2 { font-size:clamp(22px,4vw,44px); margin:.5em 0; }
 .gfx-entry-spinner { width:52px; height:52px; margin:auto; border:6px solid var(--gfx-pick); border-top-color:var(--gfx-accent); border-radius:50%; animation:gfx-entry-spin 1s linear infinite; }
 @keyframes gfx-entry-spin { to { transform:rotate(360deg); } }
-.gfx-game-board button[data-empty="true"] { background:transparent; border-color:transparent; }
-.gfx-game-board button[data-selected="true"] { background:var(--gfx-accent); outline:2px solid var(--gfx-line); }
-.gfx-game-board button span { position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:bold; text-shadow:0 1px 2px #000,1px 0 2px #000; }
-.gfx-load[data-game] .gfx-load-stage,.gfx-load[data-game] .gfx-load-tip { display:none; }
-.gfx-load[data-game] .gfx-load-foot { bottom:5%; }
 .gfx-load-stage::before { content: ""; position: absolute; inset: 6% 2% 10%; border-radius: 50%;
   background: radial-gradient(circle, color-mix(in srgb, #fff 80%, transparent), transparent 68%); }
 .gfx-load-shadow { position: absolute; bottom: 3%; left: 50%; width: 46%; height: 7%; translate: -50% 0; border-radius: 50%;
@@ -1583,6 +1552,9 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
     if (!w) return [];
     return Object.values(w.sd).flatMap((e) => [e?.url, ...Object.values(e?.variants || {}).map((v) => typeof v === "string" ? v : v?.url)]).filter(Boolean);
   };
+  // One SD per character, for the separate Gacha Mini Games extension (its memory cards).
+  const sdFaces = () => { const w = current ? world() : null; return w ? [...new Set(Object.values(w.sd).map((x) => x?.url).filter(Boolean))] : []; };
+  window.__GFX_SD_FACES = sdFaces;
   async function loadUnitDetails(card, w = world()) {
     if (!w || w.details.has(card.name) || w.detailsLoading.has(card.name)) return;
     w.detailsLoading.add(card.name);
@@ -1820,6 +1792,10 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     paintQuestTheme();
     setFlag(h, "data-gfx-box", current && prefs.opts.box);
     setFlag(h, "data-gfx-sticker", current && prefs.opts.sticker);
+    // Shared with the separate Gacha Mini Games extension: its pieces follow the colour preset.
+    const preset = current ? prefs.preset || "" : "";
+    if (preset) { if (h.getAttribute("data-gfx-preset") !== preset) h.setAttribute("data-gfx-preset", preset); }
+    else if (h.hasAttribute("data-gfx-preset")) h.removeAttribute("data-gfx-preset");
     setFlag(h, "data-gfx-motion", current && prefs.opts.motion && !matchMedia("(prefers-reduced-motion: reduce)").matches);
     setFlag(h, "data-gfx-field", current && prefs.opts.field);
     setFlag(h, "data-gfx-team", current && prefs.opts.team);
@@ -3518,41 +3494,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   }
   let load = null; // { node, since, progress, tipAt, shownAt, ending }
   let loadDismissed = false;
-  /* Loading games: local UI state only; never touch the run, rewards or generation request. */
-  function newMineGame(random = Math.random, difficulty = "easy") {
-    const [cols, mines] = ({ easy: [8, 10], normal: [10, 18], hard: [12, 30] })[difficulty] || [8, 10];
-    const cells = Array.from({ length: cols * cols }, () => ({ mine: false, open: false, flag: false, count: 0 }));
-    const game = { cells, cols, rows: cols, mines, started: false, ended: false, won: false };
-    const neighbours = (i) => cells.map((_, j) => j).filter((j) => j !== i && Math.abs(j % cols - i % cols) <= 1 && Math.abs(Math.floor(j / cols) - Math.floor(i / cols)) <= 1);
-    game.flag = (i) => { if (!game.ended && !cells[i].open) cells[i].flag = !cells[i].flag; };
-    game.reveal = (i) => {
-      if (game.ended || cells[i].flag || cells[i].open) return;
-      if (!game.started) {
-        const safe = new Set([i, ...neighbours(i)]), pool = cells.map((_, j) => j).filter((j) => !safe.has(j));
-        for (let k = 0; k < mines; k++) { const at = k + Math.floor(random() * (pool.length - k)); [pool[k], pool[at]] = [pool[at], pool[k]]; cells[pool[k]].mine = true; }
-        cells.forEach((c, j) => c.count = neighbours(j).filter((n) => cells[n].mine).length);
-        game.started = true;
-      }
-      if (cells[i].mine) { cells[i].open = true; game.ended = true; return; }
-      const queue = [i];
-      while (queue.length) { const j = queue.pop(), c = cells[j]; if (c.open || c.flag || c.mine) continue; c.open = true; if (!c.count) queue.push(...neighbours(j)); }
-      if (cells.filter((c) => c.open).length === cells.length - mines) { game.ended = true; game.won = true; }
-    };
-    return game;
-  }
-  function newFruitGame(random = Math.random, difficulty = "normal") {
-    const [cols, rows, max] = ({ easy: [8, 6, 5], normal: [10, 8, 9], hard: [12, 10, 9] })[difficulty] || [10, 8, 9];
-    const game = { cols, rows, cells: Array.from({ length: cols * rows }, () => 1 + Math.floor(random() * max)), score: 0 };
-    game.cells[0] = max === 5 ? 5 : 1; game.cells[1] = 10 - game.cells[0]; // Every new board has at least one legal selection.
-    game.select = (a, b, remove = false) => {
-      const x0 = Math.min(a % cols, b % cols), x1 = Math.max(a % cols, b % cols), y0 = Math.min(Math.floor(a / cols), Math.floor(b / cols)), y1 = Math.max(Math.floor(a / cols), Math.floor(b / cols));
-      const ids = game.cells.map((_, i) => i).filter((i) => i % cols >= x0 && i % cols <= x1 && Math.floor(i / cols) >= y0 && Math.floor(i / cols) <= y1);
-      const sum = ids.reduce((n, i) => n + game.cells[i], 0);
-      if (remove && sum === 10) { game.score += ids.filter((i) => game.cells[i]).length; ids.forEach((i) => game.cells[i] = 0); }
-      return { ids, sum };
-    };
-    return game;
-  }
   function writingLoad(h) {
     if (!h) return false;
     // A story fetch/entry is not generation. The Forge screen also covers image generation after text is ready.
@@ -3584,76 +3525,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     card.append(spinner, el('h2', '', '이야기로 이동 중'), el('p', '', '화면을 불러오고 있어요. 잠시만 기다려 주세요.'));
     node.append(card); return node;
   }
-  function makeLoadingGames(overlay) {
-    const panel = el('section', 'gfx-load-games');
-    panel.setAttribute('aria-label', '로딩 미니게임');
-    const nav = el('div', 'gfx-game-nav'), content = el('div', 'gfx-game-content');
-    const button = (label, fn) => { const b = el('button', '', label); b.type = 'button'; on(b, 'click', fn); return b; };
-    const levels = { mines: 'easy', fruits: 'normal' };
-    const fresh = (which) => which === 'mines' ? newMineGame(Math.random, levels.mines) : newFruitGame(Math.random, levels.fruits);
-    const states = { mines: fresh('mines'), fruits: fresh('fruits') };
-    let mode = '', flagMode = false, anchor = null, pointer = null, moved = false, end = null;
-    const menu = [button('지뢰찾기', () => show('mines')), button('フルーツボックス', () => show('fruits'))];
-    const close = button('게임 접기', () => { mode = ''; overlay.removeAttribute('data-game'); content.replaceChildren(); menu.forEach((b) => b.setAttribute('aria-pressed', 'false')); });
-    const hide = button('로딩 화면 닫기', () => {
-      loadDismissed = true;
-      if (load?.node === overlay) { load.popup?.remove(); overlay.parentElement?.classList.contains('gfx-load-host') && overlay.parentElement.remove(); overlay.remove(); load = null; }
-    });
-    const enlarge = button('크게 보기', () => { const big = overlay.toggleAttribute('data-game-large'); enlarge.textContent = big ? '기본 크기' : '크게 보기'; enlarge.setAttribute('aria-pressed', String(big)); });
-    nav.append(...menu, enlarge, close); if (!overlay.classList.contains('forge-center')) nav.append(hide); panel.append(nav, content);
-    for (const event of ['pointerdown', 'pointerup', 'click', 'dblclick', 'keydown', 'keyup']) on(panel, event, (e) => e.stopPropagation());
-    function show(next) {
-      mode = next; anchor = null; pointer = null; overlay.setAttribute('data-game', mode);
-      menu.forEach((b, i) => b.setAttribute('aria-pressed', String(i === (mode === 'mines' ? 0 : 1))));
-      content.replaceChildren();
-      const tools = el('div', 'gfx-game-tools'), info = el('div', 'gfx-game-info'), board = el('div', 'gfx-game-board');
-      info.setAttribute('aria-live', 'polite');
-      tools.append(button('새 판', () => { states[mode] = fresh(mode); show(mode); }));
-      const difficulty = el('select'); difficulty.setAttribute('aria-label', '난이도 (변경 시 새 판)');
-      for (const [value, title] of [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']]) { const option = el('option', '', title); option.value = value; difficulty.append(option); }
-      difficulty.value = levels[mode]; on(difficulty, 'change', () => { levels[mode] = difficulty.value; states[mode] = fresh(mode); show(mode); }); tools.append(difficulty);
-      if (mode === 'mines') {
-        const flags = button('깃발 모드', () => { flagMode = !flagMode; flags.setAttribute('aria-pressed', String(flagMode)); });
-        flags.setAttribute('aria-pressed', String(flagMode)); tools.append(flags);
-      }
-      content.append(tools, info, board);
-      const game = states[mode];
-      board.style.setProperty('--cols', String(game.cols));
-      const buttons = game.cells.map((_, i) => {
-        const b = button('', () => {
-          if (mode === 'mines') { if (flagMode) game.flag(i); else game.reveal(i); paint(); }
-          // Keyboard and assistive-technology activation uses the same two-corner selection.
-          else if (pointer === null) { if (anchor === null) anchor = i; else { game.select(anchor, i, true); anchor = null; } paint(); }
-        });
-        b.dataset.cell = String(i); board.append(b);
-        if (mode === 'mines') on(b, 'contextmenu', (e) => { e.preventDefault(); game.flag(i); paint(); });
-        return b;
-      });
-      function paint(selection = null) {
-        if (mode === 'mines') {
-          info.textContent = game.ended ? (game.won ? '성공! 지뢰를 모두 피했어요.' : '지뢰! 새 판으로 다시 도전하세요.') : '지뢰 ' + game.mines + '개 · 깃발 ' + game.cells.filter((c) => c.flag).length + ' · 첫 칸은 안전해요';
-          buttons.forEach((b, i) => { const c = game.cells[i]; b.textContent = c.flag ? '깃발' : c.mine && game.ended ? '✹' : c.open ? c.count || '' : ''; b.dataset.open = String(c.open); b.dataset.flag = String(c.flag); b.disabled = game.ended; b.setAttribute('aria-label', (i + 1) + '번 칸 ' + (c.flag ? '깃발' : c.open ? (c.mine ? '지뢰' : '주변 지뢰 ' + c.count) : '닫힘')); });
-        } else {
-          const selected = selection || (anchor !== null ? game.select(anchor, anchor) : null);
-          info.textContent = '점수 ' + game.score + ' · ' + (selected ? '선택 합계 ' + selected.sum : '사각형 합계 10! 드래그하거나 두 모서리를 누르세요.');
-          buttons.forEach((b, i) => { b.textContent = game.cells[i] ? '🍎' : ''; if (game.cells[i]) b.append(el('span', '', String(game.cells[i]))); b.dataset.empty = String(!game.cells[i]); b.dataset.selected = String(!!selected?.ids.includes(i)); b.setAttribute('aria-label', (i + 1) + '번 과일 ' + game.cells[i]); });
-        }
-      }
-      if (mode === 'fruits') {
-        const cellAt = (e) => { const r = board.getBoundingClientRect(); if (e.clientX < r.left || e.clientX >= r.right || e.clientY < r.top || e.clientY >= r.bottom) return null; return Math.min(game.rows - 1, Math.floor((e.clientY - r.top) / r.height * game.rows)) * game.cols + Math.min(game.cols - 1, Math.floor((e.clientX - r.left) / r.width * game.cols)); };
-        on(board, 'pointerdown', (e) => { if (e.button !== 0 || pointer !== null) return; const i = cellAt(e); if (i === null) return; e.preventDefault(); pointer = e.pointerId; moved = false; end = i; if (anchor === null) anchor = i; board.setPointerCapture(e.pointerId); paint(game.select(anchor, i)); });
-        on(board, 'pointermove', (e) => { if (pointer !== e.pointerId) return; const i = cellAt(e); if (i !== null) { moved ||= i !== end; end = i; paint(game.select(anchor, end)); } });
-        on(board, 'pointerup', (e) => { if (pointer !== e.pointerId) return; e.preventDefault(); if (moved || end !== anchor) { game.select(anchor, end, true); anchor = null; } pointer = null; board.releasePointerCapture(e.pointerId); paint(); });
-        on(board, 'pointercancel', () => { pointer = null; anchor = null; paint(); });
-        // Pointer input is handled above; prevent its synthetic click from selecting twice.
-        on(board, 'click', (e) => { if (e.detail) { e.preventDefault(); e.stopImmediatePropagation(); } }, { capture: true });
-      }
-      paint();
-    }
-    menu.forEach((b) => b.setAttribute('aria-pressed', 'false'));
-    return panel;
-  }
-
   function makeLoad() {
     const node = el("div", "gfx-load");
     node.setAttribute("data-gfx-ui", "");
@@ -3784,21 +3655,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (/\(thought\)\s*$/i.test(t)) who.textContent = t.replace(/\(thought\)\s*$/i, "(속마음)");
     else if (/^\s*Thought\s*$/i.test(t)) who.textContent = "속마음";
   }
-  let generationGames = null;
-  function syncGenerationGames(h, writing) {
-    const center = writing && current && prefs.opts.loading ? h?.shadowRoot?.querySelector('.forge-center') : null;
-    if (generationGames && generationGames.center !== center) {
-      generationGames.panel.remove();
-      for (const attr of ['data-gfx-games', 'data-game', 'data-game-large']) generationGames.center.removeAttribute(attr);
-      generationGames = null;
-    }
-    if (center && !generationGames) {
-      const panel = makeLoadingGames(center);
-      center.setAttribute('data-gfx-games', ''); center.append(panel);
-      generationGames = { center, panel };
-    }
-    if (center && generationGames.panel.parentNode !== center) center.append(generationGames.panel);
-  }
   function tickLoading() {
     if (disposed || document.hidden) return;
     if (sdEditing) placeSdEditor();
@@ -3808,7 +3664,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (choiceStage) choiceStage.toggleAttribute('data-gfx-choice', !!current && visibleChoice(choiceStage));
     const writing = writingLoad(h);
     const entry = simpleEntryLoad(h);
-    syncGenerationGames(h, writing);
     if (writing) {
       if (load) { load.popup?.remove(); load.node.remove(); load = null; }
       chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0;
@@ -4839,7 +4694,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     document.getElementById("gfx-quest-ui-switch")?.remove();
     document.getElementById("gfx-chapter-loading")?.remove();
     document.getElementById("gfx-story-entry-loading")?.remove();
-    syncGenerationGames(null, false);
+    if (window.__GFX_SD_FACES === sdFaces) delete window.__GFX_SD_FACES;
     document.getElementById("gfx-quest-mallang")?.remove();
     for (const [root, observer] of questPopupRoots) {
       observer.disconnect();
