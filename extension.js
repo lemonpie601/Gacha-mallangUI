@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.10.66 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.11.2 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -148,7 +148,7 @@
       size: SIZES.some(([s]) => s === g.size) ? g.size : DEFAULT_GEN.size,
     };
     const lobbyScale = typeof p.lobbyScale === "number" && Number.isFinite(p.lobbyScale) ? Math.min(2, Math.max(0.5, p.lobbyScale)) : 1;
-    const storyCast = [2, 3, 4, 5].includes(p.storyCast) ? p.storyCast : 3;
+    const storyCast = Number.isInteger(p.storyCast) && p.storyCast >= 2 && p.storyCast <= 10 ? p.storyCast : 3;
     const boxOpacity = typeof p.boxOpacity === "number" && Number.isFinite(p.boxOpacity) ? Math.min(100, Math.max(20, Math.round(p.boxOpacity))) : 95;
     const style = typeof p.style === "string" ? p.style : undefined;
     return { questViews: Object.fromEntries(Object.entries(p.questViews || {}).filter(([k,v]) => k && typeof v === "boolean")), font: FONT_CHOICES.includes(p.font) ? p.font : "Jua", colors, preset: typeof p.preset === "string" ? p.preset : "", opts, gen, home, homeScene, lobbyScale, storyCast, boxOpacity, style };
@@ -507,13 +507,13 @@ ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
 .gfx-vn-cast { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; contain: layout paint style; }
 /* Feet a little above the bottom edge, so roughly the lower legs pass behind the box; a shorter character
    (키 below 보통) keeps the same feet line and simply stands lower-headed. */
-.gfx-vn-cast .who { position: absolute; bottom: 9%; height: 78%; aspect-ratio: 0.68; translate: -50% 0; z-index: 1;
+.gfx-vn-cast .who { position: absolute; bottom: 9%; height: 78%; aspect-ratio: 0.68; translate: -50% 0; z-index: var(--cast-order, 1);
   filter: brightness(0.6) saturate(0.85); scale: 0.94; transform-origin: 50% 100%;
   transition: left 560ms cubic-bezier(.4,0,.2,1), height 450ms cubic-bezier(.4,0,.2,1), filter 250ms ease, scale 250ms ease, opacity 300ms ease; animation: gfx-cast-in 380ms ease both; }
-/* Every count stands at the same size: a fuller stage overlaps more instead of shrinking (see layoutCast). */
+/* Cast count never changes sprite size; only centre spacing adapts to the available stage. */
 /* Leaving: the entrance animation's fill held translate in place, so only the fade ran; without it they sink as they fade. */
 .gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; animation: none; transition: opacity 340ms ease, translate 340ms cubic-bezier(.4,0,.2,1), left 560ms cubic-bezier(.4,0,.2,1); }
-.gfx-vn-cast .who[data-speaking] { filter: none; scale: 1; z-index: 2; }
+.gfx-vn-cast .who[data-speaking] { filter: none; scale: 1; z-index: 100; }
 .gfx-vn-cast .who .body { position: absolute; inset: 0; display: grid; place-items: end center; transform-origin: 50% 100%; scale: calc(var(--hf, 1) * var(--cast-fit, 1)); animation: gfx-breathe 3.4s ease-in-out infinite; will-change: transform; transition: scale 450ms cubic-bezier(.4,0,.2,1); }
 /* The talk hop is on the picture, so the body's breathing carries on (restarting it was a visible jolt). */
 .gfx-vn-cast .who[data-hop] img { animation: gfx-talk-hop 380ms ease; transform-origin: 50% 100%; }
@@ -650,6 +650,22 @@ ${T} .gf-stage:has(> .gfx-load-host), ${T} .gf-arena:has(> .gfx-load-host) { pos
 .gfx-load-world:empty { display: none; }
 .gfx-load-stage { position: absolute; left: 50%; top: 42%; translate: -50% -50%; width: calc(var(--u) * 34); height: calc(var(--u) * 34);
   display: grid; place-items: end center; cursor: pointer; }
+.gfx-load-games { position:absolute; z-index:5; top:17%; left:50%; translate:-50% 0; width:min(560px,94%); max-height:70%; overflow:auto; color:var(--gfx-text); font:clamp(12px,1.6vw,16px)/1.4 "Jua",sans-serif; }
+.gfx-game-nav,.gfx-game-tools { display:flex; flex-wrap:wrap; justify-content:center; gap:7px; margin-bottom:8px; }
+.gfx-load-games button { font:inherit; color:var(--gfx-text); background:var(--gfx-card); border:2px solid var(--gfx-line); border-radius:10px; padding:7px 10px; cursor:pointer; }
+.gfx-load-games button[aria-pressed="true"] { background:var(--gfx-pick); }
+.gfx-load-games button:focus-visible { outline:3px solid var(--gfx-accent); outline-offset:1px; }
+.gfx-game-content:empty { display:none; }
+.gfx-game-content { background:var(--gfx-card); border:3px solid var(--gfx-line); border-radius:18px; padding:10px; }
+.gfx-game-info { min-height:2.8em; text-align:center; margin-bottom:5px; }
+.gfx-game-board { display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); gap:3px; width:min(100%,48vh); margin:auto; touch-action:none; user-select:none; }
+.gfx-game-board button { position:relative; padding:0; aspect-ratio:1; min-width:0; border-radius:6px; font-size:clamp(12px,2.3vh,22px); background:var(--gfx-pick); }
+.gfx-game-board button[data-open="true"] { background:var(--gfx-ink); }
+.gfx-game-board button[data-empty="true"] { background:transparent; border-color:transparent; }
+.gfx-game-board button[data-selected="true"] { background:var(--gfx-accent); outline:2px solid var(--gfx-line); }
+.gfx-game-board button span { position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:bold; text-shadow:0 1px 2px #000,1px 0 2px #000; }
+.gfx-load[data-game] .gfx-load-stage,.gfx-load[data-game] .gfx-load-tip { display:none; }
+.gfx-load[data-game] .gfx-load-foot { bottom:5%; }
 .gfx-load-stage::before { content: ""; position: absolute; inset: 6% 2% 10%; border-radius: 50%;
   background: radial-gradient(circle, color-mix(in srgb, #fff 80%, transparent), transparent 68%); }
 .gfx-load-shadow { position: absolute; bottom: 3%; left: 50%; width: 46%; height: 7%; translate: -50% 0; border-radius: 50%;
@@ -1246,7 +1262,7 @@ ${T} [data-screen="reveal"] .rv-foot { background: color-mix(in srgb, var(--gfx-
 
 /* Keep replacement plates hidden through game DOM redraws; CG remains untouched. */
 ${H("[data-gfx-story-sd]")} .vn:has(> .gfx-vn-cast):not([data-cg]) .vn-plate { visibility: hidden !important; }
-.gfx-vn-cast .who[data-protagonist] { z-index: 3; }
+/* Speaking priority applies equally to the protagonist and their neighbours. */
 /* A newcomer stays hidden until the line-up has placed it (it showed for a moment at an even-share spot first). */
 .gfx-vn-cast .who:not([data-placed]) { visibility: hidden; }
 ${AT} .ev-panel[data-gfx-attendance] .ev-day { color: #30251B !important; }
@@ -1533,9 +1549,10 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
     w.detailsLoading.add(card.name);
     try {
       const unit = await unitOf(card, w);
+      await sharePromptContext(w, card, unit);
       w.details.set(card.name, unit);
       const variants = w.outfits.get(card.name) || new Set();
-      for (const outfit of unit.outfits || []) {
+      for (const outfit of [...(unit.outfits || []), ...(w.sd[card.name]?.promptContext?.outfits || [])]) {
         if (!outfit.url) continue;
         const path = pathOf(outfit.url);
         variants.add(path); w.byPortrait.set(path, card.name);
@@ -2364,7 +2381,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const W = layer.clientWidth;
       const nodes = Array.from(layer.querySelectorAll(":scope > .who:not([data-leaving])")).sort((a, b) => (Number(a.dataset.i) || 0) - (Number(b.dataset.i) || 0));
       if (!W || !nodes.length) return;
-      const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) * 0.86 / W * 100);
+      const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) / W * 100);
       if (widths.some((w) => !w)) return;
       // Count everyone except the protagonist, including those standing beside them.
       const groupOf = (n) => n.dataset.group || "b";
@@ -2373,34 +2390,39 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const total = widths.reduce((a, b) => a + b, 0);
       const joins = nodes.slice(1).map((n, i) => groupOf(n) === groupOf(nodes[i]) ? "in" : "between");
       const pairW = joins.map((_, i) => Math.min(widths[i], widths[i + 1]));
-      // Two others overlap 22%, three 34%, four 46%; allies close in at the same rate.
-      const ratio = Math.min(0.70, 0.22 + 0.12 * Math.max(0, otherCount - 2)), apart = 11;
+      // Keep faces readable while gradually increasing overlap with the cast count.
+      const ratio = Math.min(0.38, 0.16 + 0.07 * Math.max(0, otherCount - 2)), apart = 5;
       const span = () => total + joins.reduce((s, j, i) => s + (j === "in" ? -pairW[i] * ratio : apart), 0);
       const groupSpan = (group) => widths.reduce((s, w, i) => s + (groupOf(nodes[i]) === group ? w - (joins[i] === "in" ? pairW[i] * ratio : 0) : 0), 0);
-      // The size stays; whatever still does not fit simply runs a little past the edges.
+      // Fit all centres as one group; individually clamping them collapsed neighbouring slots.
+      const rightShift = Math.min(6, Math.max(0, rightCount - 1) * 1.5);
       const fit = 1;
       let x = 50 - span() * fit / 2;
       // Mirror the centres of the two visible groups, accounting for the allies' combined width.
       if (rightCount && rightCount < nodes.length) x -= (groupSpan("a") - groupSpan("b")) / 4;
-      nodes.forEach((n, i) => {
-        const center = x + widths[i] * fit / 2 + (groupOf(n) === "b" ? Math.min(14, Math.max(0, rightCount - 1) * 3.5) : 0);
+      let centers = nodes.map((n, i) => {
+        const center = x + widths[i] * fit / 2 + (groupOf(n) === "b" ? rightShift * fit : 0);
         x += (widths[i] + (i < joins.length ? (joins[i] === "in" ? -pairW[i] * ratio : apart) : 0)) * fit;
+        return center;
+      });
+      // Compress positions uniformly, never the characters. Keep ordering and avoid per-node clamps.
+      const low = Math.min(35, 4 + widths[0] / 2);
+      const high = Math.max(65, 96 - widths.at(-1) / 2);
+      const spread = centers.at(-1) - centers[0];
+      if (spread > high - low) centers = centers.map((c) => low + (c - centers[0]) * (high - low) / spread);
+      const left = Math.min(...centers.map((c, i) => c - widths[i] * fit / 2));
+      const right = Math.max(...centers.map((c, i) => c + widths[i] * fit / 2));
+      const shift = right - left > 92 ? 50 - (left + right) / 2 : left < 4 ? 4 - left : right > 96 ? 96 - right : 0;
+      nodes.forEach((n, i) => {
+        const center = centers[i] + shift;
+        n.style.setProperty("--cast-order", String(i + 1));
         n.style.setProperty("--cast-fit", fit.toFixed(3));
         n.dataset.x = center.toFixed(2);
         // A newcomer appears where it belongs; only those already standing glide over.
         if (!n.dataset.placed) { n.dataset.placed = "1"; n.style.transition = "none"; requestAnimationFrame(() => { n.style.transition = ""; }); }
-        clampCastPosition(layer, n);
+        n.style.left = center.toFixed(2) + "%";
       });
     });
-  }
-  function clampCastPosition(layer, node) {
-    if (!layer.clientWidth || !node.offsetWidth) return;
-    const wanted = Number(node.dataset.x) || 50;
-    const scale = Number(getComputedStyle(node).getPropertyValue("--hf")) || 1;
-    const fit = Number(node.style.getPropertyValue("--cast-fit")) || 1;
-    const half = Math.min(45, (node.offsetWidth * scale * fit / layer.clientWidth) * 50 + 1);
-    const pokeOut = node.dataset.group === "b" ? half * 0.45 : 0;
-    node.style.left = clamp(wanted, half, 100 - half + pokeOut).toFixed(2) + "%";
   }
   const storyScenes = new WeakMap();
   let storySceneObserver = null, storySceneTargets = [];
@@ -2486,7 +2508,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (layer.getAttribute("data-key") === key) return;
     layer.setAttribute("data-key", key);
     vnCast.renderedKey = key;
-    const xs = CAST_X[slots.length] || [];
+    const xs = CAST_X[slots.length] || slots.map((_, i) => 10 + i * 80 / Math.max(1, slots.length - 1));
     layer.setAttribute("data-n", String(slots.length));
     const ids = new Set(slots.map((s) => s.id));
     // One who leaves fades where they stood while the others glide over, instead of the line-up jumping.
@@ -3370,12 +3392,114 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   const HEAVY_VIEWS = new Set(["beat"]);
   function loadingNow(h) {
     if (!h || !h.shadowRoot) return false;
-    if (h._hudView === "beat" || (h._activeStoryNode && h._beatState === "loading")) return false;
+    if (writingLoad(h)) return "heavy";
+    if (h._hudView === "beat") return false;
     if (h._boot === "idle" || h._boot === "loading") return "heavy";
     const test = LOADING_BY_VIEW[h._hudView];
     try { return test && test(h) ? (h._hudView === "combat" ? "battle" : HEAVY_VIEWS.has(h._hudView) ? "heavy" : "light") : false; } catch { return false; }
   }
   let load = null; // { node, since, progress, tipAt, shownAt, ending }
+  let loadDismissed = false;
+  /* Loading games: local UI state only; never touch the run, rewards or generation request. */
+  function newMineGame(random = Math.random) {
+    const cells = Array.from({ length: 64 }, () => ({ mine: false, open: false, flag: false, count: 0 }));
+    const game = { cells, started: false, ended: false, won: false };
+    const neighbours = (i) => cells.map((_, j) => j).filter((j) => j !== i && Math.abs(j % 8 - i % 8) <= 1 && Math.abs(Math.floor(j / 8) - Math.floor(i / 8)) <= 1);
+    game.flag = (i) => { if (!game.ended && !cells[i].open) cells[i].flag = !cells[i].flag; };
+    game.reveal = (i) => {
+      if (game.ended || cells[i].flag || cells[i].open) return;
+      if (!game.started) {
+        const safe = new Set([i, ...neighbours(i)]), pool = cells.map((_, j) => j).filter((j) => !safe.has(j));
+        for (let k = 0; k < 10; k++) { const at = k + Math.floor(random() * (pool.length - k)); [pool[k], pool[at]] = [pool[at], pool[k]]; cells[pool[k]].mine = true; }
+        cells.forEach((c, j) => c.count = neighbours(j).filter((n) => cells[n].mine).length);
+        game.started = true;
+      }
+      if (cells[i].mine) { cells[i].open = true; game.ended = true; return; }
+      const queue = [i];
+      while (queue.length) { const j = queue.pop(), c = cells[j]; if (c.open || c.flag || c.mine) continue; c.open = true; if (!c.count) queue.push(...neighbours(j)); }
+      if (cells.filter((c) => c.open).length === 54) { game.ended = true; game.won = true; }
+    };
+    return game;
+  }
+  function newFruitGame(random = Math.random) {
+    const game = { cells: Array.from({ length: 80 }, () => 1 + Math.floor(random() * 9)), score: 0 };
+    game.cells[0] = 1; game.cells[1] = 9; // Every new board has at least one legal selection.
+    game.select = (a, b, remove = false) => {
+      const x0 = Math.min(a % 10, b % 10), x1 = Math.max(a % 10, b % 10), y0 = Math.min(Math.floor(a / 10), Math.floor(b / 10)), y1 = Math.max(Math.floor(a / 10), Math.floor(b / 10));
+      const ids = game.cells.map((_, i) => i).filter((i) => i % 10 >= x0 && i % 10 <= x1 && Math.floor(i / 10) >= y0 && Math.floor(i / 10) <= y1);
+      const sum = ids.reduce((n, i) => n + game.cells[i], 0);
+      if (remove && sum === 10) { game.score += ids.filter((i) => game.cells[i]).length; ids.forEach((i) => game.cells[i] = 0); }
+      return { ids, sum };
+    };
+    return game;
+  }
+  function writingLoad(h) {
+    return !!h && ((h._hudView === 'beat' && h._beatState === 'loading') || (h._hudView === 'chapter' && h._planState === 'loading') || (h._hudView === 'chapters' && h._chaptersState === 'loading'));
+  }
+  function makeLoadingGames(overlay) {
+    const panel = el('section', 'gfx-load-games');
+    panel.setAttribute('aria-label', '로딩 미니게임');
+    const nav = el('div', 'gfx-game-nav'), content = el('div', 'gfx-game-content');
+    const button = (label, fn) => { const b = el('button', '', label); b.type = 'button'; on(b, 'click', fn); return b; };
+    const states = { mines: newMineGame(), fruits: newFruitGame() };
+    let mode = '', flagMode = false, anchor = null, pointer = null, moved = false, end = null;
+    const menu = [button('지뢰찾기', () => show('mines')), button('フルーツボックス', () => show('fruits'))];
+    const close = button('게임 접기', () => { mode = ''; overlay.removeAttribute('data-game'); content.replaceChildren(); menu.forEach((b) => b.setAttribute('aria-pressed', 'false')); });
+    const hide = button('로딩 화면 닫기', () => {
+      loadDismissed = true;
+      if (load?.node === overlay) { load.popup?.remove(); overlay.parentElement?.classList.contains('gfx-load-host') && overlay.parentElement.remove(); overlay.remove(); load = null; }
+    });
+    nav.append(...menu, close, hide); panel.append(nav, content);
+    for (const event of ['pointerdown', 'pointerup', 'click', 'dblclick', 'keydown', 'keyup']) on(panel, event, (e) => e.stopPropagation());
+    function show(next) {
+      mode = next; anchor = null; pointer = null; overlay.setAttribute('data-game', mode);
+      menu.forEach((b, i) => b.setAttribute('aria-pressed', String(i === (mode === 'mines' ? 0 : 1))));
+      content.replaceChildren();
+      const tools = el('div', 'gfx-game-tools'), info = el('div', 'gfx-game-info'), board = el('div', 'gfx-game-board');
+      info.setAttribute('aria-live', 'polite');
+      tools.append(button('새 판', () => { states[mode] = mode === 'mines' ? newMineGame() : newFruitGame(); show(mode); }));
+      if (mode === 'mines') {
+        const flags = button('깃발 모드', () => { flagMode = !flagMode; flags.setAttribute('aria-pressed', String(flagMode)); });
+        flags.setAttribute('aria-pressed', String(flagMode)); tools.append(flags);
+      }
+      content.append(tools, info, board);
+      board.style.setProperty('--cols', mode === 'mines' ? '8' : '10');
+      const game = states[mode];
+      const buttons = game.cells.map((_, i) => {
+        const b = button('', () => {
+          if (mode === 'mines') { if (flagMode) game.flag(i); else game.reveal(i); paint(); }
+          // Keyboard and assistive-technology activation uses the same two-corner selection.
+          else if (pointer === null) { if (anchor === null) anchor = i; else { game.select(anchor, i, true); anchor = null; } paint(); }
+        });
+        b.dataset.cell = String(i); board.append(b);
+        if (mode === 'mines') on(b, 'contextmenu', (e) => { e.preventDefault(); game.flag(i); paint(); });
+        return b;
+      });
+      function paint(selection = null) {
+        if (mode === 'mines') {
+          info.textContent = game.ended ? (game.won ? '성공! 지뢰를 모두 피했어요.' : '지뢰! 새 판으로 다시 도전하세요.') : '지뢰 10개 · 깃발 ' + game.cells.filter((c) => c.flag).length + ' · 첫 칸은 안전해요';
+          buttons.forEach((b, i) => { const c = game.cells[i]; b.textContent = c.flag ? '⚑' : c.mine && game.ended ? '✹' : c.open ? c.count || '' : ''; b.dataset.open = String(c.open); b.disabled = game.ended; b.setAttribute('aria-label', (i + 1) + '번 칸 ' + (c.flag ? '깃발' : c.open ? (c.mine ? '지뢰' : '주변 지뢰 ' + c.count) : '닫힘')); });
+        } else {
+          const selected = selection || (anchor !== null ? game.select(anchor, anchor) : null);
+          info.textContent = '점수 ' + game.score + ' · ' + (selected ? '선택 합계 ' + selected.sum : '사각형 합계 10! 드래그하거나 두 모서리를 누르세요.');
+          buttons.forEach((b, i) => { b.textContent = game.cells[i] ? '🍎' : ''; if (game.cells[i]) b.append(el('span', '', String(game.cells[i]))); b.dataset.empty = String(!game.cells[i]); b.dataset.selected = String(!!selected?.ids.includes(i)); b.setAttribute('aria-label', (i + 1) + '번 과일 ' + game.cells[i]); });
+        }
+      }
+      if (mode === 'fruits') {
+        const cellAt = (e) => { const r = board.getBoundingClientRect(); if (e.clientX < r.left || e.clientX >= r.right || e.clientY < r.top || e.clientY >= r.bottom) return null; return Math.min(7, Math.floor((e.clientY - r.top) / r.height * 8)) * 10 + Math.min(9, Math.floor((e.clientX - r.left) / r.width * 10)); };
+        on(board, 'pointerdown', (e) => { if (e.button !== 0 || pointer !== null) return; const i = cellAt(e); if (i === null) return; e.preventDefault(); pointer = e.pointerId; moved = false; end = i; if (anchor === null) anchor = i; board.setPointerCapture(e.pointerId); paint(game.select(anchor, i)); });
+        on(board, 'pointermove', (e) => { if (pointer !== e.pointerId) return; const i = cellAt(e); if (i !== null) { moved ||= i !== end; end = i; paint(game.select(anchor, end)); } });
+        on(board, 'pointerup', (e) => { if (pointer !== e.pointerId) return; e.preventDefault(); if (moved || end !== anchor) { game.select(anchor, end, true); anchor = null; } pointer = null; board.releasePointerCapture(e.pointerId); paint(); });
+        on(board, 'pointercancel', () => { pointer = null; anchor = null; paint(); });
+        // Pointer input is handled above; prevent its synthetic click from selecting twice.
+        on(board, 'click', (e) => { if (e.detail) { e.preventDefault(); e.stopImmediatePropagation(); } }, { capture: true });
+      }
+      paint();
+    }
+    menu.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    return panel;
+  }
+
   function makeLoad() {
     const node = el("div", "gfx-load");
     node.setAttribute("data-gfx-ui", "");
@@ -3504,16 +3628,22 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (sdEditing) placeSdEditor();
     const h = host();
     if (h?._hudView === "beat") relabelThought(h);
-    if (h?._hudView === "beat" && load) { load.popup?.remove(); load.node.remove(); load = null; chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0; }
+    const writing = writingLoad(h);
+    if (!writing && load?.node.querySelector('.gfx-load-games')) {
+      load.popup?.remove(); load.node.remove(); load = null;
+      chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0;
+    }
+    if (h?._hudView === "beat" && !writing && load) { load.popup?.remove(); load.node.remove(); load = null; chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0; }
     // The battle phase as a host attribute, for rules that differ before and during the fight.
     const phase = h && h._hudView === "combat" ? String(h._combatPhase || "") : "";
     if (h && (h.getAttribute("data-gfx-phase") || "") !== phase) { if (phase) h.setAttribute("data-gfx-phase", phase); else h.removeAttribute("data-gfx-phase"); }
     const entering = chapterEnteredAt && (performance.now() - chapterEnteredAt < 220 || performance.now() - chapterMutationAt < 120);
-    const kind = !!current && prefs.opts.loading && h?._hudView !== "beat" && (entering ? "heavy" : loadingNow(h));
+    if (!writing) loadDismissed = false;
+    const kind = !!current && prefs.opts.loading && !loadDismissed && (entering ? "heavy" : loadingNow(h));
     const now = performance.now();
     if (kind) lastWantAt = now;
     const want = !!kind || (lastWantAt && now - lastWantAt < LOAD_GAP);
-    if (want) {
+    if (want && !loadDismissed) {
       if (!loadingSince) loadingSince = now;
       // Short waits stay quiet: only a load still running past its threshold gets the screen (a stuck one only once).
       if (!load && kind && now - loadingSince > LOAD_AFTER[kind] && now - loadingSince < 25000) {
@@ -3522,11 +3652,12 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       }
     } else loadingSince = 0;
     if (!load) return;
+    if (writing && !load.node.querySelector('.gfx-load-games')) load.node.append(makeLoadingGames(load.node));
     ensureLoadMounted();
     // The fade-in once: re-attaching after a redraw must not replay it.
     if (!load.node.hasAttribute("data-shown") && now - load.shownAt > 240) load.node.setAttribute("data-shown", "");
     // A state the game never clears (an error it shows on its own screen) must not hide that screen: 25s at most.
-    if (!load.ending && ((!want && now - load.shownAt > (load.external ? 200 : LOAD_MIN)) || (!load.external && now - load.shownAt > 25000))) load.ending = now;
+    if (!load.ending && ((!want && now - load.shownAt > (load.external ? 200 : LOAD_MIN)) || (!writing && !load.external && now - load.shownAt > 25000))) load.ending = now;
     if (load.ending) {
       // The chapter-entry screen fills and leaves at once; the others still finish their bar.
       load.progress = load.external ? 100 : Math.min(100, load.progress + 30);
@@ -3661,7 +3792,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     }
     const cast = el("div", "st-chips");
     cast.style.marginTop = ".7em";
-    for (const n of [2, 3, 4, 5]) cast.append(chip(n + "명", () => { prefs.storyCast = n; savePrefs(); paintSettings(); refresh(); }, { "data-gfx-cast": String(n) }));
+    cast.style.flexWrap = "wrap";
+    for (const n of [2, 3, 4, 5, 6, 7, 8, 9, 10]) cast.append(chip(n + "명", () => { prefs.storyCast = n; savePrefs(); paintSettings(); refresh(); }, { "data-gfx-cast": String(n) }));
     // How much of the scene shows through the dialogue box (100% = solid).
     const boxRow = el("label", "gfx-box-alpha");
     const boxRange = el("input"); boxRange.type = "range"; boxRange.min = "20"; boxRange.max = "100"; boxRange.step = "5";
@@ -3820,7 +3952,10 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const lookUrl = look ? sdVariant(e, look)?.url : e.url;
       const lookName = (k) => w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === k)?.name || "의상 " + (allOutfits.indexOf(k) + 1);
       const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.history || []), e.lobby || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
-      if (box.getAttribute("data-key") === key) continue;
+      const promptKey = JSON.stringify([e.appearance, e.prompt, e.promptContext, prefs.gen.template]);
+      if (box.getAttribute("data-key") === key && box.getAttribute("data-prompt-key") === promptKey) continue;
+      if (box.contains(root.activeElement) && root.activeElement?.matches("input, textarea")) continue;
+      box.setAttribute("data-prompt-key", promptKey);
       box._gfxMarkerRO?.disconnect();
       box._gfxMarkerRO = null;
       box.setAttribute("data-key", key);
@@ -4007,7 +4142,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       imageActions.append(chip("이미지 업로드", () => fileInput.click()), fileInput);
       if (lookUrl) imageActions.append(chip("선택한 이미지 제거", async () => { await saveLook(c.name, look, { url: "", imageRemoved: true }); paintSettings(); refreshSprites(); }));
       side.append(imageActions);
-      side.append(field("캐릭터 외형 프롬프트", e.appearance || w.details.get(c.name)?.appearance, (v) => saveSdEntry(c.name, { appearance: v }).then(() => { linesRev++; paintSettings(); setEditNote("저장했습니다", true); }), 4000));
+      side.append(field("캐릭터 외형 프롬프트", e.appearance || e.promptContext?.appearance || w.details.get(c.name)?.appearance, (v) => saveSdEntry(c.name, { appearance: v }).then(() => { linesRev++; paintSettings(); setEditNote("저장했습니다", true); }), 4000));
       side.append(field("선택한 모습의 SD 생성 프롬프트 (비우면 자동 구성)", sdPrompt(c, w.details.get(c.name) || {}, look),
         (v) => saveLook(c.name, look, { prompt: v }).then(() => setEditNote("생성 프롬프트를 저장했습니다", true)), 12000));
       side = panels.lines;
@@ -4110,8 +4245,20 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   const extOf = (mime) => (/png/.test(mime) ? ".png" : /webp/.test(mime) ? ".webp" : /jpe?g/.test(mime) ? ".jpg" : ".png");
   // One drawing at a time across every button: a second request waits its turn, then its own 3–7s.
   let genChain = Promise.resolve();
+  async function sharePromptContext(w, card, unit) {
+    const old = w.sd[card.name] || {};
+    if (old._deleted || (!unit?.appearance && !unit?.outfits?.length)) return;
+    // Share the automatic inputs, not a frozen override: template edits and 'empty = automatic' still work.
+    const outfits = new Map((old.promptContext?.outfits || []).map((o) => [pathOf(o.url), o]));
+    for (const o of unit.outfits || []) if (o.url && !outfits.has(pathOf(o.url))) outfits.set(pathOf(o.url), { url: o.url, prompt: o.prompt, outfitLine: o.outfitLine, outfitTags: o.outfitTags });
+    const promptContext = { appearance: old.promptContext?.appearance || String(unit.appearance || ""), outfits: [...outfits.values()] };
+    if (JSON.stringify(promptContext) === JSON.stringify(old.promptContext)) return;
+    w.sd = { ...w.sd, [card.name]: { ...old, promptContext, _editedAt: Date.now() } };
+    await storePatch({ ["sd:" + w.id]: w.sd });
+  }
   function sdPrompt(card, unit, look = "") {
     const entry = sdEntry(card.name);
+    if (entry.promptContext) unit = { ...unit, ...entry.promptContext };
     const override = (look ? sdVariant(entry, look) : entry)?.prompt;
     if (override) return override;
     const outfit = look && unit?.outfits?.find((o) => o.url && pathOf(o.url) === pathOf(look));
@@ -4145,6 +4292,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       w.note = card.name + " 그리는 중…";
       paintSettings();
       const u = { unit: await unitOf(card, w) };
+      await sharePromptContext(w, card, u.unit);
       const prompt = sdPrompt(card, u.unit, variantKey);
       if (!prompt) throw Error("외형 정보가 없습니다. SD 편집에서 생성 프롬프트를 입력해 주세요.");
       const [width, height] = prefs.gen.size.split("x").map(Number);
