@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.0 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.1 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1710,11 +1710,22 @@ ${P} :is(button,input,textarea):focus-visible{outline:3px solid ${c.pick}!import
 ${P}.gfq-01-ask::backdrop{background:#0006}
 `;
   }
+  // The quest extension keeps its whole state (hundreds of KB) in one localStorage entry. Reading and parsing it
+  // took ~4 ms and ran on every pass, twice; the world it names changes only from the quest panel, which is read
+  // directly while open.
+  let questStoredAt = -Infinity, questStoredKey;
+  function questStoredWorld() {
+    if (performance.now() - questStoredAt > 10000) {
+      questStoredAt = performance.now();
+      try { questStoredKey = JSON.parse(localStorage.getItem("gf-quest-v1") || "null")?.world; } catch { questStoredKey = undefined; }
+    }
+    return questStoredKey;
+  }
   function paintQuestPopups() {
     if (disposed) return;
     const panel = document.getElementById("gfq-01-panel");
     let key = panel?.querySelector('[data-action="pick-world"][aria-checked="true"]')?.dataset.id;
-    if (!key) { try { key = JSON.parse(localStorage.getItem("gf-quest-v1") || "null")?.world; } catch {} }
+    if (!key) key = questStoredWorld();
     const enabled = !!current && !!prefs.questViews[key || questLastWorld];
     const fs = document.fullscreenElement || document.webkitFullscreenElement;
     const roots = new Set([document, host()?.shadowRoot, fs?.shadowRoot].filter(Boolean));
@@ -1779,13 +1790,16 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     for (const b of panel.querySelectorAll('[data-action="pick-theme"][aria-pressed="true"]')) { b.setAttribute("aria-pressed", "false"); b.setAttribute("data-gfx-was-pressed", ""); }
   }
 
-  function apply() {
-    const h = host(), root = h?.shadowRoot;
-    if (!root) return;
+  function adoptSheets(root) {
     const sheets = root.adoptedStyleSheets, base = styleSheet(), vars = paintVars();
     if (!sheets.includes(base) || !sheets.includes(vars)) {
       root.adoptedStyleSheets = [...sheets.filter((s) => s !== sheet && s !== varSheet), sheet, varSheet];
     }
+  }
+  function apply() {
+    const h = host(), root = h?.shadowRoot;
+    if (!root) return;
+    adoptSheets(root);
     if (current) { if (h.getAttribute(ATTR) !== current) h.setAttribute(ATTR, current); }
     else if (h.hasAttribute(ATTR)) h.removeAttribute(ATTR);
     setFlag(h, "data-gfx-story-sd", current && prefs.opts.storySd);
@@ -2011,7 +2025,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   }
   function paintSprites(root) {
     formatDialogue(root);
-    perfStep("");
+    perfStep("format");
     const on = !!current;
     const whoEl = root.querySelector(".vn-who");
     const who = whoEl && !whoEl.hasAttribute("data-narration") ? whoEl.textContent.replace(/\s*\(.*?\)\s*$/, "").trim() : "";
@@ -3223,7 +3237,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     });
     lobbyRO.disconnect();
     lobbyRO.observe(lobby);
-    lobbySize = { w: lobby.clientWidth, h: lobby.clientHeight };
+    // Measured only the first time. Reading it on every return home forced a layout of the whole new screen the
+    // game had just drawn, inside this pass (up to ~40 ms); the observer above reports a real size change.
+    if (!lobbySize.w || !lobbySize.h) lobbySize = { w: lobby.clientWidth, h: lobby.clientHeight };
     for (const who of lobby.querySelectorAll(":scope > .who")) { const st = roam.get(who.getAttribute("data-name")); if (st) placeWho(who, st); }
     if (!roamFrame) roamFrame = requestAnimationFrame(roamTick);
   }
@@ -3632,7 +3648,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // On a fresh open this timer can find the game before the style pass has dressed it: without the sheet
     // the SD was drawn at its full picture size for a moment (a face across the whole screen). The sheet goes
     // on first, and the screen waits if it still is not there.
-    apply();
+    adoptSheets(root);
     if (!root.adoptedStyleSheets.includes(styleSheet())) return;
     let mount = target.querySelector(":scope > .gfx-load-host");
     if (!load) { if (mount && !mount.childElementCount) mount.remove(); return; }
@@ -4559,7 +4575,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   function refreshBody() {
     if (disposed) return;
     lastRefreshAt = performance.now();
+    perfStep("");
     apply();
+    perfStep("apply");
     const root = gameRoot();
     if (!root) return;
     const id = runId();
@@ -4568,6 +4586,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       mountSettings(root);
       paintSettings();
     }
+    perfStep("settings");
     paintSprites(root);
     perfStep("rest");
     ensureLoadMounted();
