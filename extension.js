@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.11.5 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.11.15 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -523,13 +523,13 @@ ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
 .gfx-vn-placeholder svg { width: 85%; max-height: 85%; }
 .gfx-vn-placeholder > span { padding: .3em .8em; border: 2px solid var(--gfx-line); border-radius: 999px; background: var(--gfx-card); }
 .vn[data-cg] .gfx-vn-cast { display: none; }
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .gfx-vn-cast { filter: brightness(.88) saturate(.9); }
+.vn[data-gfx-choice] .gfx-vn-cast { filter: brightness(.88) saturate(.9); }
 .vn .vn-choices, .vn .vn-choice, .vn [data-choice] { position: relative; z-index: 8; }
 /* The game's cleared-chapter green is a fixed dark colour; on a dark sheet it takes a light one. */
 ${T} .ch-card.cleared .ch-index, ${T} .diffs span.on { color: var(--gfx-jade-text, #1C6B54) !important; }
 /* Gacha Choice's shipped runtime uses gch-menu / gch-opt. */
-${T} .vn:has(.gch-menu:not([hidden])) .gfx-vn-cast { filter: brightness(.88) saturate(.9); }
-${T} .vn:has(.gch-menu:not([hidden]), .vn-choices:not([hidden])) .vn-plate:not([data-gfx-sd]) { visibility: hidden !important; }
+${T} .vn[data-gfx-choice] .gfx-vn-cast { filter: brightness(.88) saturate(.9); }
+${T} .vn[data-gfx-choice] .vn-plate:not([data-gfx-sd]) { visibility: hidden !important; }
 ${T} .vn .gch-menu { position: relative; z-index: 12; align-items: stretch !important; max-height: 38cqh;
   overflow-y: auto; overscroll-behavior: contain; gap: .55em !important; padding: .35em .4em .65em; margin-bottom: .3em !important;
   /* A centred column of pills instead of bars across the whole scene. */
@@ -547,30 +547,43 @@ ${T} .vn .gch-menu .gch-opt:active { translate: 0 .18em; box-shadow: 0 .04em 0 v
 ${T} .vn[data-cg] .vn-cast { visibility: hidden !important; }
 ${T} .vn-plate:not([data-gfx-sd]) .vn-art > img { object-fit: contain !important; object-position: center bottom !important; width: 100% !important; height: 100% !important; transform: none !important; animation: none !important; }
 ${T} .vn-dock { position: relative; z-index: 5; max-height: 58%; }
-${T} .vn:has(.gch-menu) .vn-box { max-height: 20cqh; overflow-y: auto; }
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices {
+/* Choices float above the dialogue dock instead of adding height to its flow. */
+${T} .vn[data-gfx-choice] .vn-dock { overflow: visible; }
+${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) {
+  position: absolute !important; top: auto !important; bottom: calc(100% + 10px) !important;
+  left: 50% !important; right: auto !important; transform: translateX(-50%) !important;
+  width: min(70vw, 640px) !important; min-width: 0 !important; max-width: 94vw !important;
+  max-height: min(32cqh, 300px) !important; overflow-y: auto; overflow-x: hidden;
+  margin: 0 !important; padding: 5px !important; gap: 6px !important; box-sizing: border-box;
+}
+${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) > :is(.gch-opt, .vn-choice, button) {
+  font-size: clamp(13px, 1.6cqw, 20px) !important; min-height: 36px !important;
+  padding: .4em .85em !important; border-width: 2px !important; line-height: 1.35 !important;
+}
+@media (max-width: 600px) { ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) { width: 90vw !important; } }
+.vn[data-gfx-choice] .vn-choices {
   display: grid; gap: calc(var(--f, 10px) * 0.7); padding: calc(var(--f, 10px) * 0.9) 0; isolation: isolate;
   /* A centred column of pills, not bars across the whole scene, so the picture stays visible around them. */
   width: min(60%, calc(var(--f, 10px) * 56)); min-width: min(100%, calc(var(--f, 10px) * 30)); margin-inline: auto !important;
 }
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices .vn-choice,
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices > button {
+.vn[data-gfx-choice] .vn-choices .vn-choice,
+.vn[data-gfx-choice] .vn-choices > button {
   justify-content: center; text-align: center; font-size: .92em;
 }
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices .vn-choice,
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices > button {
+.vn[data-gfx-choice] .vn-choices .vn-choice,
+.vn[data-gfx-choice] .vn-choices > button {
   border: calc(var(--f, 10px) * 0.28) solid var(--gfx-line) !important; border-radius: 999px !important;
   background: color-mix(in srgb, var(--gfx-card) 92%, white) !important; color: var(--gfx-text) !important;
   box-shadow: 0 calc(var(--f, 10px) * 0.5) 0 var(--gfx-line), inset 0 calc(var(--f, 10px) * 0.22) 0 #fff8 !important;
   padding: calc(var(--f, 10px) * 0.75) calc(var(--f, 10px) * 1.8) !important;
   transition: translate .14s ease, scale .14s ease, box-shadow .14s ease, background .14s ease;
 }
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices .vn-choice:hover,
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices > button:hover {
+.vn[data-gfx-choice] .vn-choices .vn-choice:hover,
+.vn[data-gfx-choice] .vn-choices > button:hover {
   background: var(--gfx-pick) !important; translate: 0 calc(var(--f, 10px) * -0.18); scale: 1.015;
 }
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices .vn-choice:active,
-.vn:has(.vn-choices:not([hidden]), .vn-choice:not([hidden]), [data-choice]:not([hidden])) .vn-choices > button:active {
+.vn[data-gfx-choice] .vn-choices .vn-choice:active,
+.vn[data-gfx-choice] .vn-choices > button:active {
   translate: 0 calc(var(--f, 10px) * 0.34); scale: .985; box-shadow: 0 calc(var(--f, 10px) * 0.14) 0 var(--gfx-line) !important;
 }
 @keyframes gfx-cast-in { from { opacity: 0; translate: -50% 8%; } to { opacity: 1; translate: -50% 0; } }
@@ -1186,7 +1199,7 @@ ${T} [data-screen="events"] .ev-foot { min-height: 0; padding-top: .3em; }
 ${T} [data-screen="events"] :is(.ev-claim, .sv-draw, .sv-fight) { font-size: calc(var(--f, 10px) * 1.15) !important; min-height: 2.4em; padding: .35em 1.4em !important; }
 ${T} [data-screen="events"] :is(.pv-reroll, .sv-ms-btn) { font-size: calc(var(--f, 10px) * .85) !important; padding: .25em .8em !important; }
 @media (prefers-reduced-motion: reduce) {
-  .gfx-vn-cast .who, .gfx-vn-cast .body, .gfx-lobby .body, .gfx-team > span { animation: none !important; transition: none !important; }
+  .gfx-vn-cast .who, .gfx-vn-cast .body, .gfx-vn-cast img, .gfx-lobby .body, .gfx-team > span { animation: none !important; transition: none !important; }
 }
 /* Summon cards. The frame sits on the faces, not the card box (it clipped the rays and glow). Cards fly in from
  * the middle, the back glows in its rarity before turning, and the turn bounces. */
@@ -1228,14 +1241,14 @@ ${T} .u-art.mat svg { filter: drop-shadow(0 .1em 0 color-mix(in srgb, var(--gfx-
 .gfx-spot .who b { font-family: var(--display, "Jua"), sans-serif; font-size: 7cqmin; color: #fff; -webkit-text-stroke: .7cqmin #5A3A24; paint-order: stroke fill; }
 .gfx-spot .who i { font-style: normal; font-size: 5cqmin; color: #FFD34E; -webkit-text-stroke: .5cqmin #5A3A24; paint-order: stroke fill; letter-spacing: .1em; }
 .gfx-spot .tap { position: absolute; bottom: 3cqh; right: 4cqw; font-size: 2.6cqmin; color: #fff; opacity: .9; animation: rvBlink 1.1s ease-in-out infinite; }
-/* Location change: the old cast steps out, a soft wipe names the new place. */
+/* Location change: a brief top-right label, without a full-screen veil. */
 .gfx-vn-cast-out { pointer-events: none; animation: gfx-cast-out 480ms ease forwards; }
 @keyframes gfx-cast-out { to { opacity: 0; translate: 0 6%; filter: blur(2px); } }
-.gfx-scene-wipe { position: absolute; inset: 0; z-index: 8; pointer-events: none; display: grid; place-items: center;
-  background: radial-gradient(circle, color-mix(in srgb, var(--gfx-card) 55%, transparent), color-mix(in srgb, var(--gfx-ink) 85%, transparent));
+.gfx-scene-wipe { position: absolute; top: 4em; right: 1em; left: auto; bottom: auto; max-width: min(70%, 32em); z-index: 8; pointer-events: none; display: block;
+  background: transparent; backdrop-filter: none; filter: none;
   animation: gfx-wipe 1.45s ease forwards; }
 .gfx-scene-wipe > span { padding: .35em 1.2em; font-family: var(--display, "Jua"), sans-serif; font-size: calc(var(--f, 10px) * 1.6); color: var(--gfx-text);
-  background: var(--gfx-card); border: 3px solid var(--gfx-line); border-radius: 999px; box-shadow: 0 .2em 0 var(--gfx-line); animation: gfx-pop 420ms cubic-bezier(.3,1.6,.5,1) both; }
+  display: block; overflow-wrap: anywhere; background: var(--gfx-card); border: 3px solid var(--gfx-line); border-radius: 999px; box-shadow: 0 .2em 0 var(--gfx-line); }
 @keyframes gfx-wipe { 0% { opacity: 0; } 22% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
 /* Summon capsule. The game's own charge ring is hidden while ours plays. */
 ${T} [data-screen="reveal"]:has(.gfx-summon) .rv-sigil { visibility: hidden; }
@@ -1311,6 +1324,8 @@ ${F} .side.enemies .cbt > * { pointer-events: none; }
 ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px solid var(--gfx-pick); outline-offset: 3px; }
 ${T} .forge-center { border: 3px solid var(--gfx-line); border-radius: 28px; padding: 1.5em; background: radial-gradient(ellipse at top, var(--gfx-sky1), var(--gfx-card)); color: var(--gfx-text); box-shadow: 0 .4em 0 var(--gfx-line); }
 ${T} .forge-center::before { content: "Now Loading · 이야기를 준비하고 있어요"; display: block; font-family: "Jua", sans-serif; color: var(--gfx-text); margin-bottom: .6em; }
+.gfx-forge-mascot[data-squish] > :is(img,svg) { animation:gfx-squash 380ms ease !important; }
+.gfx-forge-mascot .gfx-load-pop { font-size:clamp(16px,2vw,28px); pointer-events:none; }
 .gfx-forge-mascot { margin-inline: auto; animation: gfx-bob 2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .gfx-forge-mascot { animation: none; } }
 
@@ -2017,6 +2032,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const who = whoEl && !whoEl.hasAttribute("data-narration") ? whoEl.textContent.replace(/\s*\(.*?\)\s*$/, "").trim() : "";
     const plates = Array.from(root.querySelectorAll(".vn-plate"));
     const snapshot = storySnapshot(root, whoEl && whoEl.hasAttribute("data-narration") ? "" : who);
+    root.querySelector(".vn")?.toggleAttribute("data-gfx-choice", on && snapshot.mode === "choice");
     paintStoryScene(root, on, snapshot);
     watchStoryScene(root);
     const replaced = new Set(snapshot.slots.map((s) => s.plate).filter(Boolean));
@@ -2066,7 +2082,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // World creation: the mascot in place of the emblem.
     for (const center of root.querySelectorAll(".forge-center")) {
       const has = center.querySelector(":scope > .gfx-forge-mascot");
-      if (on && !has) { const m = el("div", "gfx-forge-mascot"); m.append(heroNode(pick(anySd()))); center.prepend(m); }
+      if (on && !has) { const m = el("div", "gfx-forge-mascot"); m.append(heroNode(pick(anySd()))); m.setAttribute('role', 'button'); m.tabIndex = 0; m.setAttribute('aria-label', 'SD 캐릭터 누르기');
+        const react = (e) => { e.stopPropagation(); m.removeAttribute('data-squish'); void m.offsetWidth; m.setAttribute('data-squish', ''); clearTimeout(m._gfxSquishTimer); m._gfxSquishTimer = setTimeout(() => m.removeAttribute('data-squish'), 380); const pop = el('span', 'gfx-load-pop', pick(['말랑!', '꾹!', '몰캉~'])); m.append(pop); setTimeout(() => pop.remove(), 650); };
+        m.addEventListener('click', react); m.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); react(e); } }); center.prepend(m); }
       else if (!on && has) has.remove();
     }
   }
@@ -2410,6 +2428,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const W = layer.clientWidth;
       const nodes = Array.from(layer.querySelectorAll(":scope > .who:not([data-leaving])")).sort((a, b) => (Number(a.dataset.i) || 0) - (Number(b.dataset.i) || 0));
       if (!W || !nodes.length) return;
+      // Wait for the whole incoming cast to decode before revealing or repositioning it.
+      if (nodes.some((n) => {
+        const img = n.querySelector?.('img');
+        return img && !img.hidden && !n.hasAttribute('data-image-error') && (!img.complete || !img.naturalWidth);
+      })) return;
       const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) / W * 100);
       if (widths.some((w) => !w)) return;
       // Speaking and line progression must not recalculate the cast's positions.
@@ -2417,7 +2440,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const signature = JSON.stringify([W, nodes.map((n, i) => [n.dataset.name || n.dataset.i, n.dataset.group, widths[i]]).sort((a, b) => String(a[0]).localeCompare(String(b[0])))]);
       const previous = castLayoutStates.get(layer);
       if (previous?.signature === signature && nodes.every((n) => previous.nodes.has(n))) return;
-      castLayoutStates.set(layer, { signature, nodes: new Set(nodes) });
+
       // Count everyone except the protagonist, including those standing beside them.
       const groupOf = (n) => n.dataset.group || "b";
       const otherCount = nodes.filter((n) => !("protagonist" in n.dataset)).length;
@@ -2454,10 +2477,20 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         const middle = (centers[indices[0]] + centers[indices[1]]) / 2;
         for (const i of indices) centers[i] = middle + (centers[i] - middle) * 0.85;
       }
+      const growing = previous && previous.W === W && rightCount > previous.rightCount;
+      const settled = new Map();
       nodes.forEach((n, i) => {
         // Shift only the opposing group, after fitting so centring cannot cancel it.
         // Three/four/five opponents move an additional 2.5/4/6 percent to the right.
-        const center = centers[i] + shift + (groupOf(n) === "b" ? (rightCount === 3 ? 2.5 : Math.min(6, Math.max(0, rightCount - 2) * 2)) : 0);
+        let center = centers[i] + shift + (groupOf(n) === "b" ? (rightCount === 3 ? 2.5 : Math.min(6, Math.max(0, rightCount - 2) * 2)) : 0);
+        const key = n.dataset.name || n.dataset.i;
+        if (growing && previous.positions.has(key)) {
+          center = previous.positions.get(key) + (groupOf(n) === 'b' ? Math.min(2, 0.75 * (rightCount - previous.rightCount)) : 0);
+        } else if (growing && groupOf(n) === 'b') {
+          const rightmost = Math.max(...nodes.filter(m => (m.dataset.group || 'b') === 'b').map(m => settled.get(m.dataset.name || m.dataset.i) ?? previous.positions.get(m.dataset.name || m.dataset.i) ?? 0));
+          center = Math.max(center, rightmost + Math.max(1, (98 - rightmost) / 2));
+        }
+        settled.set(key, center);
         n.style.setProperty("--cast-order", String(i + 1));
         n.style.setProperty("--cast-fit", fit.toFixed(3));
         n.dataset.x = center.toFixed(2);
@@ -2465,6 +2498,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         if (!n.dataset.placed) { n.dataset.placed = "1"; n.style.transition = "none"; requestAnimationFrame(() => { n.style.transition = ""; }); }
         n.style.left = center.toFixed(2) + "%";
       });
+      castLayoutStates.set(layer, { signature, nodes: new Set(nodes), W, rightCount, positions: settled });
     });
   }
   const storyScenes = new WeakMap();
@@ -2570,7 +2604,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         // Pushed out: the newcomer steps in as the one leaving fades, not on top of them in the same frame.
         if (layer.querySelector(":scope > .who[data-leaving]")) n.style.animationDelay = "180ms";
         // Never left hidden: if the line-up could not measure it (stage hidden), it shows where it is.
-        setTimeout(() => { if (!n.dataset.placed) { n.dataset.placed = "1"; layoutCast(layer); } }, 700);
+        // A stalled image gets one fixed fallback box; late decoding cannot move the cast again.
+        setTimeout(() => { if (n.isConnected && !n.dataset.placed) { n.setAttribute('data-image-error', ''); layoutCast(layer); } }, 1500);
         n.setAttribute("data-slot", slot.id);
         n.setAttribute("data-name", name);
         const body = el("div", "body"), img = el("img");
@@ -2610,11 +2645,12 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         n.style.setProperty("--hf", "1");
       }
       const fit = () => {
-        if (im.naturalWidth && im.naturalHeight) n.style.aspectRatio = String(im.classList.contains("portrait") ? im.naturalWidth / im.naturalHeight : Math.min(1.1, im.naturalWidth / im.naturalHeight));
+        if (!n.dataset.placed && im.naturalWidth && im.naturalHeight) n.style.aspectRatio = String(im.classList.contains("portrait") ? im.naturalWidth / im.naturalHeight : Math.min(1.1, im.naturalWidth / im.naturalHeight));
         layoutCast(layer);
       };
       // onload, not a one-off listener: a sprite swapped in later (after its picture decoded) refits too.
       im.onload = fit;
+      im.onerror = () => { n.setAttribute('data-image-error', ''); layoutCast(layer); };
       if (im.complete) fit();
       const speaking = name === speaker;
       if (speaking !== n.hasAttribute("data-speaking")) {
@@ -3731,6 +3767,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (sdEditing) placeSdEditor();
     const h = host();
     if (h?._hudView === "beat") relabelThought(h);
+    const choiceStage = h?.shadowRoot?.querySelector('.vn');
+    if (choiceStage) choiceStage.toggleAttribute('data-gfx-choice', !!current && visibleChoice(choiceStage));
     const writing = writingLoad(h);
     const entry = simpleEntryLoad(h);
     syncGenerationGames(h, writing);
@@ -4776,6 +4814,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     document.querySelector("[data-gfx-quest-theme]")?.remove();
     const h = host(), root = h?.shadowRoot;
     for (const a of [ATTR, "data-gfx-story-sd", "data-gfx-box", "data-gfx-sticker", "data-gfx-motion", "data-gfx-field", "data-gfx-team", "data-gfx-hideplate", "data-gfx-attend", "data-gfx-phase", "data-gfx-lobby"]) h?.removeAttribute(a);
+    root?.querySelectorAll('[data-gfx-choice]').forEach(n => n.removeAttribute('data-gfx-choice'));
     if (root) root.adoptedStyleSheets = root.adoptedStyleSheets.filter((s) => s !== sheet && s !== varSheet);
     for (const n of root?.querySelectorAll("[data-gfx-set], [data-gfx-plate], [data-gfx-ui], img.gfx-sd, .gfx-forge-mascot, .gfx-foe, .gfx-team, .gfx-lobby, .gfx-ev-mascot, .gfx-tiles, .gfx-aff-layer, .gfx-vn-cast, .gfx-load-host") || []) n.remove();
     for (const n of root?.querySelectorAll("[data-gfx-sd], [data-gfx-foe], [data-gfx-attendance], [data-gfx-settings-view]") || []) {
