@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.11.15 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.11.16 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -512,7 +512,10 @@ ${T} .vn-plate[data-gfx-sd] { opacity: 0 !important; }
   transition: left 560ms cubic-bezier(.4,0,.2,1), height 450ms cubic-bezier(.4,0,.2,1), filter 250ms ease, scale 250ms ease, opacity 300ms ease; animation: gfx-cast-in 380ms ease both; }
 /* Cast count never changes sprite size; only centre spacing adapts to the available stage. */
 /* Leaving: the entrance animation's fill held translate in place, so only the fade ran; without it they sink as they fade. */
-.gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; animation: none; transition: opacity 340ms ease, translate 340ms cubic-bezier(.4,0,.2,1), left 560ms cubic-bezier(.4,0,.2,1); }
+/* A keyframe, not a transition: switching the entrance animation off made opacity land on 0 in the same frame, so
+   the one leaving vanished at once. */
+.gfx-vn-cast .who[data-leaving] { opacity: 0; translate: -50% 4%; animation: gfx-cast-leave 340ms cubic-bezier(.4,0,.2,1) both; transition: left 560ms cubic-bezier(.4,0,.2,1); }
+@keyframes gfx-cast-leave { from { opacity: 1; translate: -50% 0; } to { opacity: 0; translate: -50% 4%; } }
 .gfx-vn-cast .who[data-speaking] { filter: none; scale: 1; z-index: 100; }
 .gfx-vn-cast .who .body { position: absolute; inset: 0; display: grid; place-items: end center; transform-origin: 50% 100%; scale: calc(var(--hf, 1) * var(--cast-fit, 1)); animation: gfx-breathe 3.4s ease-in-out infinite; will-change: transform; transition: scale 450ms cubic-bezier(.4,0,.2,1); }
 /* The talk hop is on the picture, so the body's breathing carries on (restarting it was a visible jolt). */
@@ -549,18 +552,21 @@ ${T} .vn-plate:not([data-gfx-sd]) .vn-art > img { object-fit: contain !important
 ${T} .vn-dock { position: relative; z-index: 5; max-height: 58%; }
 /* Choices float above the dialogue dock instead of adding height to its flow. */
 ${T} .vn[data-gfx-choice] .vn-dock { overflow: visible; }
+/* Sized in the game's own unit (--f follows the stage, as the dialogue text does), not in px or viewport units:
+   those made a small and a full-screen stage show the same small, tightly packed buttons. */
 ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) {
-  position: absolute !important; top: auto !important; bottom: calc(100% + 10px) !important;
+  position: absolute !important; top: auto !important; bottom: calc(100% + var(--f, 10px) * 1.4) !important;
   left: 50% !important; right: auto !important; transform: translateX(-50%) !important;
-  width: min(70vw, 640px) !important; min-width: 0 !important; max-width: 94vw !important;
-  max-height: min(32cqh, 300px) !important; overflow-y: auto; overflow-x: hidden;
-  margin: 0 !important; padding: 5px !important; gap: 6px !important; box-sizing: border-box;
+  width: min(74%, calc(var(--f, 10px) * 72)) !important; min-width: 0 !important; max-width: 96% !important;
+  max-height: min(48cqh, var(--gfx-choice-room, 48cqh)) !important; overflow-y: auto; overflow-x: hidden;
+  margin: 0 !important; padding: calc(var(--f, 10px) * .6) !important; gap: calc(var(--f, 10px) * 1.15) !important; box-sizing: border-box;
 }
 ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) > :is(.gch-opt, .vn-choice, button) {
-  font-size: clamp(13px, 1.6cqw, 20px) !important; min-height: 36px !important;
-  padding: .4em .85em !important; border-width: 2px !important; line-height: 1.35 !important;
+  font-size: max(12px, calc(var(--f, 10px) * 1.6)) !important; min-height: max(32px, calc(var(--f, 10px) * 4.4)) !important;
+  padding: .6em 1.3em !important; border-width: max(2px, calc(var(--f, 10px) * .28)) !important; line-height: 1.4 !important;
 }
-@media (max-width: 600px) { ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) { width: 90vw !important; } }
+/* A narrow stage (phone portrait): nearly the dialogue box's width. */
+@container (max-width: 600px) { ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) { width: 92% !important; } }
 .vn[data-gfx-choice] .vn-choices {
   display: grid; gap: calc(var(--f, 10px) * 0.7); padding: calc(var(--f, 10px) * 0.9) 0; isolation: isolate;
   /* A centred column of pills, not bars across the whole scene, so the picture stays visible around them. */
@@ -1242,8 +1248,6 @@ ${T} .u-art.mat svg { filter: drop-shadow(0 .1em 0 color-mix(in srgb, var(--gfx-
 .gfx-spot .who i { font-style: normal; font-size: 5cqmin; color: #FFD34E; -webkit-text-stroke: .5cqmin #5A3A24; paint-order: stroke fill; letter-spacing: .1em; }
 .gfx-spot .tap { position: absolute; bottom: 3cqh; right: 4cqw; font-size: 2.6cqmin; color: #fff; opacity: .9; animation: rvBlink 1.1s ease-in-out infinite; }
 /* Location change: a brief top-right label, without a full-screen veil. */
-.gfx-vn-cast-out { pointer-events: none; animation: gfx-cast-out 480ms ease forwards; }
-@keyframes gfx-cast-out { to { opacity: 0; translate: 0 6%; filter: blur(2px); } }
 .gfx-scene-wipe { position: absolute; top: 4em; right: 1em; left: auto; bottom: auto; max-width: min(70%, 32em); z-index: 8; pointer-events: none; display: block;
   background: transparent; backdrop-filter: none; filter: none;
   animation: gfx-wipe 1.45s ease forwards; }
@@ -1918,6 +1922,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       for (const img of gameRoot()?.querySelectorAll("img[data-raw]") || []) if (img.dataset.raw === url) setSprite(img, url, img.style.scale === "-1 1");
     } catch {
       bakedMap.set(url, "failed");
+      // Those waiting for it stand with the raw picture instead.
+      for (const img of gameRoot()?.querySelectorAll("img[data-raw]") || []) if (img.dataset.raw === url) { setSprite(img, url, img.style.scale === "-1 1"); img.onload?.(); }
     }
   }
   // Which character an SD picture belongs to (for its 키).
@@ -1944,10 +1950,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         // Keep showing the old picture until the new one has decoded, then swap in one frame.
         img._gfxNext = src;
         const pre = new Image(); pre.src = src;
-        (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (img._gfxNext === src) { img._gfxNext = null; img.setAttribute("src", src); } });
+        (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (img._gfxNext === src) { img._gfxNext = null; delete img.dataset.baking; img.setAttribute("src", src); } });
       }
     }
     img.classList.toggle("baked", !!b);
+    // Still being outlined: the story line-up waits for the outlined picture (its margins are trimmed, so the raw
+    // one would stand at another size and then jump when the outlined one swaps in).
+    if ((url && !b && bakedMap.get(url) === "pending") || img._gfxNext) img.dataset.baking = "1"; else delete img.dataset.baking;
     for (const k of ["mx", "ox", "my", "oy", "hf"]) { if (b) img.dataset[k] = String(b[k]); else delete img.dataset[k]; }
     // The character's own height: rules size sprites as a share of their box times --hf.
     const tall = Number(sdEntry(nameOfUrl(url)).tall) || 1;
@@ -2032,7 +2041,15 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const who = whoEl && !whoEl.hasAttribute("data-narration") ? whoEl.textContent.replace(/\s*\(.*?\)\s*$/, "").trim() : "";
     const plates = Array.from(root.querySelectorAll(".vn-plate"));
     const snapshot = storySnapshot(root, whoEl && whoEl.hasAttribute("data-narration") ? "" : who);
-    root.querySelector(".vn")?.toggleAttribute("data-gfx-choice", on && snapshot.mode === "choice");
+    const vnStage = root.querySelector(".vn");
+    vnStage?.toggleAttribute("data-gfx-choice", on && snapshot.mode === "choice");
+    // The choices float above the dialogue dock: they may use the room between the stage top (below the header)
+    // and the dock, so on a small stage they scroll instead of running off the top over the header.
+    if (vnStage && on && snapshot.mode === "choice") {
+      const dock = vnStage.querySelector(".vn-dock"), top = vnStage.getBoundingClientRect().top;
+      const room = dock ? Math.max(60, dock.getBoundingClientRect().top - top - vnStage.clientHeight * 0.16) : 0;
+      if (room) vnStage.style.setProperty("--gfx-choice-room", Math.round(room) + "px");
+    }
     paintStoryScene(root, on, snapshot);
     watchStoryScene(root);
     const replaced = new Set(snapshot.slots.map((s) => s.plate).filter(Boolean));
@@ -2431,7 +2448,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       // Wait for the whole incoming cast to decode before revealing or repositioning it.
       if (nodes.some((n) => {
         const img = n.querySelector?.('img');
-        return img && !img.hidden && !n.hasAttribute('data-image-error') && (!img.complete || !img.naturalWidth);
+        return img && !img.hidden && !n.hasAttribute('data-image-error') && (!img.complete || !img.naturalWidth || img.dataset?.baking !== undefined);
       })) return;
       const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) / W * 100);
       if (widths.some((w) => !w)) return;
@@ -2440,6 +2457,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const signature = JSON.stringify([W, nodes.map((n, i) => [n.dataset.name || n.dataset.i, n.dataset.group, widths[i]]).sort((a, b) => String(a[0]).localeCompare(String(b[0])))]);
       const previous = castLayoutStates.get(layer);
       if (previous?.signature === signature && nodes.every((n) => previous.nodes.has(n))) return;
+      // Same people on the same stage, only a picture's size changed (a late picture took its real proportions):
+      // the size is corrected where they stand; nobody moves.
+      const members = JSON.stringify([W, nodes.map((n) => [n.dataset.name || n.dataset.i, n.dataset.group])]);
+      if (previous?.members === members && nodes.every((n) => previous.nodes.has(n) && previous.positions.has(n.dataset.name || n.dataset.i))) {
+        castLayoutStates.set(layer, { ...previous, signature });
+        return;
+      }
 
       // Count everyone except the protagonist, including those standing beside them.
       const groupOf = (n) => n.dataset.group || "b";
@@ -2467,7 +2491,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const low = Math.min(35, 4 + widths[0] / 2);
       const high = Math.max(65, 96 - widths.at(-1) / 2);
       const spread = centers.at(-1) - centers[0];
-      if (spread > high - low) centers = centers.map((c) => low + (c - centers[0]) * (high - low) / spread);
+      // A full stage used to pin the protagonist on the left bound from two others on, so two, three and four
+      // others all left them on the same spot. The bound now comes closer one step per extra character: two others
+      // 12% in from it, three 6%, four or more on it — the protagonist visibly steps left as the cast grows.
+      const anchor = Math.min(centers[0] > low ? centers[0] : Infinity, low + Math.max(0, 4 - otherCount) * 6);
+      if (spread > high - anchor) centers = centers.map((c) => anchor + (c - centers[0]) * (high - anchor) / spread);
       const left = Math.min(...centers.map((c, i) => c - widths[i] * fit / 2));
       const right = Math.max(...centers.map((c, i) => c + widths[i] * fit / 2));
       const shift = right - left > 92 ? 50 - (left + right) / 2 : left < 4 ? 4 - left : right > 96 ? 96 - right : 0;
@@ -2477,19 +2505,32 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         const middle = (centers[indices[0]] + centers[indices[1]]) / 2;
         for (const i of indices) centers[i] = middle + (centers[i] - middle) * 0.85;
       }
-      const growing = previous && previous.W === W && rightCount > previous.rightCount;
+      // Shift only the opposing group, after fitting so centring cannot cancel it.
+      // Three/four/five opponents move an additional 2.5/4/6 percent to the right.
+      let placed = nodes.map((n, i) => centers[i] + shift + (groupOf(n) === "b" ? (rightCount === 3 ? 2.5 : Math.min(6, Math.max(0, rightCount - 2) * 2)) : 0));
+      const keyOf = (n) => n.dataset.name || n.dataset.i;
+      // Someone joins the opposing side: the protagonist's side takes its place for the larger cast (a step left),
+      // those already there step a little right and the newcomers fill in up to the stage edge — while everyone
+      // still fits on the stage without crowding more than half a sprite; otherwise the whole cast is laid out afresh.
+      if (previous && previous.W === W && previous.rightCount > 0 && rightCount > previous.rightCount) {
+        const right = nodes.map((n, i) => groupOf(n) === "b" ? i : -1).filter((i) => i >= 0);
+        const kept = placed.slice();
+        const nudge = Math.min(2, 0.75 * (rightCount - previous.rightCount));
+        const stay = right.filter((i) => previous.positions.has(keyOf(nodes[i])));
+        const fresh = right.filter((i) => !previous.positions.has(keyOf(nodes[i])));
+        for (const i of stay) kept[i] = previous.positions.get(keyOf(nodes[i])) + nudge;
+        const from = stay.length ? kept[stay.at(-1)] : placed[right[0]];
+        const to = Math.max(from, 98 - widths[right.at(-1)] / 2);
+        fresh.forEach((i, k) => { kept[i] = stay.length ? from + (to - from) * (k + 1) / fresh.length : from + (to - from) * k / Math.max(1, fresh.length - 1); });
+        // Neighbours may overlap by at most half of the narrower one (a fresh line-up overlaps up to 38%).
+        const roomy = kept.slice(1).every((x, i) => x - kept[i] >= Math.min(widths[i], widths[i + 1]) * 0.5);
+        const onStage = kept.every((c, i) => c - widths[i] / 2 >= 0 && c + widths[i] / 2 <= 100);
+        if (onStage && roomy) placed = kept;
+      }
       const settled = new Map();
       nodes.forEach((n, i) => {
-        // Shift only the opposing group, after fitting so centring cannot cancel it.
-        // Three/four/five opponents move an additional 2.5/4/6 percent to the right.
-        let center = centers[i] + shift + (groupOf(n) === "b" ? (rightCount === 3 ? 2.5 : Math.min(6, Math.max(0, rightCount - 2) * 2)) : 0);
-        const key = n.dataset.name || n.dataset.i;
-        if (growing && previous.positions.has(key)) {
-          center = previous.positions.get(key) + (groupOf(n) === 'b' ? Math.min(2, 0.75 * (rightCount - previous.rightCount)) : 0);
-        } else if (growing && groupOf(n) === 'b') {
-          const rightmost = Math.max(...nodes.filter(m => (m.dataset.group || 'b') === 'b').map(m => settled.get(m.dataset.name || m.dataset.i) ?? previous.positions.get(m.dataset.name || m.dataset.i) ?? 0));
-          center = Math.max(center, rightmost + Math.max(1, (98 - rightmost) / 2));
-        }
+        const center = placed[i];
+        const key = keyOf(n);
         settled.set(key, center);
         n.style.setProperty("--cast-order", String(i + 1));
         n.style.setProperty("--cast-fit", fit.toFixed(3));
@@ -2498,7 +2539,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         if (!n.dataset.placed) { n.dataset.placed = "1"; n.style.transition = "none"; requestAnimationFrame(() => { n.style.transition = ""; }); }
         n.style.left = center.toFixed(2) + "%";
       });
-      castLayoutStates.set(layer, { signature, nodes: new Set(nodes), W, rightCount, positions: settled });
+      castLayoutStates.set(layer, { signature, members, nodes: new Set(nodes), W, rightCount, positions: settled });
     });
   }
   const storyScenes = new WeakMap();
@@ -2568,19 +2609,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // Left to right: the protagonist, those set to stand by them (주인공 옆), then everyone else.
     const rank = (n) => (n === prota ? 0 : sdEntry(n).ally ? 1 : 2);
     const slots = snapshot.slots.slice().sort((a, b) => rank(a.name) - rank(b.name));
-    if (layer.getAttribute("data-scene") !== snapshot.sceneKey) {
-      // A new place (or scene): the cast that was there steps out under a soft wipe naming where we are now,
-      // instead of vanishing in one frame.
-      if (layer.childElementCount && layer.hasAttribute("data-scene") && prefs.opts.motion) {
-        const ghost = layer.cloneNode(true);
-        ghost.classList.add("gfx-vn-cast-out");
-        ghost.removeAttribute("data-key");
-        layer.after(ghost);
-        setTimeout(() => ghost.remove(), 520);
-      }
-      layer.replaceChildren();
-      layer.setAttribute("data-scene", snapshot.sceneKey);
-    }
+    // A new place (or scene) keeps whoever is still there standing; only those not in it step out (below). The
+    // layer used to be emptied and rebuilt here, so everyone vanished and popped back in once their pictures loaded.
+    if (layer.getAttribute("data-scene") !== snapshot.sceneKey) layer.setAttribute("data-scene", snapshot.sceneKey);
     const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, sdUrl(s.name, s.portrait), sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, faceOf(s.name)].join("~")).join(";");
     if (layer.getAttribute("data-key") === key) return;
     layer.setAttribute("data-key", key);
@@ -2645,7 +2676,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         n.style.setProperty("--hf", "1");
       }
       const fit = () => {
-        if (!n.dataset.placed && im.naturalWidth && im.naturalHeight) n.style.aspectRatio = String(im.classList.contains("portrait") ? im.naturalWidth / im.naturalHeight : Math.min(1.1, im.naturalWidth / im.naturalHeight));
+        // The box always takes the shown picture's proportions. One placed in the fallback box after a stall
+        // (or on the raw picture) used to keep the wrong box for good: a wide sprite stood visibly smaller on its
+        // first appearance than on later ones. layoutCast keeps where it stands when only the size changes.
+        if (im.naturalWidth && im.naturalHeight) {
+          const ar = im.classList.contains("portrait") ? im.naturalWidth / im.naturalHeight : Math.min(1.1, im.naturalWidth / im.naturalHeight);
+          if (Math.abs((parseFloat(n.style.aspectRatio) || 0) - ar) > 0.005) n.style.aspectRatio = String(ar);
+        }
         layoutCast(layer);
       };
       // onload, not a one-off listener: a sprite swapped in later (after its picture decoded) refits too.
