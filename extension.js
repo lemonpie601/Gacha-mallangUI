@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.11.2 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.11.5 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -650,7 +650,19 @@ ${T} .gf-stage:has(> .gfx-load-host), ${T} .gf-arena:has(> .gfx-load-host) { pos
 .gfx-load-world:empty { display: none; }
 .gfx-load-stage { position: absolute; left: 50%; top: 42%; translate: -50% -50%; width: calc(var(--u) * 34); height: calc(var(--u) * 34);
   display: grid; place-items: end center; cursor: pointer; }
-.gfx-load-games { position:absolute; z-index:5; top:17%; left:50%; translate:-50% 0; width:min(560px,94%); max-height:70%; overflow:auto; color:var(--gfx-text); font:clamp(12px,1.6vw,16px)/1.4 "Jua",sans-serif; }
+.gfx-load-games { position:absolute; z-index:5; top:12%; left:50%; translate:-50% 0; width:min(760px,96%); max-height:80%; overflow:auto; color:var(--gfx-text); font:clamp(12px,1.6vw,16px)/1.4 "Jua",sans-serif; }
+.forge-center[data-gfx-games] { position:relative; }
+.forge-center > .gfx-load-games { inset:12px 12px 12px auto; translate:none; width:min(820px,96%); max-height:none; display:flex; flex-direction:row-reverse; align-items:flex-start; gap:8px; pointer-events:none; overflow:hidden; }
+.forge-center > .gfx-load-games > * { pointer-events:auto; }
+.forge-center .gfx-game-nav { flex:0 0 110px; flex-direction:column; max-height:100%; overflow:auto; }
+.forge-center .gfx-game-content { flex:1; min-width:0; max-height:100%; overflow:auto; box-sizing:border-box; }
+.forge-center[data-game-large] > .gfx-load-games { width:calc(100% - 24px); }
+.forge-center .gfx-game-board { width:min(100%,58vh); }
+.forge-center[data-game-large] .gfx-game-board { width:min(100%,72vh); }
+@media(max-width:600px) { .forge-center .gfx-game-nav { flex-basis:76px; } .forge-center > .gfx-load-games { gap:4px; inset:8px 8px 8px auto; } .forge-center .gfx-load-games button { padding:6px 3px; } }
+.gfx-load[data-game-large] .gfx-load-games { width:min(1100px,98%); top:8%; max-height:88%; }
+.gfx-load[data-game-large] .gfx-game-board { width:min(100%,78vh); }
+.gfx-load-games select { font:inherit; border:2px solid var(--gfx-line); border-radius:10px; padding:7px; background:var(--gfx-card); color:var(--gfx-text); }
 .gfx-game-nav,.gfx-game-tools { display:flex; flex-wrap:wrap; justify-content:center; gap:7px; margin-bottom:8px; }
 .gfx-load-games button { font:inherit; color:var(--gfx-text); background:var(--gfx-card); border:2px solid var(--gfx-line); border-radius:10px; padding:7px 10px; cursor:pointer; }
 .gfx-load-games button[aria-pressed="true"] { background:var(--gfx-pick); }
@@ -658,9 +670,17 @@ ${T} .gf-stage:has(> .gfx-load-host), ${T} .gf-arena:has(> .gfx-load-host) { pos
 .gfx-game-content:empty { display:none; }
 .gfx-game-content { background:var(--gfx-card); border:3px solid var(--gfx-line); border-radius:18px; padding:10px; }
 .gfx-game-info { min-height:2.8em; text-align:center; margin-bottom:5px; }
-.gfx-game-board { display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); gap:3px; width:min(100%,48vh); margin:auto; touch-action:none; user-select:none; }
+.gfx-game-board { display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); gap:3px; width:min(100%,64vh); margin:auto; touch-action:none; user-select:none; }
 .gfx-game-board button { position:relative; padding:0; aspect-ratio:1; min-width:0; border-radius:6px; font-size:clamp(12px,2.3vh,22px); background:var(--gfx-pick); }
 .gfx-game-board button[data-open="true"] { background:var(--gfx-ink); }
+.gfx-game-board button[data-flag="true"] { font-size:0 !important; background:var(--gfx-card); }
+.gfx-game-board button[data-flag="true"]::before { content:""; position:absolute; left:34%; top:18%; height:62%; border-left:3px solid #432e23; }
+.gfx-game-board button[data-flag="true"]::after { content:""; position:absolute; left:calc(34% + 3px); top:18%; width:42%; height:36%; background:#e13f35; clip-path:polygon(0 0,100% 25%,0 100%); }
+.gfx-entry-load { display:grid; place-items:center; text-align:center; }
+.gfx-entry-card { padding:2em; border:3px solid var(--gfx-line); border-radius:28px; background:var(--gfx-card); color:var(--gfx-text); box-shadow:0 6px 0 var(--gfx-line); max-width:85%; }
+.gfx-entry-card h2 { font-size:clamp(22px,4vw,44px); margin:.5em 0; }
+.gfx-entry-spinner { width:52px; height:52px; margin:auto; border:6px solid var(--gfx-pick); border-top-color:var(--gfx-accent); border-radius:50%; animation:gfx-entry-spin 1s linear infinite; }
+@keyframes gfx-entry-spin { to { transform:rotate(360deg); } }
 .gfx-game-board button[data-empty="true"] { background:transparent; border-color:transparent; }
 .gfx-game-board button[data-selected="true"] { background:var(--gfx-accent); outline:2px solid var(--gfx-line); }
 .gfx-game-board button span { position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:bold; text-shadow:0 1px 2px #000,1px 0 2px #000; }
@@ -2204,14 +2224,14 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
    * The current open portrait slots are authoritative. Closed slots leave immediately, unknown full-frame art
    * is treated as CG, and characters without an SD use a contained portrait card in the same stage. */
   const MAX_STORY_CAST = 3;
-  // How many stand on the stage at once: a setting (2–5), 3 by default.
+  // How many stand on the stage at once: a setting (2–10), 3 by default.
   const castMax = () => prefs.storyCast || MAX_STORY_CAST;
   const vnCast = { renderedKey: "" };
   const CAST_X = { 1: [50], 2: [30, 70], 3: [19, 50, 81], 4: [14, 38, 62, 86], 5: [11, 30.5, 50, 69.5, 89] };
   // The protagonist always takes the left-most place, as the player's side of the stage.
   function protagonistName() {
     const w = world(), h = host();
-    return (h?._run?.protagonist?.name || w?.cards.find((c) => c.isProtagonist)?.name || "").trim();
+    return (h?._run?.protagonist?.name || w?.cards.find((c) => c.isProtagonist)?.name || h?._beatCast?.find((c) => c.prota)?.name || "").trim();
   }
   function activePlateImage(plate) {
     const front = plate.getAttribute("data-front") || "a";
@@ -2319,14 +2339,17 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const cgActive = vn.hasAttribute("data-cg") || largeUnknownArt || !!vn.querySelector('.vn-cg:not([hidden]), .vn-illustration:not([hidden]), .scene-cg:not([hidden]), [data-illustration]:not([hidden]), .vn-art-full:not([hidden])');
     const mode = choiceActive ? "choice" : cgActive ? "cg" : "dialogue";
     const slots = [];
-    const h = host(), heroName = h?._run?.protagonist?.name || world()?.cards?.find((c) => c.isProtagonist)?.name;
+    const h = host(), heroName = (h?._run?.protagonist?.name || world()?.cards?.find((c) => c.isProtagonist)?.name || h?._beatCast?.find((c) => c.prota)?.name || "").trim();
     const cast = (Array.isArray(h?._beatCast) ? h._beatCast : []).map((c) => c.name === heroName && !c.prota ? { ...c, prota: true } : c);
+    if (heroName && !cast.some((c) => c.name === heroName)) cast.unshift({ name: heroName, prota: true, art: h?._run?.protagonist?.portrait || world()?.cards?.find((c) => c.name === heroName)?.portrait || "" });
     { const w = world(); if (w && w.state === "ready" && addExtras(w, cast)) setTimeout(() => paintSettings(), 0); }
     const segments = Array.isArray(h?._beat) ? h._beat : [];
     if (mode !== "cg" && segments.length && cast.length) {
       const count = (vn.querySelector(".vn-count")?.textContent || "").match(/\d+/);
       const at = Math.max(0, Number(count?.[0] || 1) - 1);
       const actors = storyCastAt(segments, at, cast, castMax());
+      const hero = cast.find((c) => c.name === heroName);
+      if (hero && !actors.some((c) => c.name === heroName)) actors.unshift(hero);
       // A reply branch may use a different speaker than its parent beat.
       const speaking = cast.find((c) => c.name === speaker);
       const parentSpeaker = String(segments[at]?.speaker || "").trim();
@@ -2360,6 +2383,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         slots.push({ id: plate.getAttribute("data-side") || String(i), name, portrait, plate });
       }
     }
+    if (mode !== "cg" && heroName && !slots.some((s) => s.name === heroName)) {
+      slots.unshift({ id: heroName, name: heroName, portrait: cast.find((c) => c.name === heroName)?.art || "", plate: null });
+    }
+    const heroSlot = slots.find((s) => s.name === heroName);
+    const visibleSlots = heroSlot ? [heroSlot, ...slots.filter((s) => s !== heroSlot).slice(-(castMax() - 1))] : slots.slice(-castMax());
     const bgImage = root.querySelector(".vn-scene .vn-bg[data-on] img, .vn-scene img, .vn-bg img, .vn-back img, [data-background] img");
     const bgBox = root.querySelector(".vn-scene .vn-bg[data-on], .vn-scene .vn-bg, .vn-bg, .vn-back, [data-background]");
     const bg = bgImage?.getAttribute("src") || bgBox?.style.backgroundImage || (bgBox ? getComputedStyle(bgBox).backgroundImage : "") || "";
@@ -2367,12 +2395,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const count = (vn.querySelector(".vn-count")?.textContent || "").match(/\d+/);
     const at = count ? Math.max(0, Number(count[0]) - 1) : Number(h?._beatAt) || 0;
     const place = segments.slice(0, at + 1).reverse().find((s) => s?.place)?.place || "";
-    return { mode, sceneKey: caption + "|" + place + "|" + bg, place: place || caption.split(/\s*·\s*/)[0] || "", slots: slots.slice(-castMax()) };
+    return { mode, sceneKey: caption + "|" + place + "|" + bg, place: place || caption.split(/\s*·\s*/)[0] || "", slots: visibleSlots };
   }
   /* The line-up stands by each character's real width, not on even fifths of the stage: a small gap between
    * neighbours, the group centred, and a slight overlap when the stage is full. Run after the sprites know
    * their size (once per frame for the whole layer). */
   const castLayoutQueued = new WeakSet();
+  const castLayoutStates = new WeakMap();
   function layoutCast(layer) {
     if (castLayoutQueued.has(layer)) return;
     castLayoutQueued.add(layer);
@@ -2383,6 +2412,12 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       if (!W || !nodes.length) return;
       const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) / W * 100);
       if (widths.some((w) => !w)) return;
+      // Speaking and line progression must not recalculate the cast's positions.
+      // Reflow only for membership, sprite dimensions or viewport changes.
+      const signature = JSON.stringify([W, nodes.map((n, i) => [n.dataset.name || n.dataset.i, n.dataset.group, widths[i]]).sort((a, b) => String(a[0]).localeCompare(String(b[0])))]);
+      const previous = castLayoutStates.get(layer);
+      if (previous?.signature === signature && nodes.every((n) => previous.nodes.has(n))) return;
+      castLayoutStates.set(layer, { signature, nodes: new Set(nodes) });
       // Count everyone except the protagonist, including those standing beside them.
       const groupOf = (n) => n.dataset.group || "b";
       const otherCount = nodes.filter((n) => !("protagonist" in n.dataset)).length;
@@ -2413,8 +2448,16 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const left = Math.min(...centers.map((c, i) => c - widths[i] * fit / 2));
       const right = Math.max(...centers.map((c, i) => c + widths[i] * fit / 2));
       const shift = right - left > 92 ? 50 - (left + right) / 2 : left < 4 ? 4 - left : right > 96 ? 96 - right : 0;
+      // Bring a two-person opposing team closer without moving its midpoint or the protagonist team.
+      if (rightCount === 2) {
+        const indices = nodes.map((n, i) => groupOf(n) === "b" ? i : -1).filter((i) => i >= 0);
+        const middle = (centers[indices[0]] + centers[indices[1]]) / 2;
+        for (const i of indices) centers[i] = middle + (centers[i] - middle) * 0.85;
+      }
       nodes.forEach((n, i) => {
-        const center = centers[i] + shift;
+        // Shift only the opposing group, after fitting so centring cannot cancel it.
+        // Three/four/five opponents move an additional 2.5/4/6 percent to the right.
+        const center = centers[i] + shift + (groupOf(n) === "b" ? (rightCount === 3 ? 2.5 : Math.min(6, Math.max(0, rightCount - 2) * 2)) : 0);
         n.style.setProperty("--cast-order", String(i + 1));
         n.style.setProperty("--cast-fit", fit.toFixed(3));
         n.dataset.x = center.toFixed(2);
@@ -3393,6 +3436,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   function loadingNow(h) {
     if (!h || !h.shadowRoot) return false;
     if (writingLoad(h)) return "heavy";
+    if (simpleEntryLoad(h)) return "heavy";
+    if (h.shadowRoot.querySelector?.('.forge-center')) return false;
     if (h._hudView === "beat") return false;
     if (h._boot === "idle" || h._boot === "loading") return "heavy";
     const test = LOADING_BY_VIEW[h._hudView];
@@ -3401,32 +3446,34 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   let load = null; // { node, since, progress, tipAt, shownAt, ending }
   let loadDismissed = false;
   /* Loading games: local UI state only; never touch the run, rewards or generation request. */
-  function newMineGame(random = Math.random) {
-    const cells = Array.from({ length: 64 }, () => ({ mine: false, open: false, flag: false, count: 0 }));
-    const game = { cells, started: false, ended: false, won: false };
-    const neighbours = (i) => cells.map((_, j) => j).filter((j) => j !== i && Math.abs(j % 8 - i % 8) <= 1 && Math.abs(Math.floor(j / 8) - Math.floor(i / 8)) <= 1);
+  function newMineGame(random = Math.random, difficulty = "easy") {
+    const [cols, mines] = ({ easy: [8, 10], normal: [10, 18], hard: [12, 30] })[difficulty] || [8, 10];
+    const cells = Array.from({ length: cols * cols }, () => ({ mine: false, open: false, flag: false, count: 0 }));
+    const game = { cells, cols, rows: cols, mines, started: false, ended: false, won: false };
+    const neighbours = (i) => cells.map((_, j) => j).filter((j) => j !== i && Math.abs(j % cols - i % cols) <= 1 && Math.abs(Math.floor(j / cols) - Math.floor(i / cols)) <= 1);
     game.flag = (i) => { if (!game.ended && !cells[i].open) cells[i].flag = !cells[i].flag; };
     game.reveal = (i) => {
       if (game.ended || cells[i].flag || cells[i].open) return;
       if (!game.started) {
         const safe = new Set([i, ...neighbours(i)]), pool = cells.map((_, j) => j).filter((j) => !safe.has(j));
-        for (let k = 0; k < 10; k++) { const at = k + Math.floor(random() * (pool.length - k)); [pool[k], pool[at]] = [pool[at], pool[k]]; cells[pool[k]].mine = true; }
+        for (let k = 0; k < mines; k++) { const at = k + Math.floor(random() * (pool.length - k)); [pool[k], pool[at]] = [pool[at], pool[k]]; cells[pool[k]].mine = true; }
         cells.forEach((c, j) => c.count = neighbours(j).filter((n) => cells[n].mine).length);
         game.started = true;
       }
       if (cells[i].mine) { cells[i].open = true; game.ended = true; return; }
       const queue = [i];
       while (queue.length) { const j = queue.pop(), c = cells[j]; if (c.open || c.flag || c.mine) continue; c.open = true; if (!c.count) queue.push(...neighbours(j)); }
-      if (cells.filter((c) => c.open).length === 54) { game.ended = true; game.won = true; }
+      if (cells.filter((c) => c.open).length === cells.length - mines) { game.ended = true; game.won = true; }
     };
     return game;
   }
-  function newFruitGame(random = Math.random) {
-    const game = { cells: Array.from({ length: 80 }, () => 1 + Math.floor(random() * 9)), score: 0 };
-    game.cells[0] = 1; game.cells[1] = 9; // Every new board has at least one legal selection.
+  function newFruitGame(random = Math.random, difficulty = "normal") {
+    const [cols, rows, max] = ({ easy: [8, 6, 5], normal: [10, 8, 9], hard: [12, 10, 9] })[difficulty] || [10, 8, 9];
+    const game = { cols, rows, cells: Array.from({ length: cols * rows }, () => 1 + Math.floor(random() * max)), score: 0 };
+    game.cells[0] = max === 5 ? 5 : 1; game.cells[1] = 10 - game.cells[0]; // Every new board has at least one legal selection.
     game.select = (a, b, remove = false) => {
-      const x0 = Math.min(a % 10, b % 10), x1 = Math.max(a % 10, b % 10), y0 = Math.min(Math.floor(a / 10), Math.floor(b / 10)), y1 = Math.max(Math.floor(a / 10), Math.floor(b / 10));
-      const ids = game.cells.map((_, i) => i).filter((i) => i % 10 >= x0 && i % 10 <= x1 && Math.floor(i / 10) >= y0 && Math.floor(i / 10) <= y1);
+      const x0 = Math.min(a % cols, b % cols), x1 = Math.max(a % cols, b % cols), y0 = Math.min(Math.floor(a / cols), Math.floor(b / cols)), y1 = Math.max(Math.floor(a / cols), Math.floor(b / cols));
+      const ids = game.cells.map((_, i) => i).filter((i) => i % cols >= x0 && i % cols <= x1 && Math.floor(i / cols) >= y0 && Math.floor(i / cols) <= y1);
       const sum = ids.reduce((n, i) => n + game.cells[i], 0);
       if (remove && sum === 10) { game.score += ids.filter((i) => game.cells[i]).length; ids.forEach((i) => game.cells[i] = 0); }
       return { ids, sum };
@@ -3434,14 +3481,44 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     return game;
   }
   function writingLoad(h) {
-    return !!h && ((h._hudView === 'beat' && h._beatState === 'loading') || (h._hudView === 'chapter' && h._planState === 'loading') || (h._hudView === 'chapters' && h._chaptersState === 'loading'));
+    if (!h) return false;
+    // A story fetch/entry is not generation. The Forge screen also covers image generation after text is ready.
+    const forge = h.shadowRoot?.querySelector?.('.forge-center');
+    const visible = forge && !forge.closest('[hidden]') && forge.getClientRects().length > 0;
+    const text = visible ? forge.textContent || '' : '';
+    if (/(?:실패|오류|취소|failed|error|cancelled)/i.test(text)) return false;
+    const working = /(?:생성\s*중|작성\s*중|그리는\s*중|generating|rendering|writing\b)/i.test(text);
+    if (visible && /(?:완료|완성|completed|finished)/i.test(text) && !working) return false;
+    // Fetching an existing chapter also uses _planState=loading. Only an explicit
+    // generation-in-progress screen may offer games; labels/buttons are not evidence.
+    return !!visible && working;
+  }
+  const storyEntryTransitions = new WeakMap();
+  function simpleEntryLoad(h) {
+    if (!h) return false;
+    const previous = storyEntryTransitions.get(h);
+    const forge = h.shadowRoot?.querySelector?.('.forge-center');
+    const forgeVisible = forge && !forge.closest('[hidden]') && forge.getClientRects().length;
+    const active = !forgeVisible && !writingLoad(h) && h._hudView === 'beat' && h._beatState === 'loading' &&
+      (previous?.view === 'chapter' || previous?.active === true);
+    storyEntryTransitions.set(h, { view: h._hudView, active });
+    return active;
+  }
+  function makeEntryLoad() {
+    const node = el('div', 'gfx-load gfx-entry-load'); node.setAttribute('data-gfx-ui', '');
+    const card = el('div', 'gfx-entry-card'), spinner = el('div', 'gfx-entry-spinner');
+    spinner.setAttribute('aria-hidden', 'true'); card.setAttribute('role', 'status');
+    card.append(spinner, el('h2', '', '이야기로 이동 중'), el('p', '', '화면을 불러오고 있어요. 잠시만 기다려 주세요.'));
+    node.append(card); return node;
   }
   function makeLoadingGames(overlay) {
     const panel = el('section', 'gfx-load-games');
     panel.setAttribute('aria-label', '로딩 미니게임');
     const nav = el('div', 'gfx-game-nav'), content = el('div', 'gfx-game-content');
     const button = (label, fn) => { const b = el('button', '', label); b.type = 'button'; on(b, 'click', fn); return b; };
-    const states = { mines: newMineGame(), fruits: newFruitGame() };
+    const levels = { mines: 'easy', fruits: 'normal' };
+    const fresh = (which) => which === 'mines' ? newMineGame(Math.random, levels.mines) : newFruitGame(Math.random, levels.fruits);
+    const states = { mines: fresh('mines'), fruits: fresh('fruits') };
     let mode = '', flagMode = false, anchor = null, pointer = null, moved = false, end = null;
     const menu = [button('지뢰찾기', () => show('mines')), button('フルーツボックス', () => show('fruits'))];
     const close = button('게임 접기', () => { mode = ''; overlay.removeAttribute('data-game'); content.replaceChildren(); menu.forEach((b) => b.setAttribute('aria-pressed', 'false')); });
@@ -3449,7 +3526,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       loadDismissed = true;
       if (load?.node === overlay) { load.popup?.remove(); overlay.parentElement?.classList.contains('gfx-load-host') && overlay.parentElement.remove(); overlay.remove(); load = null; }
     });
-    nav.append(...menu, close, hide); panel.append(nav, content);
+    const enlarge = button('크게 보기', () => { const big = overlay.toggleAttribute('data-game-large'); enlarge.textContent = big ? '기본 크기' : '크게 보기'; enlarge.setAttribute('aria-pressed', String(big)); });
+    nav.append(...menu, enlarge, close); if (!overlay.classList.contains('forge-center')) nav.append(hide); panel.append(nav, content);
     for (const event of ['pointerdown', 'pointerup', 'click', 'dblclick', 'keydown', 'keyup']) on(panel, event, (e) => e.stopPropagation());
     function show(next) {
       mode = next; anchor = null; pointer = null; overlay.setAttribute('data-game', mode);
@@ -3457,14 +3535,17 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       content.replaceChildren();
       const tools = el('div', 'gfx-game-tools'), info = el('div', 'gfx-game-info'), board = el('div', 'gfx-game-board');
       info.setAttribute('aria-live', 'polite');
-      tools.append(button('새 판', () => { states[mode] = mode === 'mines' ? newMineGame() : newFruitGame(); show(mode); }));
+      tools.append(button('새 판', () => { states[mode] = fresh(mode); show(mode); }));
+      const difficulty = el('select'); difficulty.setAttribute('aria-label', '난이도 (변경 시 새 판)');
+      for (const [value, title] of [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']]) { const option = el('option', '', title); option.value = value; difficulty.append(option); }
+      difficulty.value = levels[mode]; on(difficulty, 'change', () => { levels[mode] = difficulty.value; states[mode] = fresh(mode); show(mode); }); tools.append(difficulty);
       if (mode === 'mines') {
         const flags = button('깃발 모드', () => { flagMode = !flagMode; flags.setAttribute('aria-pressed', String(flagMode)); });
         flags.setAttribute('aria-pressed', String(flagMode)); tools.append(flags);
       }
       content.append(tools, info, board);
-      board.style.setProperty('--cols', mode === 'mines' ? '8' : '10');
       const game = states[mode];
+      board.style.setProperty('--cols', String(game.cols));
       const buttons = game.cells.map((_, i) => {
         const b = button('', () => {
           if (mode === 'mines') { if (flagMode) game.flag(i); else game.reveal(i); paint(); }
@@ -3477,8 +3558,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       });
       function paint(selection = null) {
         if (mode === 'mines') {
-          info.textContent = game.ended ? (game.won ? '성공! 지뢰를 모두 피했어요.' : '지뢰! 새 판으로 다시 도전하세요.') : '지뢰 10개 · 깃발 ' + game.cells.filter((c) => c.flag).length + ' · 첫 칸은 안전해요';
-          buttons.forEach((b, i) => { const c = game.cells[i]; b.textContent = c.flag ? '⚑' : c.mine && game.ended ? '✹' : c.open ? c.count || '' : ''; b.dataset.open = String(c.open); b.disabled = game.ended; b.setAttribute('aria-label', (i + 1) + '번 칸 ' + (c.flag ? '깃발' : c.open ? (c.mine ? '지뢰' : '주변 지뢰 ' + c.count) : '닫힘')); });
+          info.textContent = game.ended ? (game.won ? '성공! 지뢰를 모두 피했어요.' : '지뢰! 새 판으로 다시 도전하세요.') : '지뢰 ' + game.mines + '개 · 깃발 ' + game.cells.filter((c) => c.flag).length + ' · 첫 칸은 안전해요';
+          buttons.forEach((b, i) => { const c = game.cells[i]; b.textContent = c.flag ? '깃발' : c.mine && game.ended ? '✹' : c.open ? c.count || '' : ''; b.dataset.open = String(c.open); b.dataset.flag = String(c.flag); b.disabled = game.ended; b.setAttribute('aria-label', (i + 1) + '번 칸 ' + (c.flag ? '깃발' : c.open ? (c.mine ? '지뢰' : '주변 지뢰 ' + c.count) : '닫힘')); });
         } else {
           const selected = selection || (anchor !== null ? game.select(anchor, anchor) : null);
           info.textContent = '점수 ' + game.score + ' · ' + (selected ? '선택 합계 ' + selected.sum : '사각형 합계 10! 드래그하거나 두 모서리를 누르세요.');
@@ -3486,7 +3567,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         }
       }
       if (mode === 'fruits') {
-        const cellAt = (e) => { const r = board.getBoundingClientRect(); if (e.clientX < r.left || e.clientX >= r.right || e.clientY < r.top || e.clientY >= r.bottom) return null; return Math.min(7, Math.floor((e.clientY - r.top) / r.height * 8)) * 10 + Math.min(9, Math.floor((e.clientX - r.left) / r.width * 10)); };
+        const cellAt = (e) => { const r = board.getBoundingClientRect(); if (e.clientX < r.left || e.clientX >= r.right || e.clientY < r.top || e.clientY >= r.bottom) return null; return Math.min(game.rows - 1, Math.floor((e.clientY - r.top) / r.height * game.rows)) * game.cols + Math.min(game.cols - 1, Math.floor((e.clientX - r.left) / r.width * game.cols)); };
         on(board, 'pointerdown', (e) => { if (e.button !== 0 || pointer !== null) return; const i = cellAt(e); if (i === null) return; e.preventDefault(); pointer = e.pointerId; moved = false; end = i; if (anchor === null) anchor = i; board.setPointerCapture(e.pointerId); paint(game.select(anchor, i)); });
         on(board, 'pointermove', (e) => { if (pointer !== e.pointerId) return; const i = cellAt(e); if (i !== null) { moved ||= i !== end; end = i; paint(game.select(anchor, end)); } });
         on(board, 'pointerup', (e) => { if (pointer !== e.pointerId) return; e.preventDefault(); if (moved || end !== anchor) { game.select(anchor, end, true); anchor = null; } pointer = null; board.releasePointerCapture(e.pointerId); paint(); });
@@ -3572,16 +3653,23 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (!load) return;
     if (!load.popup) {
       const popup = document.createElement("div");
-      popup.id = "gfx-chapter-loading"; popup.setAttribute("data-gfx-ui", "");
-      popup.setAttribute("popover", "manual"); popup.setAttribute("role", "status"); popup.setAttribute("aria-label", "챕터를 준비하는 중");
+      popup.id = load.entry ? "gfx-story-entry-loading" : "gfx-chapter-loading"; popup.setAttribute("data-gfx-ui", "");
+      popup.setAttribute("popover", "manual"); popup.setAttribute("role", "dialog"); popup.setAttribute("aria-label", "생성 대기 화면");
       popup.style.cssText = "position:fixed;inset:0;margin:auto;width:100vw;height:100dvh;padding:0;border:0;border-radius:0;overflow:hidden;z-index:2147483004;box-shadow:0 12px 60px #0009;background:transparent";
       const shadow = popup.attachShadow({ mode: "open" });
       shadow.adoptedStyleSheets = [styleSheet(), paintVars()];
       const mount = el("div", "gfx-load-host"); mount.style.cssText = "position:relative;width:100%;height:100%";
-      shadow.append(mount); document.body.append(popup);
+      shadow.append(mount);
       load.popup = popup; load.popupMount = mount;
-      if (typeof popup.showPopover === "function") popup.showPopover();
-      else popup.removeAttribute("popover");
+    }
+    // Body popovers are inert outside a fullscreen subtree, even when visible in the top layer.
+    const fs = document.fullscreenElement || document.webkitFullscreenElement;
+    const home = fs ? (fs.shadowRoot || fs) : document.body;
+    if (load.popup.parentNode !== home) {
+      try { load.popup.hidePopover?.(); } catch {}
+      home.append(load.popup);
+      if (typeof load.popup.showPopover === "function") load.popup.showPopover();
+      else load.popup.removeAttribute("popover");
     }
     if (load.node.parentNode !== load.popupMount) load.popupMount.append(load.node);
   }
@@ -3623,17 +3711,36 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (/\(thought\)\s*$/i.test(t)) who.textContent = t.replace(/\(thought\)\s*$/i, "(속마음)");
     else if (/^\s*Thought\s*$/i.test(t)) who.textContent = "속마음";
   }
+  let generationGames = null;
+  function syncGenerationGames(h, writing) {
+    const center = writing && current && prefs.opts.loading ? h?.shadowRoot?.querySelector('.forge-center') : null;
+    if (generationGames && generationGames.center !== center) {
+      generationGames.panel.remove();
+      for (const attr of ['data-gfx-games', 'data-game', 'data-game-large']) generationGames.center.removeAttribute(attr);
+      generationGames = null;
+    }
+    if (center && !generationGames) {
+      const panel = makeLoadingGames(center);
+      center.setAttribute('data-gfx-games', ''); center.append(panel);
+      generationGames = { center, panel };
+    }
+    if (center && generationGames.panel.parentNode !== center) center.append(generationGames.panel);
+  }
   function tickLoading() {
     if (disposed || document.hidden) return;
     if (sdEditing) placeSdEditor();
     const h = host();
     if (h?._hudView === "beat") relabelThought(h);
     const writing = writingLoad(h);
-    if (!writing && load?.node.querySelector('.gfx-load-games')) {
-      load.popup?.remove(); load.node.remove(); load = null;
+    const entry = simpleEntryLoad(h);
+    syncGenerationGames(h, writing);
+    if (writing) {
+      if (load) { load.popup?.remove(); load.node.remove(); load = null; }
       chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0;
+      return;
     }
-    if (h?._hudView === "beat" && !writing && load) { load.popup?.remove(); load.node.remove(); load = null; chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0; }
+    if (entry && load && !load.entry) { load.popup?.remove(); load.node.remove(); load = null; loadingSince = 0; }
+    if (h?._hudView === "beat" && !writing && !entry && load) { load.popup?.remove(); load.node.remove(); load = null; chapterEnteredAt = 0; lastWantAt = 0; loadingSince = 0; }
     // The battle phase as a host attribute, for rules that differ before and during the fight.
     const phase = h && h._hudView === "combat" ? String(h._combatPhase || "") : "";
     if (h && (h.getAttribute("data-gfx-phase") || "") !== phase) { if (phase) h.setAttribute("data-gfx-phase", phase); else h.removeAttribute("data-gfx-phase"); }
@@ -3647,12 +3754,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       if (!loadingSince) loadingSince = now;
       // Short waits stay quiet: only a load still running past its threshold gets the screen (a stuck one only once).
       if (!load && kind && now - loadingSince > LOAD_AFTER[kind] && now - loadingSince < 25000) {
-        load = { node: makeLoad(), progress: 4, tipAt: now, shownAt: now, ending: 0 };
+        load = { node: entry ? makeEntryLoad() : makeLoad(), progress: 4, tipAt: now, shownAt: now, ending: 0, entry, external: entry };
         ensureLoadMounted();
       }
     } else loadingSince = 0;
     if (!load) return;
-    if (writing && !load.node.querySelector('.gfx-load-games')) load.node.append(makeLoadingGames(load.node));
     ensureLoadMounted();
     // The fade-in once: re-attaching after a redraw must not replay it.
     if (!load.node.hasAttribute("data-shown") && now - load.shownAt > 240) load.node.setAttribute("data-shown", "");
@@ -4619,6 +4725,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   });
   // Going fullscreen puts the game above an editor opened before it: show the editor again to bring it back on top.
   on(document, "fullscreenchange", () => {
+    if (load) ensureLoadMounted();
     for (const box of gameRoot()?.querySelectorAll("[data-gfx-sd-edit]:popover-open") || []) { box.hidePopover(); box.showPopover(); }
   });
   watch();
@@ -4656,6 +4763,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     document.getElementById("gfx-quest-theme")?.remove();
     document.getElementById("gfx-quest-ui-switch")?.remove();
     document.getElementById("gfx-chapter-loading")?.remove();
+    document.getElementById("gfx-story-entry-loading")?.remove();
+    syncGenerationGames(null, false);
     document.getElementById("gfx-quest-mallang")?.remove();
     for (const [root, observer] of questPopupRoots) {
       observer.disconnect();
