@@ -3443,7 +3443,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const button = (label, fn) => { const b = el('button', '', label); b.type = 'button'; on(b, 'click', fn); return b; };
     const states = { mines: newMineGame(), fruits: newFruitGame() };
     let mode = '', flagMode = false, anchor = null, pointer = null, moved = false, end = null;
-    const menu = [button('지뢰찾기', () => show('mines')), button('사과게임', () => show('fruits'))];
+    const menu = [button('지뢰찾기', () => show('mines')), button('フルーツボックス', () => show('fruits'))];
     const close = button('게임 접기', () => { mode = ''; overlay.removeAttribute('data-game'); content.replaceChildren(); menu.forEach((b) => b.setAttribute('aria-pressed', 'false')); });
     const hide = button('로딩 화면 닫기', () => {
       loadDismissed = true;
@@ -3534,8 +3534,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     on(runner, "click", (e) => react(runner, e));
     bar.append(fill, runner, el("em", "gfx-load-pct", "0%"));
     foot.append(tip, bar);
-    const minigames = makeLoadingGames(node);
-    node.append(title, worldName, stage, minigames, foot);
+    node.append(title, worldName, stage, foot);
     return node;
   }
   function paintLoad() {
