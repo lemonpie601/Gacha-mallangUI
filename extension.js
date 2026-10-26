@@ -3534,7 +3534,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     on(runner, "click", (e) => react(runner, e));
     bar.append(fill, runner, el("em", "gfx-load-pct", "0%"));
     foot.append(tip, bar);
-    node.append(title, worldName, stage, foot);
+    const minigames = makeLoadingGames(node);
+    node.append(title, worldName, stage, minigames, foot);
     return node;
   }
   function paintLoad() {
