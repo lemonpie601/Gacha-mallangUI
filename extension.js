@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.11 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.12 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1310,6 +1310,9 @@ ${FMB} { --fm-edge: color-mix(in srgb, var(--gfx-line) 70%, var(--gfx-text));
   grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative; isolation: isolate;
   border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line); overflow: hidden;
   background: linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 22%, var(--gfx-card)), var(--gfx-card) 75%); }
+/* 밤하늘's 배경 1 is almost its card colour, so the light tint above left it flat: a dusk gradient instead,
+   from a lighter blue at the top through the card colour to the theme's violet 배경 2. */
+${H('[data-gfx-preset="night"]')} .fm-body .board { background: linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 70%, #8A93E0), var(--gfx-card) 50%, color-mix(in srgb, var(--gfx-sky2) 75%, var(--gfx-card))); }
 /* The floor grid, laid back in perspective: three lanes across, front and back lines. */
 ${FMB}::before { content: ""; position: absolute; left: 4%; right: 4%; top: 9%; bottom: 9%; z-index: -1; pointer-events: none;
   transform: perspective(60em) rotateX(32deg); transform-origin: 50% 100%; border-radius: 14px;
