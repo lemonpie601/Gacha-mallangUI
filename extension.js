@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.14 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.15 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1313,12 +1313,12 @@ ${FMB} { --fm-edge: color-mix(in srgb, var(--gfx-line) 70%, var(--gfx-text));
   background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 38%, var(--gfx-card)) 0 55%, transparent 56%),
     radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 24%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px,
     linear-gradient(180deg, var(--gfx-sky1), var(--gfx-card) 60%); }
-/* 밤하늘: the yellow floor turned a muddy brown on the dark violet and the dots shouted. A moonlit violet floor,
-   quieter dots, a sky lighter at the top, and see-through empty pedestals. */
-${FMN} { background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-sky2) 70%, #8A7CC8) 0 55%, transparent 56%),
+/* 밤하늘: the yellow floor, mixed into the dark card colour, turned a muddy brown and the dots shouted. The floor
+   stays yellow but mixed toward cream (a lit stage under the night sky), quieter dots, a sky lighter at the top. */
+${FMN} { background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 45%, #FFF8E6) 0 25%, color-mix(in srgb, var(--gfx-pick) 80%, #E9C47A) 55%, transparent 56%),
     radial-gradient(circle at 12px 12px, color-mix(in srgb, #fff 9%, transparent) 2.5px, transparent 3px) 0 0 / 24px 24px,
     linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 60%, #8A93E0), var(--gfx-card) 60%); }
-${FMN} .slot.empty::after { background: color-mix(in srgb, #fff 14%, transparent); border-color: color-mix(in srgb, #fff 55%, transparent); }
+${FMN} .slot.empty::after { background: color-mix(in srgb, #fff 40%, transparent); }
 /* Front line on top (farther), back line below (nearer). */
 ${FMB} > .row-lab:first-child { grid-row: 1; }
 ${FMB} > .slots[data-row="front"] { grid-row: 2; padding: 0 9%; gap: 6%; }
