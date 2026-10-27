@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.3 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.4 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -63,7 +63,7 @@
   ];
   // Whole-screen makeovers in the Trickcal Revive manner, each its own switch.
   const SCREEN_FIELDS = [
-    ["field", "전투 필드", "카드 대신 아군은 왼쪽, 적은 오른쪽 땅 위에 서서 싸웁니다. 편성 화면도 같은 땅 위에서 후열 · 전열 칸에 세웁니다. 행동 버튼은 아래 한 줄로 모입니다. 끄면 원래 카드 전투입니다."],
+    ["field", "전투 필드", "카드 대신 아군은 왼쪽, 적은 오른쪽 땅 위에 서서 싸웁니다. 행동 버튼은 아래 한 줄로 모입니다. 끄면 원래 카드 전투입니다."],
     ["team", "편성 · 출격 캐릭터", "편성 칸과 전투 시작 화면에 팀 캐릭터가 둥실 떠 있습니다."],
     ["lobby", "홈 로비", "홈 배경 위에 캐릭터들이 서서 돌아다닙니다. 누르면 말을 겁니다. 아래 목록에서 누구를 둘지 고르고, 홈의 [배치] 버튼으로 옮깁니다."],
     ["hidePlate", "홈 대표 카드 숨기기", "홈 왼쪽의 대표 캐릭터 카드를 숨겨 로비를 넓게 씁니다."],
@@ -1296,73 +1296,36 @@ ${F} .side.enemies .cbt { width: 8.5% !important; height: 23% !important; top: c
 ${F} .side.enemies .cbt > * { pointer-events: none; }
 ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px solid var(--gfx-pick); outline-offset: 3px; }
 
-/* ── Formation on the field ─────────────────────────────────────────────────────────────────────────
-   The board is the left half of the battle field: the back line stands to the left, the front line toward the
-   foes on the right, and each line's three slots are the battle's three lanes of depth (the first one farthest,
-   up and to the right). Every unit stands on a dashed ground tile like the ones before a fight, so the team
-   steps onto the field where it was placed. Slots stay the game's buttons: taps, drag and × are untouched. */
-${F} .board { position: relative; display: block !important; align-self: stretch; min-height: calc(var(--f, 10px) * 26); overflow: hidden;
-  border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line);
-  background: linear-gradient(180deg, var(--gfx-sky1) 0%, var(--gfx-sky2) 30%, color-mix(in srgb, var(--gfx-sky2) 45%, #8FCB7A) 31%, color-mix(in srgb, var(--gfx-sky2) 30%, #6FB05E) 100%); }
-/* The ground: a dashed grid laid flat in perspective, the enemy half tinted as on the pre-battle tiles. */
-${F} .board::before { content: ""; position: absolute; left: -12%; right: -12%; top: 31%; bottom: -8%; pointer-events: none; z-index: 0;
-  transform: perspective(40em) rotateX(52deg); transform-origin: 50% 0;
-  background: linear-gradient(90deg, transparent 84%, color-mix(in srgb, #F2884B 22%, transparent) 84%),
-    repeating-linear-gradient(90deg, color-mix(in srgb, #fff 32%, transparent) 0 2px, transparent 2px 12.5%),
-    repeating-linear-gradient(0deg, color-mix(in srgb, #fff 32%, transparent) 0 2px, transparent 2px 25%); }
-${F} .board::after { content: "적 ▶"; position: absolute; right: .8em; top: 36%; z-index: 1; pointer-events: none;
-  font-family: var(--display); font-size: calc(var(--f, 10px) * .9); padding: .1em .7em; border-radius: 999px; color: #fff;
-  background: #F2884B; border: 2px solid var(--gfx-line); box-shadow: 0 .12em 0 var(--gfx-line); }
-${F} .board .slots { display: contents !important; }
-${F} .board .row-lab { position: absolute; top: .7em; z-index: 3; max-width: 40%; margin: 0 !important; padding: .15em .8em; border-radius: 999px;
-  background: var(--gfx-card); border: 2px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); color: var(--gfx-text) !important;
-  letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
-${F} .board .row-lab::after { display: none !important; }
-${F} .board > .row-lab:first-child { left: 46%; }
-${F} .board > .slots + .row-lab { left: 5%; }
-${F} .board .board-foot { position: absolute; left: 0; right: 0; bottom: .4em; z-index: 3; justify-content: center; margin: 0 !important; pointer-events: none; }
-${F} .board .board-foot .hint { padding: .1em .8em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-card) 80%, transparent); color: var(--gfx-text) !important; }
-/* A slot is a spot on the ground: no card, just the unit (or a "+") over its tile. */
-${F} .board .slot { position: absolute !important; z-index: calc(4 + var(--lane)); --lane: 0; margin: 0 !important;
-  height: 37% !important; width: auto !important; max-width: none !important; aspect-ratio: 3 / 4; top: calc(13% + var(--lane) * 17%);
-  scale: calc(.86 + var(--lane) * .07); transform-origin: 50% 100%;
-  background: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; backdrop-filter: none !important; overflow: visible !important;
-  transition: left 300ms ease, top 300ms ease, transform 130ms ease; }
-${F} .board .slot:nth-child(2) { --lane: 1; }
-${F} .board .slot:nth-child(3) { --lane: 2; }
-${F} .board .slots[data-row="back"] > .slot { left: calc(5% + (2 - var(--lane)) * 5.5%); }
-${F} .board .slots[data-row="front"] > .slot { left: calc(45% + (2 - var(--lane)) * 5.5%); }
-${F} .board .slot::before { display: none !important; }
-${F} .board .slot::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -7%; height: 26%; z-index: 0; pointer-events: none;
-  border: 2.5px dashed color-mix(in srgb, #fff 80%, transparent); border-radius: 14px; background: color-mix(in srgb, #fff 16%, transparent);
-  transform: perspective(14em) rotateX(58deg); transform-origin: 50% 100%; transition: background 130ms ease, border-color 130ms ease; }
-${F} .board .slot.filled::after { border-style: solid; border-color: color-mix(in srgb, var(--slot-rare, #fff) 85%, #fff);
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--gfx-line) 40%, transparent), color-mix(in srgb, #fff 14%, transparent)); }
-${F} .board .slot.leader { --slot-rare: #FF8FB1; }
-${F} .board .slot:hover::after { background: color-mix(in srgb, #fff 32%, transparent); }
-${F} .board .slot:is(.held, .sel, .drop-ok)::after { border: 3px solid var(--gfx-pick); background: color-mix(in srgb, var(--gfx-pick) 45%, transparent);
-  box-shadow: 0 0 1em var(--gfx-pick); }
-${F} .board .slot.empty .plus { position: relative; z-index: 1; display: grid; place-items: center; width: 2.2em; height: 2.2em;
-  border-radius: 50%; background: color-mix(in srgb, #fff 55%, transparent); border: 2.5px dashed #fff; color: var(--gfx-line) !important; font-size: calc(var(--f, 10px) * 1.6); align-self: end; margin: 0 0 4%; }
-${F} .board .slot.empty .plus small { display: none; }
-${F} .board .slot-art, ${F} .board .slot[data-gfx-sd] .slot-art { position: absolute !important; inset: 18% 8% 4%; z-index: 1; background: none !important; overflow: visible; }
-/* No SD: the portrait is a sticker card standing on the tile, as on the battle field. */
-${F} .board .slot:not([data-gfx-sd]) .slot-art { border: 3px solid #fff; outline: 2.5px solid var(--gfx-line); border-radius: 14px; overflow: hidden;
-  background: linear-gradient(170deg, var(--gfx-sky1), var(--gfx-sky2)) !important; box-shadow: 0 .3em 0 var(--gfx-line); }
-${F} .board .slot[data-gfx-sd] > img.gfx-sd { left: -18% !important; width: 136% !important; bottom: -2% !important; height: min(calc(86% * var(--hf, 1)), 100%) !important; z-index: 2; animation: none; }
-${H("[data-gfx-field][data-gfx-motion]")} .board .slot[data-gfx-sd] > img.gfx-sd { animation: gfx-bob 1.7s ease-in-out infinite; }
-${H("[data-gfx-field][data-gfx-motion]")} .board .slot.filled:nth-child(2) > img.gfx-sd { animation-delay: -.6s; }
-${H("[data-gfx-field][data-gfx-motion]")} .board .slot.filled:nth-child(3) > img.gfx-sd { animation-delay: -1.1s; }
-${H("[data-gfx-field][data-gfx-motion]")} .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
-/* Name over the head and role under the feet, as the battle's name plate. */
-${F} .board .slot-meta { display: contents !important; }
-${F} .board .slot-name { position: absolute; top: 2%; left: -12%; right: -12%; z-index: 4; text-align: center; padding: .1em .4em; border-radius: 999px;
-  background: var(--gfx-card); border: 2px solid var(--gfx-line); box-shadow: 0 .12em 0 var(--gfx-line); text-shadow: none !important; }
-${F} .board .slot-role { position: absolute; bottom: -16%; left: -14%; right: -14%; z-index: 20; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  color: #fff !important; -webkit-text-stroke: 2.5px var(--gfx-line); paint-order: stroke fill; letter-spacing: 0; }
-${F} .board .slot-tag { top: -8% !important; z-index: 5; border-radius: 999px; border: 2px solid var(--gfx-line); background: #FF8FB1 !important; color: #fff !important; }
-${F} .board .slot-remove { top: -9% !important; right: -14% !important; z-index: 5; border-radius: 50%; background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important;
-  color: var(--gfx-text) !important; box-shadow: 0 .12em 0 var(--gfx-line); }
+/* ── Formation board, 말랑 manner ─────────────────────────────────────────────────────────────────────
+   The game's grid stays as it is (every slot a big, easy target); each slot becomes a little stage the unit
+   stands on: a round pedestal with its shadow, a card that lifts on hover and presses down on tap, and the
+   picked slot glowing with its unit hopping. Front and back lines get ribbon labels. */
+${T} .board { padding: .6em .7em .4em; border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line);
+  background: radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 26%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px, var(--gfx-card); }
+${T} .board .row-lab { justify-self: start; padding: .15em .9em; border-radius: 999px; color: #fff !important; background: var(--gfx-accent);
+  border: 2px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); letter-spacing: .04em; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
+${T} .board .row-lab::after { display: none !important; }
+${T} .board > .slots + .row-lab { background: #6FB2F2; }
+${T} .board .board-foot { justify-content: center; }
+${T} .board .board-foot .hint { padding: .1em .8em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-pick) 30%, transparent); color: var(--gfx-text) !important; }
+${T} .board .slot { border: 3px solid var(--gfx-line) !important; border-radius: 18px !important; clip-path: none !important; backdrop-filter: none !important;
+  box-shadow: 0 .3em 0 var(--gfx-line) !important; transition: transform 140ms ease, box-shadow 140ms ease; }
+${T} .board .slot:hover { transform: translateY(-.18em); box-shadow: 0 .45em 0 var(--gfx-line) !important; }
+${T} .board .slot:active { transform: translateY(.2em); box-shadow: 0 .1em 0 var(--gfx-line) !important; }
+${T} .board .slot.filled::before { height: .45em; }
+${T} .board .slot.empty { border-style: dashed !important; box-shadow: none !important; background: color-mix(in srgb, var(--gfx-sky1) 45%, var(--gfx-card)) !important; }
+${T} .board .slot.empty .plus { display: grid; place-items: center; width: 2em; height: 2em; border-radius: 50%; color: #fff !important; font-size: calc(var(--f, 10px) * 1.7);
+  background: var(--gfx-accent); border: 2.5px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); }
+${T} .board .slot.empty .plus small { display: none; }
+/* The pedestal: a soft round step under the unit's feet. */
+${T} .board .slot.filled[data-gfx-sd] .slot-art::after { content: ""; position: absolute; left: 14%; right: 14%; bottom: 4%; height: 13%; border-radius: 50%; z-index: 0; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, #fff 70%, transparent), color-mix(in srgb, #fff 25%, transparent) 70%, transparent);
+  box-shadow: 0 .2em 0 color-mix(in srgb, var(--gfx-line) 25%, transparent); }
+${T} .board .slot:is(.held, .sel, .drop-ok) { outline: .3em solid color-mix(in srgb, var(--gfx-pick) 85%, transparent); outline-offset: 0; transform: translateY(-.25em); }
+${T} .board .slot-remove { border-radius: 50%; background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important; color: var(--gfx-text) !important; }
+${T} .board .slot-tag { border-radius: 999px; border: 2px solid var(--gfx-line); background: #FF8FB1 !important; color: #fff !important; z-index: 4; }
+${H("[data-gfx-team][data-gfx-motion]")} .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
+@media (prefers-reduced-motion: reduce) { ${T} .board .slot { transition: none; } ${T} .board .slot:is(:hover, :active, .held, .sel, .drop-ok) { transform: none; } }
 /* The team marches onto the field when the fight starts (set for a moment by the phase watcher). */
 @keyframes gfx-field-in-l { 0% { translate: -160% 0; opacity: 0; } 70% { translate: 6% 0; opacity: 1; } 100% { translate: 0 0; } }
 @keyframes gfx-field-in-r { 0% { translate: 160% 0; opacity: 0; } 70% { translate: -6% 0; opacity: 1; } 100% { translate: 0 0; } }
@@ -2794,19 +2757,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     for (const slot of root.querySelectorAll(".slot")) {
       const art = slot.querySelector(".slot-art img"), name = nameFromImg(art);
       const url = enabled && slot.classList.contains("filled") ? sdUrl(name, art?.getAttribute("src") || "") : "";
-      // On the field board the team looks toward the foes on the right, as it will in the fight.
-      if (url || slot.hasAttribute("data-gfx-sd")) placeSd(slot, url, !!url && prefs.opts.field && needFlip(name, "right"));
-    }
-    // The fight skips empty slots and fills the lanes from the far one, so on the field board the units take the
-    // lanes in that order and the empty slots the lanes left over: each unit stands where it will in the fight.
-    const field = !!current && prefs.opts.field;
-    for (const row of root.querySelectorAll(".board .slots")) {
-      const slots = Array.from(row.children).filter((s) => s.classList.contains("slot"));
-      const order = [...slots.filter((s) => s.classList.contains("filled")), ...slots.filter((s) => !s.classList.contains("filled"))];
-      for (const slot of slots) {
-        const lane = field ? String(order.indexOf(slot)) : "";
-        if (slot.style.getPropertyValue("--lane") !== lane) { if (lane) slot.style.setProperty("--lane", lane); else slot.style.removeProperty("--lane"); }
-      }
+      if (url || slot.hasAttribute("data-gfx-sd")) placeSd(slot, url);
     }
     // The result screen after a win: the team that fought, jumping for joy.
     for (const verdict of root.querySelectorAll('[data-screen="result"] .rs-verdict')) {
