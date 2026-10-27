@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.8 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.9 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1305,9 +1305,11 @@ ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px so
    picker before a fight is the same board and looks the same. */
 ${FMB} { grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative;
   border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line); overflow: hidden;
-  background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 38%, var(--gfx-card)) 0 55%, transparent 56%),
-    radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 24%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px,
-    linear-gradient(180deg, var(--gfx-sky1), var(--gfx-card) 60%); }
+  /* Every colour comes from the theme: a sky in 배경 1, a gently curved floor in 배경 2 with an outlined horizon,
+     and a soft light pool where the back line stands. */
+  background: radial-gradient(55% 20% at 50% 80%, color-mix(in srgb, var(--gfx-pick) 30%, transparent), transparent 72%),
+    radial-gradient(170% 92% at 50% 114%, color-mix(in srgb, var(--gfx-sky2) 62%, var(--gfx-card)) 0 98.6%, color-mix(in srgb, var(--gfx-line) 35%, transparent) 98.8% 99.6%, transparent 99.8%),
+    linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 80%, var(--gfx-card)), color-mix(in srgb, var(--gfx-sky1) 30%, var(--gfx-card)) 30%); }
 /* Front line on top (farther), back line below (nearer). */
 ${FMB} > .row-lab:first-child { grid-row: 1; }
 ${FMB} > .slots[data-row="front"] { grid-row: 2; padding: 0 9%; gap: 6%; }
@@ -1332,7 +1334,7 @@ ${FMB} .slot::after { content: ""; position: absolute; left: 4%; right: 4%; bott
   border: 2.5px solid var(--gfx-line); box-shadow: 0 .25em 0 var(--gfx-line); transition: background 140ms ease, box-shadow 140ms ease; }
 ${FMB} .slot.filled::after { background: radial-gradient(closest-side, #fff, color-mix(in srgb, var(--slot-rare, var(--gfx-pick)) 40%, #fff)); }
 ${FMB} .slot.leader { --slot-rare: #FF8FB1; }
-${FMB} .slot.empty::after { border-style: dashed; box-shadow: none; background: color-mix(in srgb, #fff 55%, transparent); }
+${FMB} .slot.empty::after { border-style: dashed; box-shadow: none; background: color-mix(in srgb, var(--gfx-card) 55%, transparent); }
 ${FMB} .slot:hover { transform: translateY(-.2em); }
 ${FMB} .slot:hover::after { box-shadow: 0 .25em 0 var(--gfx-line), 0 0 0 .2em color-mix(in srgb, #fff 70%, transparent); }
 ${FMB} .slot:active { transform: translateY(.12em); }
