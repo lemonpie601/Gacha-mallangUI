@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.2 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.3 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -2796,6 +2796,17 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const url = enabled && slot.classList.contains("filled") ? sdUrl(name, art?.getAttribute("src") || "") : "";
       // On the field board the team looks toward the foes on the right, as it will in the fight.
       if (url || slot.hasAttribute("data-gfx-sd")) placeSd(slot, url, !!url && prefs.opts.field && needFlip(name, "right"));
+    }
+    // The fight skips empty slots and fills the lanes from the far one, so on the field board the units take the
+    // lanes in that order and the empty slots the lanes left over: each unit stands where it will in the fight.
+    const field = !!current && prefs.opts.field;
+    for (const row of root.querySelectorAll(".board .slots")) {
+      const slots = Array.from(row.children).filter((s) => s.classList.contains("slot"));
+      const order = [...slots.filter((s) => s.classList.contains("filled")), ...slots.filter((s) => !s.classList.contains("filled"))];
+      for (const slot of slots) {
+        const lane = field ? String(order.indexOf(slot)) : "";
+        if (slot.style.getPropertyValue("--lane") !== lane) { if (lane) slot.style.setProperty("--lane", lane); else slot.style.removeProperty("--lane"); }
+      }
     }
     // The result screen after a win: the team that fought, jumping for joy.
     for (const verdict of root.querySelectorAll('[data-screen="result"] .rs-verdict')) {
