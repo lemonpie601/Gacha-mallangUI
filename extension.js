@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.20 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.21 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -794,12 +794,15 @@ ${F} .arena .cbt .cbt-est { top: 20% !important; bottom: auto !important; z-inde
 ${F} .side.allies .cbt.acting { transform: translateX(45%) scale(1.08) !important; z-index: 40 !important; }
 ${F} .side.enemies .cbt.acting { transform: translateX(-45%) scale(1.08) !important; z-index: 40 !important; }
 ${F} .arena .cbt.dead { transform: scale(0.85) rotate(-8deg) !important; }
-/* Before the fight: dashed placement tiles on the ground, as on the Trickcal field. */
-${F} .gfx-tiles { position: absolute; left: 3%; right: 3%; top: 30%; bottom: 20%; z-index: 0; pointer-events: none;
-  display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(3, 1fr); gap: 1.4% 1%;
-  transform: perspective(60em) rotateX(28deg); transform-origin: 50% 100%; opacity: 0; transition: opacity 400ms ease; }
-${F} .gfx-tiles i { border: 2px dashed color-mix(in srgb, #fff 75%, transparent); border-radius: 10px; background: color-mix(in srgb, #fff 14%, transparent); }
-${F} .gfx-tiles i:nth-child(8n+5), ${F} .gfx-tiles i:nth-child(8n+6), ${F} .gfx-tiles i:nth-child(8n+7), ${F} .gfx-tiles i:nth-child(8n+8) {
+/* Before the fight: dashed placement tiles on the ground, as on the Trickcal field. One tile under each place a
+   unit can stand (two lines × three lanes a side), worked out with the same numbers as the units themselves
+   (left, top and size of .cbt above and the foes' override further down), so every unit's feet are on a tile. */
+${F} .gfx-tiles { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 400ms ease; }
+${F} .gfx-tiles i { position: absolute; --w: 13%; --h: 13%; left: calc(var(--cx) - var(--w) / 2); top: calc(var(--feet) - var(--h) * .62); width: var(--w); height: var(--h);
+  transform: perspective(30em) rotateX(58deg); transform-origin: 50% 62%;
+  border: 2px dashed color-mix(in srgb, #fff 75%, transparent); border-radius: 12px; background: color-mix(in srgb, #fff 14%, transparent); }
+${F} .gfx-tiles i.ally { --cx: calc(var(--col) + (1 - var(--lane)) * 3.4% + 4.8%); --feet: calc(51% + var(--lane) * 14%); }
+${F} .gfx-tiles i.foe { --w: 11.5%; --h: 11%; --cx: calc(var(--col) - (1 - var(--lane)) * 2.6% + 4.25%); --feet: calc(38% + var(--lane) * 26%);
   background: color-mix(in srgb, #F2884B 16%, transparent); border-color: color-mix(in srgb, #FFE1C9 80%, transparent); }
 ${H('[data-gfx-field][data-gfx-phase="prebattle"]')} .gfx-tiles { opacity: 1; }
 /* During the fight the same placement tiles stay on the ground, faintly (as they show through the briefing). */
@@ -2148,7 +2151,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const tiles = arena.querySelector(":scope > .gfx-tiles");
       if (field && !tiles) {
         const t = el("div", "gfx-tiles");
-        for (let i = 0; i < 24; i++) t.append(el("i"));
+        // Ally lines stand at 6% / 25%, foe lines at 58% / 81% (the --col values of the unit rules).
+        for (const [side, cols] of [["ally", [6, 25]], ["foe", [58, 81]]])
+          for (const col of cols) for (let lane = 0; lane < 3; lane++) {
+            const i = el("i", side); i.style.setProperty("--col", col + "%"); i.style.setProperty("--lane", String(lane)); t.append(i);
+          }
         const shade = arena.querySelector(":scope > .cb-shade");
         if (shade) shade.after(t); else arena.prepend(t);
       } else if (!field && tiles) tiles.remove();
