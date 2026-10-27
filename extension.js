@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.12 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.13 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1301,25 +1301,26 @@ ${F} .side.enemies .cbt { width: 8.5% !important; height: 23% !important; top: c
 ${F} .side.enemies .cbt > * { pointer-events: none; }
 ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px solid var(--gfx-pick); outline-offset: 3px; }
 
-/* ── Formation tab: the battlefield seen from behind the team ───────────────────────────────────────────
-   The board is the same ground the fight is on: a plain panel in the theme's card colour with the faint floor
-   grid the battle field also shows, the front line (nearer the foes) farther up, the back line nearer. Each unit
-   stands on a round pedestal with its name plate under it. The game's grid cells stay the tap targets (side by
-   side, never overlapping), only drawn differently. The team picker before a fight is the same board. */
+/* ── Formation tab: a little stage ─────────────────────────────────────────────────────────────────────
+   No card grid: the team stands on a soft floor seen from the front, the front line farther up and smaller,
+   the back line nearer and bigger. Each unit stands on a round pedestal with its name plate under it. The
+   game's grid cells stay the tap targets (side by side, never overlapping), only drawn differently. The team
+   picker before a fight is the same board. */
 ${FMB} { --fm-edge: color-mix(in srgb, var(--gfx-line) 70%, var(--gfx-text));
-  grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative; isolation: isolate;
+  grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative;
   border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line); overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 22%, var(--gfx-card)), var(--gfx-card) 75%); }
-/* 밤하늘's 배경 1 is almost its card colour, so the light tint above left it flat: a dusk gradient instead,
-   from a lighter blue at the top through the card colour to the theme's violet 배경 2. */
-${H('[data-gfx-preset="night"]')} .fm-body .board { background: linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 70%, #8A93E0), var(--gfx-card) 50%, color-mix(in srgb, var(--gfx-sky2) 75%, var(--gfx-card))); }
-/* The floor grid, laid back in perspective: three lanes across, front and back lines. */
-${FMB}::before { content: ""; position: absolute; left: 4%; right: 4%; top: 9%; bottom: 9%; z-index: -1; pointer-events: none;
-  transform: perspective(60em) rotateX(32deg); transform-origin: 50% 100%; border-radius: 14px;
-  border: 1.5px solid color-mix(in srgb, var(--gfx-text) 14%, transparent);
-  background: linear-gradient(90deg, transparent calc(33.33% - .75px), color-mix(in srgb, var(--gfx-text) 12%, transparent) 0 calc(33.33% + .75px), transparent 0 calc(66.67% - .75px), color-mix(in srgb, var(--gfx-text) 12%, transparent) 0 calc(66.67% + .75px), transparent 0),
-    linear-gradient(180deg, transparent calc(45% - .75px), color-mix(in srgb, var(--gfx-text) 12%, transparent) 0 calc(45% + .75px), transparent 0),
-    color-mix(in srgb, var(--gfx-sky2) 14%, transparent); }
+  /* Every colour comes from the theme: a sky in 배경 1, a gently curved floor in 배경 2 with an outlined horizon,
+     and a soft light pool where the back line stands. */
+  background: radial-gradient(55% 20% at 50% 80%, color-mix(in srgb, var(--gfx-pick) 30%, transparent), transparent 72%),
+    radial-gradient(170% 92% at 50% 114%, color-mix(in srgb, var(--gfx-sky2) 62%, var(--gfx-card)) 0 98.6%, color-mix(in srgb, var(--gfx-line) 35%, transparent) 98.8% 99.6%, transparent 99.8%),
+    linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 80%, var(--gfx-card)), color-mix(in srgb, var(--gfx-sky1) 30%, var(--gfx-card)) 30%); }
+/* 밤하늘: its 배경 1 is almost its card colour (a flat sky), its outline near-black (no horizon) and the yellow light
+   pool turned muddy on violet. The same stage in night tones: a sky fading down from a lighter blue, a violet
+   floor that gets lighter toward the front, a pale horizon and a cool light pool. */
+${H('[data-gfx-preset="night"]')} .fm-body .board {
+  background: radial-gradient(55% 20% at 50% 80%, color-mix(in srgb, #C9D2FF 18%, transparent), transparent 72%),
+    radial-gradient(170% 92% at 50% 114%, color-mix(in srgb, var(--gfx-sky2) 85%, #8C7BC4) 0 45%, color-mix(in srgb, var(--gfx-sky2) 80%, var(--gfx-card)) 98.6%, color-mix(in srgb, #fff 30%, transparent) 98.8% 99.6%, transparent 99.8%),
+    linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 65%, #7C86D6), var(--gfx-sky1) 30%); }
 /* Front line on top (farther), back line below (nearer). */
 ${FMB} > .row-lab:first-child { grid-row: 1; }
 ${FMB} > .slots[data-row="front"] { grid-row: 2; padding: 0 9%; gap: 6%; }
