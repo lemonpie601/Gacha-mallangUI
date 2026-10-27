@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.16 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.17 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1314,9 +1314,9 @@ ${FMB} { --fm-edge: color-mix(in srgb, var(--gfx-line) 70%, var(--gfx-text));
     radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 24%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px,
     linear-gradient(180deg, var(--gfx-sky1), var(--gfx-card) 60%); }
 /* 밤하늘: the yellow floor, mixed into the dark card colour, turned a muddy brown and the dots shouted. The floor
-   stays yellow but softened with a dusky lavender (neither brown nor glaring), quieter dots, a sky lighter at the top. */
+   stays yellow but softened with a dusky lavender (neither brown nor glaring), little stars in place of the dots, a sky lighter at the top. */
 ${FMN} { background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 58%, #A99DCB) 0 20%, color-mix(in srgb, var(--gfx-pick) 46%, #8577AE) 55%, transparent 56%),
-    radial-gradient(circle at 12px 12px, color-mix(in srgb, #fff 9%, transparent) 2.5px, transparent 3px) 0 0 / 24px 24px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath fill='%23fff' fill-opacity='.22' d='M12 9Q12 14 17 14Q12 14 12 19Q12 14 7 14Q12 14 12 9ZM40 38Q40 42 44 42Q40 42 40 46Q40 42 36 42Q40 42 40 38Z'/%3E%3Cpath fill='%23FFE7A8' fill-opacity='.2' d='M42 9Q42 12 45 12Q42 12 42 15Q42 12 39 12Q42 12 42 9ZM14 41.5Q14 44 16.5 44Q14 44 14 46.5Q14 44 11.5 44Q14 44 14 41.5Z'/%3E%3C/svg%3E") 0 0 / 56px 56px,
     linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 60%, #8A93E0), var(--gfx-card) 60%); }
 ${FMN} .slot.empty::after { background: color-mix(in srgb, #fff 22%, transparent); }
 /* Front line on top (farther), back line below (nearer). */
