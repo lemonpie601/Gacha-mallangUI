@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.5 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.6 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1299,8 +1299,8 @@ ${F} .side.enemies .cbt > * { pointer-events: none; }
 ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px solid var(--gfx-pick); outline-offset: 3px; }
 
 /* ── Formation tab: a little stage ─────────────────────────────────────────────────────────────────────
-   No card grid: the team stands on a soft floor seen from the front, the back line farther up and smaller,
-   the front line nearer and bigger. Each unit stands on a round pedestal with its name plate under it. The
+   No card grid: the team stands on a soft floor seen from the front, the front line farther up and smaller,
+   the back line nearer and bigger. Each unit stands on a round pedestal with its name plate under it. The
    game's grid cells stay the tap targets (side by side, never overlapping), only drawn differently. The team
    picker before a fight (the one with the "into battle" button) keeps its own look. */
 ${FMB} { grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative;
@@ -1308,11 +1308,11 @@ ${FMB} { grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !imp
   background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 38%, var(--gfx-card)) 0 55%, transparent 56%),
     radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 24%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px,
     linear-gradient(180deg, var(--gfx-sky1), var(--gfx-card) 60%); }
-/* Back line on top (farther), front line below (nearer). */
-${FMB} > .slots + .row-lab { grid-row: 1; }
-${FMB} > .slots[data-row="back"] { grid-row: 2; padding: 0 9%; gap: 6%; }
-${FMB} > .row-lab:first-child { grid-row: 3; }
-${FMB} > .slots[data-row="front"] { grid-row: 4; gap: 3%; }
+/* Front line on top (farther), back line below (nearer). */
+${FMB} > .row-lab:first-child { grid-row: 1; }
+${FMB} > .slots[data-row="front"] { grid-row: 2; padding: 0 9%; gap: 6%; }
+${FMB} > .slots + .row-lab { grid-row: 3; }
+${FMB} > .slots[data-row="back"] { grid-row: 4; gap: 3%; }
 ${FMB} > .board-foot { grid-row: 5; justify-content: center; }
 ${FMB} .board-foot .hint { padding: .1em .8em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-card) 80%, transparent); color: var(--gfx-text) !important; }
 ${FMB} .row-lab { justify-self: center; position: relative; z-index: 3; padding: .1em .9em; border-radius: 999px; color: #fff !important; background: #6FB2F2;
