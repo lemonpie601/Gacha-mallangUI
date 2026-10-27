@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.7 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.8 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1319,6 +1319,10 @@ ${FMB} .row-lab { justify-self: center; position: relative; z-index: 3; padding:
   border: 2px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); letter-spacing: .04em; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
 ${FMB} .row-lab:first-child { background: var(--gfx-accent); }
 ${FMB} .row-lab::after { display: none !important; }
+/* The game's long line names ("Front line — melee & guard") crowded the name plates: a short tag instead. */
+${FMB} .row-lab { font-size: 0 !important; padding: 0 !important; margin: calc(var(--f, 10px) * .7) 0 calc(var(--f, 10px) * .2) !important; }
+${FMB} .row-lab::before { content: "전열"; display: block; font-size: calc(var(--f, 10px) * 1.2); line-height: 1.45; padding: 0 .8em; letter-spacing: .08em; }
+${FMB} > .slots + .row-lab::before { content: "후열"; }
 /* A slot: no card, just the unit on its pedestal. */
 ${FMB} .slot { background: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; backdrop-filter: none !important;
   overflow: visible !important; outline: 0 !important; transition: transform 140ms ease; }
