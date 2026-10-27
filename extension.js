@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.6 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.7 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -295,8 +295,8 @@
    * base style is, so every token of the base is replaced, not mixed. Options are further host attributes. */
   const H = (extra = "") => ':host([' + ATTR + '="trickcal"]' + extra + ")";
   const T = H();
-  // The formation tab's board; the team picker before a fight (it has the "into battle" button) is left alone.
-  const FMB = T + " .fm-body:not(:has([data-into-battle])) .board";
+  // The formation board: the formation tab and the team picker before a fight.
+  const FMB = T + " .fm-body .board";
   const LB = H("[data-gfx-lobby]"), F = H("[data-gfx-field]"), TM = H("[data-gfx-team]"), HP = H("[data-gfx-hideplate]"), AT = H("[data-gfx-attend]");
   const HALO = "0 0 2px var(--gfx-card), 0 0 5px color-mix(in srgb, var(--gfx-card) 95%, transparent), 0 0 12px color-mix(in srgb, var(--gfx-card) 70%, transparent)";
   const STICKER = "drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 0.25em 0 color-mix(in srgb, var(--gfx-line) 55%, transparent))";
@@ -1302,7 +1302,7 @@ ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px so
    No card grid: the team stands on a soft floor seen from the front, the front line farther up and smaller,
    the back line nearer and bigger. Each unit stands on a round pedestal with its name plate under it. The
    game's grid cells stay the tap targets (side by side, never overlapping), only drawn differently. The team
-   picker before a fight (the one with the "into battle" button) keeps its own look. */
+   picker before a fight is the same board and looks the same. */
 ${FMB} { grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative;
   border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line); overflow: hidden;
   background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 38%, var(--gfx-card)) 0 55%, transparent 56%),
@@ -1342,7 +1342,7 @@ ${FMB} .slot[data-gfx-sd] .slot-art { background: none !important; }
 ${FMB} .slot:not([data-gfx-sd]) .slot-art { border: 3px solid #fff; outline: 2.5px solid var(--gfx-line); border-radius: 14px; overflow: hidden;
   background: linear-gradient(170deg, var(--gfx-sky1), var(--gfx-sky2)) !important; }
 ${FMB} .slot[data-gfx-sd] > img.gfx-sd { left: -10% !important; width: 120% !important; bottom: 21% !important; height: min(calc(78% * var(--hf, 1)), 82%) !important; z-index: 2; }
-${H("[data-gfx-team][data-gfx-motion]")} .fm-body:not(:has([data-into-battle])) .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
+${H("[data-gfx-team][data-gfx-motion]")} .fm-body .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
 /* Name plate under the feet. */
 ${FMB} .slot-meta { position: absolute !important; left: -4%; right: -4%; bottom: 0; z-index: 3; padding: .1em .3em !important; text-align: center;
   background: var(--gfx-card) !important; border: 2px solid var(--gfx-line); border-radius: 12px; box-shadow: 0 .12em 0 var(--gfx-line); }
