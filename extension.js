@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.13 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.14 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -297,6 +297,7 @@
   const T = H();
   // The formation board: the formation tab and the team picker before a fight.
   const FMB = T + " .fm-body .board";
+  const FMN = H('[data-gfx-preset="night"]') + " .fm-body .board";
   const LB = H("[data-gfx-lobby]"), F = H("[data-gfx-field]"), TM = H("[data-gfx-team]"), HP = H("[data-gfx-hideplate]"), AT = H("[data-gfx-attend]");
   const HALO = "0 0 2px var(--gfx-card), 0 0 5px color-mix(in srgb, var(--gfx-card) 95%, transparent), 0 0 12px color-mix(in srgb, var(--gfx-card) 70%, transparent)";
   const STICKER = "drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 0.25em 0 color-mix(in srgb, var(--gfx-line) 55%, transparent))";
@@ -1309,18 +1310,15 @@ ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px so
 ${FMB} { --fm-edge: color-mix(in srgb, var(--gfx-line) 70%, var(--gfx-text));
   grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative;
   border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line); overflow: hidden;
-  /* Every colour comes from the theme: a sky in 배경 1, a gently curved floor in 배경 2 with an outlined horizon,
-     and a soft light pool where the back line stands. */
-  background: radial-gradient(55% 20% at 50% 80%, color-mix(in srgb, var(--gfx-pick) 30%, transparent), transparent 72%),
-    radial-gradient(170% 92% at 50% 114%, color-mix(in srgb, var(--gfx-sky2) 62%, var(--gfx-card)) 0 98.6%, color-mix(in srgb, var(--gfx-line) 35%, transparent) 98.8% 99.6%, transparent 99.8%),
-    linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 80%, var(--gfx-card)), color-mix(in srgb, var(--gfx-sky1) 30%, var(--gfx-card)) 30%); }
-/* 밤하늘: its 배경 1 is almost its card colour (a flat sky), its outline near-black (no horizon) and the yellow light
-   pool turned muddy on violet. The same stage in night tones: a sky fading down from a lighter blue, a violet
-   floor that gets lighter toward the front, a pale horizon and a cool light pool. */
-${H('[data-gfx-preset="night"]')} .fm-body .board {
-  background: radial-gradient(55% 20% at 50% 80%, color-mix(in srgb, #C9D2FF 18%, transparent), transparent 72%),
-    radial-gradient(170% 92% at 50% 114%, color-mix(in srgb, var(--gfx-sky2) 85%, #8C7BC4) 0 45%, color-mix(in srgb, var(--gfx-sky2) 80%, var(--gfx-card)) 98.6%, color-mix(in srgb, #fff 30%, transparent) 98.8% 99.6%, transparent 99.8%),
-    linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 65%, #7C86D6), var(--gfx-sky1) 30%); }
+  background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 38%, var(--gfx-card)) 0 55%, transparent 56%),
+    radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 24%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px,
+    linear-gradient(180deg, var(--gfx-sky1), var(--gfx-card) 60%); }
+/* 밤하늘: the yellow floor turned a muddy brown on the dark violet and the dots shouted. A moonlit violet floor,
+   quieter dots, a sky lighter at the top, and see-through empty pedestals. */
+${FMN} { background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-sky2) 70%, #8A7CC8) 0 55%, transparent 56%),
+    radial-gradient(circle at 12px 12px, color-mix(in srgb, #fff 9%, transparent) 2.5px, transparent 3px) 0 0 / 24px 24px,
+    linear-gradient(180deg, color-mix(in srgb, var(--gfx-sky1) 60%, #8A93E0), var(--gfx-card) 60%); }
+${FMN} .slot.empty::after { background: color-mix(in srgb, #fff 14%, transparent); border-color: color-mix(in srgb, #fff 55%, transparent); }
 /* Front line on top (farther), back line below (nearer). */
 ${FMB} > .row-lab:first-child { grid-row: 1; }
 ${FMB} > .slots[data-row="front"] { grid-row: 2; padding: 0 9%; gap: 6%; }
@@ -1340,7 +1338,7 @@ ${FMB} > .slots + .row-lab::before { content: "후열"; }
 ${FMB} .slot { background: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; backdrop-filter: none !important;
   overflow: visible !important; outline: 0 !important; transition: transform 140ms ease; }
 ${FMB} .slot::before { display: none !important; }
-${FMB} .slot::after { content: ""; position: absolute; left: 4%; right: 4%; bottom: 13%; height: 17%; border-radius: 50%; z-index: 0; pointer-events: none;
+${FMB} .slot::after { content: ""; position: absolute; left: -6%; right: -6%; bottom: 13%; height: 17%; border-radius: 50%; z-index: 0; pointer-events: none;
   background: radial-gradient(closest-side, #fff, color-mix(in srgb, #fff 55%, var(--gfx-sky1)));
   border: 2.5px solid var(--fm-edge); box-shadow: 0 .25em 0 var(--fm-edge); transition: background 140ms ease, box-shadow 140ms ease; }
 ${FMB} .slot.filled::after { background: radial-gradient(closest-side, #fff, color-mix(in srgb, var(--slot-rare, var(--gfx-pick)) 40%, #fff)); }
@@ -1358,7 +1356,7 @@ ${FMB} .slot[data-gfx-sd] .slot-art { background: none !important; }
 /* No SD: the portrait is a small sticker card standing on the pedestal. */
 ${FMB} .slot:not([data-gfx-sd]) .slot-art { border: 3px solid #fff; outline: 2.5px solid var(--fm-edge); border-radius: 14px; overflow: hidden;
   background: linear-gradient(170deg, var(--gfx-sky1), var(--gfx-sky2)) !important; }
-${FMB} .slot[data-gfx-sd] > img.gfx-sd { left: -10% !important; width: 120% !important; bottom: 21% !important; height: min(calc(78% * var(--hf, 1)), 82%) !important; z-index: 2; }
+${FMB} .slot[data-gfx-sd] > img.gfx-sd { left: -30% !important; width: 160% !important; bottom: 21% !important; height: min(calc(100% * var(--hf, 1)), 112%) !important; z-index: 2; }
 ${H("[data-gfx-team][data-gfx-motion]")} .fm-body .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
 /* Name plate under the feet. */
 ${FMB} .slot-meta { position: absolute !important; left: -4%; right: -4%; bottom: 0; z-index: 3; padding: .1em .3em !important; text-align: center;
