@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.19 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.20 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -802,9 +802,8 @@ ${F} .gfx-tiles i { border: 2px dashed color-mix(in srgb, #fff 75%, transparent)
 ${F} .gfx-tiles i:nth-child(8n+5), ${F} .gfx-tiles i:nth-child(8n+6), ${F} .gfx-tiles i:nth-child(8n+7), ${F} .gfx-tiles i:nth-child(8n+8) {
   background: color-mix(in srgb, #F2884B 16%, transparent); border-color: color-mix(in srgb, #FFE1C9 80%, transparent); }
 ${H('[data-gfx-field][data-gfx-phase="prebattle"]')} .gfx-tiles { opacity: 1; }
-/* During the fight the same ground shows as a faint grid of thin lines. */
-${H('[data-gfx-field][data-gfx-phase="battle"]')} .gfx-tiles { opacity: .45; gap: 0; }
-${H('[data-gfx-field][data-gfx-phase="battle"]')} .gfx-tiles i { border: 1px solid color-mix(in srgb, #fff 55%, transparent) !important; border-radius: 0; background: none !important; }
+/* During the fight the same placement tiles stay on the ground, faintly (as they show through the briefing). */
+${H('[data-gfx-field][data-gfx-phase="battle"]')} .gfx-tiles { opacity: .3; }
 /* Before the fight the briefing is in front: the field units (which sit above its blur) and the empty turn
    bar wait out of sight, and the floating team over the start button stands in for them. */
 ${H('[data-gfx-field][data-gfx-phase="prebattle"]')} .arena .cbt,
