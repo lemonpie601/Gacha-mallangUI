@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.25 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.26 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -2555,8 +2555,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       // Keep faces readable while gradually increasing overlap with the cast count.
       const ratio = Math.min(0.38, 0.16 + 0.07 * Math.max(0, otherCount - 2)), apart = 5;
       // The protagonist's side (the protagonist and those set to stand by them) stands nearly shoulder to shoulder:
-      // at most 6% of the narrower one overlaps, so the one beside the protagonist is not half hidden behind them.
-      const overlapAt = (i) => pairW[i] * (groupOf(nodes[i]) === "a" ? Math.min(ratio, 0.06) : ratio);
+      // at most 15% of the narrower one overlaps, so the one beside the protagonist is not half hidden behind them.
+      const overlapAt = (i) => pairW[i] * (groupOf(nodes[i]) === "a" ? Math.min(ratio, 0.15) : ratio);
       const span = () => total + joins.reduce((s, j, i) => s + (j === "in" ? -overlapAt(i) : apart), 0);
       const groupSpan = (group) => widths.reduce((s, w, i) => s + (groupOf(nodes[i]) === group ? w - (joins[i] === "in" ? overlapAt(i) : 0) : 0), 0);
       // Fit all centres as one group; individually clamping them collapsed neighbouring slots.
