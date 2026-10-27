@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.21 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.22 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -741,7 +741,7 @@ ${F} .arena .row { display: contents !important; }
 ${F} .arena > .midline { display: none !important; }
 ${F} .arena .cbt {
   position: absolute !important; margin: 0 !important; width: 9.6% !important; height: 30% !important;
-  --lane: 0; --extra: 0; top: calc(21% + var(--lane) * 14%); z-index: calc(10 + var(--lane));
+  --lane: 0; --extra: 0; top: calc(13% + var(--lane) * 14%); z-index: calc(10 + var(--lane));
   transition: left 300ms ease, top 300ms ease, transform 200ms ease;
 }
 ${F} .arena .row > .cbt:nth-child(3n+2) { --lane: 1; }
@@ -801,8 +801,8 @@ ${F} .gfx-tiles { position: absolute; inset: 0; z-index: 0; pointer-events: none
 ${F} .gfx-tiles i { position: absolute; --w: 13%; --h: 13%; left: calc(var(--cx) - var(--w) / 2); top: calc(var(--feet) - var(--h) * .62); width: var(--w); height: var(--h);
   transform: perspective(30em) rotateX(58deg); transform-origin: 50% 62%;
   border: 2px dashed color-mix(in srgb, #fff 75%, transparent); border-radius: 12px; background: color-mix(in srgb, #fff 14%, transparent); }
-${F} .gfx-tiles i.ally { --cx: calc(var(--col) + (1 - var(--lane)) * 3.4% + 4.8%); --feet: calc(51% + var(--lane) * 14%); }
-${F} .gfx-tiles i.foe { --w: 11.5%; --h: 11%; --cx: calc(var(--col) - (1 - var(--lane)) * 2.6% + 4.25%); --feet: calc(38% + var(--lane) * 26%);
+${F} .gfx-tiles i.ally { --cx: calc(var(--col) + (1 - var(--lane)) * 3.4% + 4.8%); --feet: calc(43% + var(--lane) * 14%); }
+${F} .gfx-tiles i.foe { --w: 11.5%; --h: 11%; --cx: calc(var(--col) - (1 - var(--lane)) * 2.6% + 4.25%); --feet: calc(41% + var(--lane) * 16%);
   background: color-mix(in srgb, #F2884B 16%, transparent); border-color: color-mix(in srgb, #FFE1C9 80%, transparent); }
 ${H('[data-gfx-field][data-gfx-phase="prebattle"]')} .gfx-tiles { opacity: 1; }
 /* During the fight the same placement tiles stay on the ground, faintly (as they show through the briefing). */
@@ -1297,10 +1297,10 @@ ${AT} .ev-panel[data-gfx-attendance] .ev-day.next::before, ${AT} .ev-panel[data-
 .gfx-sd-edit-side .gfx-field :is(input,textarea) { width: 100%; box-sizing: border-box; }
 @container (min-width: 720px) { .gfx-sd-edit-side { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @container (max-width: 380px) { .gfx-sd-edit-side { grid-template-columns: minmax(0, 1fr); } }
-${F} .side.enemies .row.front > .cbt { --col: 58%; }
-${F} .side.enemies .row.back > .cbt { --col: 81%; }
-${F} .side.enemies.no-front .row.back > .cbt { --col: 70%; }
-${F} .side.enemies .cbt { width: 8.5% !important; height: 23% !important; top: calc(15% + var(--lane) * 26%); }
+${F} .side.enemies .row.front > .cbt { --col: 56%; }
+${F} .side.enemies .row.back > .cbt { --col: 73%; }
+${F} .side.enemies.no-front .row.back > .cbt { --col: 64%; }
+${F} .side.enemies .cbt { width: 8.5% !important; height: 23% !important; top: calc(18% + var(--lane) * 16%); }
 ${F} .side.enemies .cbt > * { pointer-events: none; }
 ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px solid var(--gfx-pick); outline-offset: 3px; }
 
@@ -2151,8 +2151,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const tiles = arena.querySelector(":scope > .gfx-tiles");
       if (field && !tiles) {
         const t = el("div", "gfx-tiles");
-        // Ally lines stand at 6% / 25%, foe lines at 58% / 81% (the --col values of the unit rules).
-        for (const [side, cols] of [["ally", [6, 25]], ["foe", [58, 81]]])
+        // Ally lines stand at 6% / 25%, foe lines at 56% / 73% (the --col values of the unit rules).
+        for (const [side, cols] of [["ally", [6, 25]], ["foe", [56, 73]]])
           for (const col of cols) for (let lane = 0; lane < 3; lane++) {
             const i = el("i", side); i.style.setProperty("--col", col + "%"); i.style.setProperty("--lane", String(lane)); t.append(i);
           }
