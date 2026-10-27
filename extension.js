@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.22 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.23 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -772,10 +772,14 @@ ${F} .arena .cbt[data-gfx-foe] .ava > svg { display: none; }
 ${F} .arena .cbt .aff-badge { top: calc(var(--f, 10px) * -0.35) !important; right: auto !important; left: calc(var(--f, 10px) * -0.6) !important;
   width: calc(var(--f, 10px) * 1.7) !important; height: calc(var(--f, 10px) * 1.7) !important; border-radius: 50% !important; clip-path: none !important;
   background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important; box-shadow: 0 .12em 0 var(--gfx-line) !important; z-index: 5; pointer-events: none; }
-/* Overlapping foes: only the figure takes a click. The front foe's empty card area and its name, bars and
- * estimate tags let a click through to the foe standing behind it. */
+/* Overlapping foes: a click lands only on the middle of a foe's box (its ::before, which counts as the foe
+ * itself). The lanes are 16% apart and a foe 23% tall, so cutting 15% off the top and 18% off the bottom
+ * leaves the hit areas of a foe and the one in front touching but not overlapping; the picture, the empty
+ * card area, name, bars and estimate tags let a click through. */
 ${F} .arena .cbt.enemy { pointer-events: none; }
-${F} .arena .cbt.enemy > :is(.gfx-foe, img.gfx-sd, .ava) { pointer-events: auto; }
+${F} .arena .cbt.enemy > * { pointer-events: none !important; }
+${F} .arena .cbt.enemy::before { display: block !important; content: "" !important; position: absolute !important; inset: 15% 16% 18% !important;
+  pointer-events: auto; z-index: 6 !important; background: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; transform: none !important; }
 ${F} .arena .cbt.enemy > :is(.nm, .bars, .cbt-est, .fx) { pointer-events: none !important; }
 ${F} .arena .cbt[data-gfx-sd] > img.gfx-sd { left: -20% !important; right: auto !important; width: 140% !important; height: calc(92% * var(--hf, 1)) !important; bottom: 2% !important; z-index: 1; }
 ${F} .arena .cbt > .gfx-foe { position: absolute; left: 0; right: 0; bottom: 2%; height: 62%; z-index: 1; display: grid; place-items: end center; pointer-events: none; transform-origin: 50% 100%; }
