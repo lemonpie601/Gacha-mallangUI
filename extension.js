@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.4 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.5 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -295,6 +295,8 @@
    * base style is, so every token of the base is replaced, not mixed. Options are further host attributes. */
   const H = (extra = "") => ':host([' + ATTR + '="trickcal"]' + extra + ")";
   const T = H();
+  // The formation tab's board; the team picker before a fight (it has the "into battle" button) is left alone.
+  const FMB = T + " .fm-body:not(:has([data-into-battle])) .board";
   const LB = H("[data-gfx-lobby]"), F = H("[data-gfx-field]"), TM = H("[data-gfx-team]"), HP = H("[data-gfx-hideplate]"), AT = H("[data-gfx-attend]");
   const HALO = "0 0 2px var(--gfx-card), 0 0 5px color-mix(in srgb, var(--gfx-card) 95%, transparent), 0 0 12px color-mix(in srgb, var(--gfx-card) 70%, transparent)";
   const STICKER = "drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 0.25em 0 color-mix(in srgb, var(--gfx-line) 55%, transparent))";
@@ -1296,36 +1298,60 @@ ${F} .side.enemies .cbt { width: 8.5% !important; height: 23% !important; top: c
 ${F} .side.enemies .cbt > * { pointer-events: none; }
 ${F} .side.enemies .cbt:is(:hover,:focus-visible) { z-index: 45; outline: 2px solid var(--gfx-pick); outline-offset: 3px; }
 
-/* ── Formation board, 말랑 manner ─────────────────────────────────────────────────────────────────────
-   The game's grid stays as it is (every slot a big, easy target); each slot becomes a little stage the unit
-   stands on: a round pedestal with its shadow, a card that lifts on hover and presses down on tap, and the
-   picked slot glowing with its unit hopping. Front and back lines get ribbon labels. */
-${T} .board { padding: .6em .7em .4em; border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line);
-  background: radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 26%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px, var(--gfx-card); }
-${T} .board .row-lab { justify-self: start; padding: .15em .9em; border-radius: 999px; color: #fff !important; background: var(--gfx-accent);
+/* ── Formation tab: a little stage ─────────────────────────────────────────────────────────────────────
+   No card grid: the team stands on a soft floor seen from the front, the back line farther up and smaller,
+   the front line nearer and bigger. Each unit stands on a round pedestal with its name plate under it. The
+   game's grid cells stay the tap targets (side by side, never overlapping), only drawn differently. The team
+   picker before a fight (the one with the "into battle" button) keeps its own look. */
+${FMB} { grid-template-rows: auto minmax(0, .82fr) auto minmax(0, 1fr) auto !important; padding: .5em .7em .4em; position: relative;
+  border: 3px solid var(--gfx-line); border-radius: 22px; box-shadow: 0 .3em 0 var(--gfx-line); overflow: hidden;
+  background: radial-gradient(130% 75% at 50% 100%, color-mix(in srgb, var(--gfx-pick) 38%, var(--gfx-card)) 0 55%, transparent 56%),
+    radial-gradient(circle at 12px 12px, color-mix(in srgb, var(--gfx-pick) 24%, transparent) 3px, transparent 3.5px) 0 0 / 24px 24px,
+    linear-gradient(180deg, var(--gfx-sky1), var(--gfx-card) 60%); }
+/* Back line on top (farther), front line below (nearer). */
+${FMB} > .slots + .row-lab { grid-row: 1; }
+${FMB} > .slots[data-row="back"] { grid-row: 2; padding: 0 9%; gap: 6%; }
+${FMB} > .row-lab:first-child { grid-row: 3; }
+${FMB} > .slots[data-row="front"] { grid-row: 4; gap: 3%; }
+${FMB} > .board-foot { grid-row: 5; justify-content: center; }
+${FMB} .board-foot .hint { padding: .1em .8em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-card) 80%, transparent); color: var(--gfx-text) !important; }
+${FMB} .row-lab { justify-self: center; position: relative; z-index: 3; padding: .1em .9em; border-radius: 999px; color: #fff !important; background: #6FB2F2;
   border: 2px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); letter-spacing: .04em; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
-${T} .board .row-lab::after { display: none !important; }
-${T} .board > .slots + .row-lab { background: #6FB2F2; }
-${T} .board .board-foot { justify-content: center; }
-${T} .board .board-foot .hint { padding: .1em .8em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-pick) 30%, transparent); color: var(--gfx-text) !important; }
-${T} .board .slot { border: 3px solid var(--gfx-line) !important; border-radius: 18px !important; clip-path: none !important; backdrop-filter: none !important;
-  box-shadow: 0 .3em 0 var(--gfx-line) !important; transition: transform 140ms ease, box-shadow 140ms ease; }
-${T} .board .slot:hover { transform: translateY(-.18em); box-shadow: 0 .45em 0 var(--gfx-line) !important; }
-${T} .board .slot:active { transform: translateY(.2em); box-shadow: 0 .1em 0 var(--gfx-line) !important; }
-${T} .board .slot.filled::before { height: .45em; }
-${T} .board .slot.empty { border-style: dashed !important; box-shadow: none !important; background: color-mix(in srgb, var(--gfx-sky1) 45%, var(--gfx-card)) !important; }
-${T} .board .slot.empty .plus { display: grid; place-items: center; width: 2em; height: 2em; border-radius: 50%; color: #fff !important; font-size: calc(var(--f, 10px) * 1.7);
-  background: var(--gfx-accent); border: 2.5px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); }
-${T} .board .slot.empty .plus small { display: none; }
-/* The pedestal: a soft round step under the unit's feet. */
-${T} .board .slot.filled[data-gfx-sd] .slot-art::after { content: ""; position: absolute; left: 14%; right: 14%; bottom: 4%; height: 13%; border-radius: 50%; z-index: 0; pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, #fff 70%, transparent), color-mix(in srgb, #fff 25%, transparent) 70%, transparent);
-  box-shadow: 0 .2em 0 color-mix(in srgb, var(--gfx-line) 25%, transparent); }
-${T} .board .slot:is(.held, .sel, .drop-ok) { outline: .3em solid color-mix(in srgb, var(--gfx-pick) 85%, transparent); outline-offset: 0; transform: translateY(-.25em); }
-${T} .board .slot-remove { border-radius: 50%; background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important; color: var(--gfx-text) !important; }
-${T} .board .slot-tag { border-radius: 999px; border: 2px solid var(--gfx-line); background: #FF8FB1 !important; color: #fff !important; z-index: 4; }
-${H("[data-gfx-team][data-gfx-motion]")} .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
-@media (prefers-reduced-motion: reduce) { ${T} .board .slot { transition: none; } ${T} .board .slot:is(:hover, :active, .held, .sel, .drop-ok) { transform: none; } }
+${FMB} .row-lab:first-child { background: var(--gfx-accent); }
+${FMB} .row-lab::after { display: none !important; }
+/* A slot: no card, just the unit on its pedestal. */
+${FMB} .slot { background: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; backdrop-filter: none !important;
+  overflow: visible !important; outline: 0 !important; transition: transform 140ms ease; }
+${FMB} .slot::before { display: none !important; }
+${FMB} .slot::after { content: ""; position: absolute; left: 4%; right: 4%; bottom: 13%; height: 17%; border-radius: 50%; z-index: 0; pointer-events: none;
+  background: radial-gradient(closest-side, #fff, color-mix(in srgb, #fff 55%, var(--gfx-sky1)));
+  border: 2.5px solid var(--gfx-line); box-shadow: 0 .25em 0 var(--gfx-line); transition: background 140ms ease, box-shadow 140ms ease; }
+${FMB} .slot.filled::after { background: radial-gradient(closest-side, #fff, color-mix(in srgb, var(--slot-rare, var(--gfx-pick)) 40%, #fff)); }
+${FMB} .slot.leader { --slot-rare: #FF8FB1; }
+${FMB} .slot.empty::after { border-style: dashed; box-shadow: none; background: color-mix(in srgb, #fff 55%, transparent); }
+${FMB} .slot:hover { transform: translateY(-.2em); }
+${FMB} .slot:hover::after { box-shadow: 0 .25em 0 var(--gfx-line), 0 0 0 .2em color-mix(in srgb, #fff 70%, transparent); }
+${FMB} .slot:active { transform: translateY(.12em); }
+${FMB} .slot:is(.held, .sel, .drop-ok)::after { background: radial-gradient(closest-side, #fff, var(--gfx-pick)); box-shadow: 0 .25em 0 var(--gfx-line), 0 0 0 .25em var(--gfx-pick), 0 0 1em var(--gfx-pick); }
+${FMB} .slot.empty .plus { position: relative; z-index: 1; display: grid; place-items: center; width: 2em; height: 2em; align-self: end; margin-bottom: 30%;
+  border-radius: 50%; color: #fff !important; font-size: calc(var(--f, 10px) * 1.6); background: var(--gfx-accent); border: 2.5px solid var(--gfx-line); box-shadow: 0 .14em 0 var(--gfx-line); }
+${FMB} .slot.empty .plus small { display: none; }
+${FMB} .slot-art { position: absolute !important; inset: 4% 12% 22%; z-index: 1; background: none !important; overflow: visible; }
+${FMB} .slot[data-gfx-sd] .slot-art { background: none !important; }
+/* No SD: the portrait is a small sticker card standing on the pedestal. */
+${FMB} .slot:not([data-gfx-sd]) .slot-art { border: 3px solid #fff; outline: 2.5px solid var(--gfx-line); border-radius: 14px; overflow: hidden;
+  background: linear-gradient(170deg, var(--gfx-sky1), var(--gfx-sky2)) !important; }
+${FMB} .slot[data-gfx-sd] > img.gfx-sd { left: -10% !important; width: 120% !important; bottom: 21% !important; height: min(calc(78% * var(--hf, 1)), 82%) !important; z-index: 2; }
+${H("[data-gfx-team][data-gfx-motion]")} .fm-body:not(:has([data-into-battle])) .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
+/* Name plate under the feet. */
+${FMB} .slot-meta { position: absolute !important; left: -4%; right: -4%; bottom: 0; z-index: 3; padding: .1em .3em !important; text-align: center;
+  background: var(--gfx-card) !important; border: 2px solid var(--gfx-line); border-radius: 12px; box-shadow: 0 .12em 0 var(--gfx-line); }
+${FMB} .slot-name { text-shadow: none !important; overflow: hidden !important; text-overflow: ellipsis; }
+${FMB} .slot-role { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+${FMB} .slot-tag { top: auto !important; bottom: 19%; z-index: 4; border-radius: 999px; border: 2px solid var(--gfx-line); background: #FF8FB1 !important; color: #fff !important; }
+${FMB} .slot-remove { top: auto !important; bottom: 20%; right: 0 !important; z-index: 4; border-radius: 50%; background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important; color: var(--gfx-text) !important; }
+@media (prefers-reduced-motion: reduce) { ${FMB} .slot { transition: none; transform: none !important; } }
+
 /* The team marches onto the field when the fight starts (set for a moment by the phase watcher). */
 @keyframes gfx-field-in-l { 0% { translate: -160% 0; opacity: 0; } 70% { translate: 6% 0; opacity: 1; } 100% { translate: 0 0; } }
 @keyframes gfx-field-in-r { 0% { translate: 160% 0; opacity: 0; } 70% { translate: -6% 0; opacity: 1; } 100% { translate: 0 0; } }
