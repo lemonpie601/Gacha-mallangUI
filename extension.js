@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.23 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.24 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1363,15 +1363,16 @@ ${FMB} .slot[data-gfx-sd] .slot-art { background: none !important; }
 /* No SD: the portrait is a small sticker card standing on the pedestal. */
 ${FMB} .slot:not([data-gfx-sd]) .slot-art { border: 3px solid #fff; outline: 2.5px solid var(--fm-edge); border-radius: 14px; overflow: hidden;
   background: linear-gradient(170deg, var(--gfx-sky1), var(--gfx-sky2)) !important; }
-${FMB} .slot[data-gfx-sd] > img.gfx-sd { left: -30% !important; width: 160% !important; bottom: 21% !important; height: min(calc(100% * var(--hf, 1)), 112%) !important; z-index: 2; }
+${FMB} .slot[data-gfx-sd] > img.gfx-sd { left: -30% !important; width: 160% !important; bottom: 21% !important; height: min(calc(100% * var(--hf, 1)), 112%) !important; z-index: 5; }
 ${H("[data-gfx-team][data-gfx-motion]")} .fm-body .board .slot:is(.held, .sel)[data-gfx-sd] > img.gfx-sd { animation: gfx-hop 520ms ease-out infinite; }
-/* Name plate under the feet. */
+/* Name plate under the feet. The SD stands in front of every name plate (its own and the row above's, which a
+   tall SD reaches); the leader tag and × stay on top. */
 ${FMB} .slot-meta { position: absolute !important; left: -4%; right: -4%; bottom: 0; z-index: 3; padding: .1em .3em !important; text-align: center;
   background: var(--gfx-card) !important; border: 2px solid var(--fm-edge); border-radius: 12px; box-shadow: 0 .12em 0 var(--fm-edge); }
 ${FMB} .slot-name { text-shadow: none !important; overflow: hidden !important; text-overflow: ellipsis; }
 ${FMB} .slot-role { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: color-mix(in srgb, var(--gfx-text) 70%, var(--gfx-card)) !important; }
-${FMB} .slot-tag { top: auto !important; bottom: 19%; z-index: 4; border-radius: 999px; border: 2px solid var(--fm-edge); background: #FF8FB1 !important; color: #fff !important; }
-${FMB} .slot-remove { top: auto !important; bottom: 20%; right: 0 !important; z-index: 4; border-radius: 50%; background: var(--gfx-card) !important; border: 2px solid var(--fm-edge) !important; color: var(--gfx-text) !important; }
+${FMB} .slot-tag { top: auto !important; bottom: 19%; z-index: 6; border-radius: 999px; border: 2px solid var(--fm-edge); background: #FF8FB1 !important; color: #fff !important; }
+${FMB} .slot-remove { top: auto !important; bottom: 20%; right: 0 !important; z-index: 6; border-radius: 50%; background: var(--gfx-card) !important; border: 2px solid var(--fm-edge) !important; color: var(--gfx-text) !important; }
 @media (prefers-reduced-motion: reduce) { ${FMB} .slot { transition: none; transform: none !important; } }
 
 /* The team marches onto the field when the fight starts (set for a moment by the phase watcher). */
