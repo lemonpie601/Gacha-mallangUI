@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.28 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.29 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1633,6 +1633,11 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
     const variant = activePortrait && e?.variants?.[pathOf(activePortrait)];
     return typeof variant === "string" ? variant : variant?.url || e?.url || "";
   };
+  // The SD the story shows: the look picked for the story ("base" or an outfit), else the one its picture wears.
+  const storySd = (name, portrait = "") => {
+    const e = sdEntry(name), pick = e.story === "base" ? e.url : e.story && sdVariant(e, e.story)?.url;
+    return pick || sdUrl(name, portrait);
+  };
   const anySd = () => {
     const w = world();
     if (!w) return [];
@@ -2695,7 +2700,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // A new place (or scene) keeps whoever is still there standing; only those not in it step out (below). The
     // layer used to be emptied and rebuilt here, so everyone vanished and popped back in once their pictures loaded.
     if (layer.getAttribute("data-scene") !== snapshot.sceneKey) layer.setAttribute("data-scene", snapshot.sceneKey);
-    const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, sdUrl(s.name, s.portrait), sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, faceOf(s.name)].join("~")).join(";");
+    const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, storySd(s.name, s.portrait), sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, faceOf(s.name)].join("~")).join(";");
     if (layer.getAttribute("data-key") === key) return;
     layer.setAttribute("data-key", key);
     vnCast.renderedKey = key;
@@ -2714,7 +2719,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       if (!n) {
         n = el("div", "who");
         // Set the inherited body scale before mounting, including uncached/raw sprites.
-        n.style.setProperty("--hf", sdUrl(name, slot.portrait) ? String(+Math.min(1.15, Math.max(0.6, Number(sdEntry(name).tall) || 1)).toFixed(3)) : "1");
+        n.style.setProperty("--hf", storySd(name, slot.portrait) ? String(+Math.min(1.15, Math.max(0.6, Number(sdEntry(name).tall) || 1)).toFixed(3)) : "1");
         // Pushed out: the newcomer steps in as the one leaving fades, not on top of them in the same frame.
         if (layer.querySelector(":scope > .who[data-leaving]")) n.style.animationDelay = "180ms";
         // Never left hidden: if the line-up could not measure it (stage hidden), it shows where it is.
@@ -2737,7 +2742,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       // Where they stand comes from layoutCast; a newcomer starts at its even share until its size is known.
       if (!n.style.left) { n.dataset.x = String(xs[i]); n.style.left = xs[i] + "%"; }
       const im = n.querySelector("img");
-      const sd = sdUrl(name, slot.portrait);
+      const sd = storySd(name, slot.portrait);
       let placeholder = n.querySelector(".gfx-vn-placeholder");
       if (!sd && !slot.portrait) {
         im.hidden = true;
@@ -4105,7 +4110,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const look = allOutfits.includes(sdEditLook) ? sdEditLook : "";
       const lookUrl = look ? sdVariant(e, look)?.url : e.url;
       const lookName = (k) => w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === k)?.name || "의상 " + (allOutfits.indexOf(k) + 1);
-      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.history || []), e.lobby || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
+      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
       const promptKey = JSON.stringify([e.appearance, e.prompt, e.promptContext, prefs.gen.template]);
       if (box.getAttribute("data-key") === key && box.getAttribute("data-prompt-key") === promptKey) continue;
       if (box.contains(root.activeElement) && root.activeElement?.matches("input, textarea")) continue;
@@ -4254,26 +4259,34 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         side.append(hint(label + (urls.length > 1 ? " — 눌러서 바꾸기" : ""), ""), row);
       };
       vault("SD 보관함 · " + (look ? lookName(look) : "기본"), look);
-      side.append(chip("선택한 의상 SD " + (lookUrl ? "다시 그리기" : "만들기"), () => makeSd(c, look)));
+      const lookActions = el("div", "st-chips");
+      lookActions.append(chip("선택한 의상 SD " + (lookUrl ? "다시 그리기" : "만들기"), () => makeSd(c, look)));
+      if (look && lookUrl) lookActions.append(chip("선택한 의상 SD 지우기", () => removeSdVariant(c.name, look)));
+      side.append(lookActions);
       const madeOutfits = outfits.filter((key) => sdVariant(e, key)?.url);
-      if (madeOutfits.length && e.url) {
-        side.append(hint("로비에서 입을 옷", ""));
-        const lob = el("div", "st-chips");
-        const pick = (key, label) => { const b = chip(label, () => saveSdEntry(c.name, { lobby: key }).then(() => { paintSettings(); refresh(); })); b.setAttribute("aria-pressed", String((e.lobby || "") === key)); lob.append(b); };
-        pick("", "기본");
-        madeOutfits.forEach((key) => pick(key, outfitName(key, outfits.indexOf(key))));
-        side.append(lob);
-      }
+      // Which look a scene wears: the lobby always one picked look; the story can also follow its own pictures.
+      const wearPicker = (label, field, choices) => {
+        side.append(hint(label, ""));
+        const row = el("div", "st-chips");
+        for (const [key, text] of choices) {
+          const b = chip(text, () => saveSdEntry(c.name, { [field]: key }).then(() => { paintSettings(); refresh(); refreshSprites(); }));
+          b.setAttribute("aria-pressed", String((e[field] || "") === key));
+          row.append(b);
+        }
+        side.append(row);
+      };
+      const madeChoices = madeOutfits.map((key) => [key, outfitName(key, outfits.indexOf(key))]);
+      if (madeOutfits.length && e.url) wearPicker("로비에서 입을 옷", "lobby", [["", "기본"], ...madeChoices]);
+      if (madeOutfits.length) wearPicker("스토리에서 입을 옷", "story", [["", "자동 (스토리 그림 따라)"], ...(e.url ? [["base", "기본"]] : []), ...madeChoices]);
       if (outfits.length) {
-        side.append(hint("의상별 SD", ""));
+        side.append(hint("의상별 SD — 눌러서 편집", ""));
         const variants = el("div", "st-chips");
         // Every outfit, not only the one picked above (with the base look picked the list was empty). Tap one to edit it.
         outfits.forEach((variantKey, i) => {
           const url = sdVariant(e, variantKey)?.url, name = outfitName(variantKey, i);
           const pickLook = chip(url ? name : name + " (SD 없음)", () => { sdEditLook = variantKey; paintSettings(); }, { "aria-pressed": String(variantKey === look) });
           if (url) { const im = el("img"); im.src = url; im.alt = ""; im.loading = "lazy"; im.draggable = false; im.style.cssText = "height:2.2em;vertical-align:middle;margin-right:.3em"; pickLook.prepend(im); }
-          variants.append(pickLook, chip(name + (url ? " 다시 그리기" : " 만들기"), () => makeSd(c, variantKey)));
-          if (url) variants.append(chip(name + " 지우기", () => removeSdVariant(c.name, variantKey)));
+          variants.append(pickLook);
         });
         side.append(variants);
       }
@@ -4568,7 +4581,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (!w || !old) return;
     const variants = { ...(old.variants || {}) };
     delete variants[variantKey];
-    w.sd = { ...w.sd, [name]: { ...old, variants, _editedAt: Date.now() } };
+    // The lobby or story wearing it goes back to its default.
+    const wear = { lobby: old.lobby === variantKey ? "" : old.lobby, story: old.story === variantKey ? "" : old.story };
+    w.sd = { ...w.sd, [name]: { ...old, ...wear, variants, _editedAt: Date.now() } };
     await storePatch({ ["sd:" + w.id]: w.sd });
     sdEditKey = "";
     refresh();
