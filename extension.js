@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.29 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.30 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1392,8 +1392,6 @@ ${T} .forge-center::before { content: "Now Loading · 이야기를 준비하고 
 .gfx-sd-edit:not([hidden]) { position: fixed; inset: 12px; z-index: 2147483005; margin: 0; padding: 16px; box-sizing: border-box; border: 3px solid var(--gfx-line); border-radius: 22px; background: var(--gfx-card); color: var(--gfx-text); box-shadow: 0 0 0 100vmax #0008; font-size: clamp(15px, 1.4vw, 19px); display: grid; grid-template-columns: minmax(200px, .9fr) minmax(340px, 1.3fr); grid-template-rows: auto auto auto minmax(0, 1fr); gap: 12px; overflow: hidden; align-items: stretch; }
 .gfx-sd-edit-header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 1em; }
 .gfx-sd-edit-header b { font-size: 1.2em; }
-.gfx-sd-look-bar { grid-column: 1 / -1; }
-.gfx-sd-look-bar select { max-width: 100%; font: inherit; padding: .4em .8em; color: var(--gfx-text); background: var(--gfx-card); border: 2px solid var(--gfx-line); border-radius: 12px; }
 .gfx-sd-edit-tabs { grid-column: 2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .gfx-sd-edit-tabs button { font: inherit; padding: .55em .2em; }
 .gfx-sd-edit-tabs [aria-selected="true"] { background: var(--gfx-pick) !important; color: var(--gfx-pick-text) !important; }
@@ -4126,7 +4124,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const content = el("div", "gfx-sd-edit-content");
       const header = el("div", "gfx-sd-edit-header");
       const close = () => { sdEditing = ""; paintSettings(); };
-      header.append(el("b", "", c.name + " · SD 편집"), chip("닫기 ×", close));
+      // The look being edited is picked in 의상·보관함; every tab works on it, so the header names it.
+      header.append(el("b", "", c.name + " · SD 편집" + (allOutfits.length ? " · " + (look ? lookName(look) : "기본") : "")), chip("닫기 ×", close));
       const nav = el("div", "gfx-sd-edit-tabs");
       nav.setAttribute("role", "tablist");
       const panels = {};
@@ -4152,13 +4151,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         });
         nav.append(b); content.append(panel);
       }
-      const lookBar = el("div", "gfx-sd-look-bar");
-      const selector = el("select"); selector.setAttribute("aria-label", "편집할 의상");
-      for (const k of ["", ...allOutfits]) { const option = el("option", "", k ? lookName(k) : "기본 의상"); option.value = k; selector.append(option); }
-      selector.value = look;
-      on(selector, "change", () => { sdEditLook = selector.value; paintSettings(); });
-      lookBar.append(selector);
-      box.append(header, lookBar, nav, pad, content);
+      box.append(header, nav, pad, content);
       box.onkeydown = (ev) => { if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); close(); } };
       selectTab(sdEditTab);
       let side = panels.pose;
@@ -4258,6 +4251,18 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         });
         side.append(hint(label + (urls.length > 1 ? " — 눌러서 바꾸기" : ""), ""), row);
       };
+      // Which look every tab edits (this replaced the dropdown above the tabs): the base look, then each outfit.
+      if (outfits.length) {
+        side.append(hint("편집할 의상 — 눌러서 고르기", ""));
+        const looks = el("div", "st-chips");
+        ["", ...outfits].forEach((key, i) => {
+          const url = key ? sdVariant(e, key)?.url : e.url, name = key ? outfitName(key, i - 1) : "기본";
+          const b = chip(url ? name : name + " (SD 없음)", () => { sdEditLook = key; paintSettings(); }, { "aria-pressed": String(key === look) });
+          if (url) { const im = el("img"); im.src = url; im.alt = ""; im.loading = "lazy"; im.draggable = false; im.style.cssText = "height:2.2em;vertical-align:middle;margin-right:.3em"; b.prepend(im); }
+          looks.append(b);
+        });
+        side.append(looks);
+      }
       vault("SD 보관함 · " + (look ? lookName(look) : "기본"), look);
       const lookActions = el("div", "st-chips");
       lookActions.append(chip("선택한 의상 SD " + (lookUrl ? "다시 그리기" : "만들기"), () => makeSd(c, look)));
@@ -4278,18 +4283,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const madeChoices = madeOutfits.map((key) => [key, outfitName(key, outfits.indexOf(key))]);
       if (madeOutfits.length && e.url) wearPicker("로비에서 입을 옷", "lobby", [["", "기본"], ...madeChoices]);
       if (madeOutfits.length) wearPicker("스토리에서 입을 옷", "story", [["", "자동 (스토리 그림 따라)"], ...(e.url ? [["base", "기본"]] : []), ...madeChoices]);
-      if (outfits.length) {
-        side.append(hint("의상별 SD — 눌러서 편집", ""));
-        const variants = el("div", "st-chips");
-        // Every outfit, not only the one picked above (with the base look picked the list was empty). Tap one to edit it.
-        outfits.forEach((variantKey, i) => {
-          const url = sdVariant(e, variantKey)?.url, name = outfitName(variantKey, i);
-          const pickLook = chip(url ? name : name + " (SD 없음)", () => { sdEditLook = variantKey; paintSettings(); }, { "aria-pressed": String(variantKey === look) });
-          if (url) { const im = el("img"); im.src = url; im.alt = ""; im.loading = "lazy"; im.draggable = false; im.style.cssText = "height:2.2em;vertical-align:middle;margin-right:.3em"; pickLook.prepend(im); }
-          variants.append(pickLook);
-        });
-        side.append(variants);
-      }
       const field = (label, value, save, maxLength = 60) => {
         const lab = el("label", "gfx-field");
         lab.append(el("span", "", label));
