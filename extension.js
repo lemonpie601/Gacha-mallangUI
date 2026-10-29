@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.27 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.28 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -4267,11 +4267,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       if (outfits.length) {
         side.append(hint("의상별 SD", ""));
         const variants = el("div", "st-chips");
-        outfits.filter((key) => key === look).forEach((variantKey, i) => {
-          const exists = !!e.variants?.[variantKey];
-          const outfit = w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === variantKey);
-          variants.append(chip((outfit?.name || "의상 " + (i + 1)) + (exists ? " 다시 그리기" : " 만들기"), () => makeSd(c, variantKey)));
-          if (exists) variants.append(chip("의상 " + (i + 1) + " 지우기", () => removeSdVariant(c.name, variantKey)));
+        // Every outfit, not only the one picked above (with the base look picked the list was empty). Tap one to edit it.
+        outfits.forEach((variantKey, i) => {
+          const url = sdVariant(e, variantKey)?.url, name = outfitName(variantKey, i);
+          const pickLook = chip(url ? name : name + " (SD 없음)", () => { sdEditLook = variantKey; paintSettings(); }, { "aria-pressed": String(variantKey === look) });
+          if (url) { const im = el("img"); im.src = url; im.alt = ""; im.loading = "lazy"; im.draggable = false; im.style.cssText = "height:2.2em;vertical-align:middle;margin-right:.3em"; pickLook.prepend(im); }
+          variants.append(pickLook, chip(name + (url ? " 다시 그리기" : " 만들기"), () => makeSd(c, variantKey)));
+          if (url) variants.append(chip(name + " 지우기", () => removeSdVariant(c.name, variantKey)));
         });
         side.append(variants);
       }
