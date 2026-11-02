@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.35 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.38 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1100,6 +1100,10 @@ ${T} :is(.vn-dock, .vn-bar) { overflow-x: clip !important; }
 .gfx-cheek-pad { position: relative; height: calc(var(--f, 10px) * 38); display: grid; place-items: center; cursor: crosshair; touch-action: none;
   border-radius: 12px; background: radial-gradient(70% 50% at 50% 80%, color-mix(in srgb, var(--coral) 15%, transparent), transparent 70%), var(--ink); }
 .gfx-cheek-pad img { position: absolute; inset: 0; margin: auto; max-width: 100%; max-height: 100%; object-fit: contain; -webkit-user-drag: none; user-select: none; }
+.gfx-torso-guide { position: absolute; pointer-events: none; border-left: 2px solid #2dccbd; border-right: 2px solid #2dccbd; background: #2dccbd20; z-index: 2; }
+.gfx-cheek-pad[data-mode="preview"] .gfx-torso-guide { display: none; }
+.gfx-torso-controls { display: grid; gap: .45em; padding: .7em; border: 2px solid var(--gfx-line); border-radius: 12px; }
+.gfx-torso-controls input[type="range"] { width: 100%; accent-color: var(--gfx-accent); }
 .gfx-cheek-pad .mark { position: absolute; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
   border: 2px dashed var(--coral); background: color-mix(in srgb, var(--coral) 22%, transparent); }
 .gfx-sd-edit-side { display: flex; flex-direction: column; gap: 0.2em; min-width: 0; }
@@ -2518,12 +2522,79 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const place = segments.slice(0, at + 1).reverse().find((s) => s?.place)?.place || "";
     return { mode, sceneKey: caption + "|" + place + "|" + bg, place: place || caption.split(/\s*·\s*/)[0] || "", slots: visibleSlots };
   }
-  /* Upper-body pixel bounds guide spacing; opaque area and its horizontal moment balance
-   * the stage. Full image bounds still keep accessories on screen without resizing.
+  /* Torso bounds guide overlap within two independently placed golden-ratio groups.
+   * Dense upper bodies remain visible while accessories may extend offstage.
    * Run after the sprites know their size, once per frame for the whole layer. */
   const castLayoutQueued = new WeakSet();
   const castLayoutStates = new WeakMap();
   let castResizeObserver = null;
+  function normaliseTorso(value) {
+    if (!value || !Number.isFinite(value.left) || !Number.isFinite(value.right)) return null;
+    const left = Math.max(0, Math.min(0.92, value.left));
+    const right = Math.max(left + 0.08, Math.min(1, value.right));
+    return { left, right };
+  }
+  function torsoForSprite(entry, url) {
+    if (!entry || !url) return null;
+    if (entry.url === url) return normaliseTorso(entry.torso);
+    const look = Object.values(entry.variants || {}).find((v) => v && typeof v === "object" && v.url === url);
+    return normaliseTorso(look?.torso);
+  }
+  function applyTorsoProfile(profile, torso, baked = {}) {
+    const bounds = normaliseTorso(torso);
+    if (!bounds) return profile;
+    const mx = Number(baked.mx) || 1, ox = Number(baked.ox) || 0;
+    const left = Math.max(0, Math.min(1, ox + bounds.left * mx));
+    const right = Math.max(0, Math.min(1, ox + bounds.right * mx));
+    if (right - left < 0.01) return profile;
+    return { ...(profile || { headLeft: left, headRight: right, cx: (left + right) / 2, mass: 0.5 }), left, right, manual: true };
+  }
+  function createTorsoControls({ value, automatic, preview, save }) {
+    const wrap = el("div", "gfx-torso-controls");
+    const status = el("small");
+    const width = el("input"), centre = el("input");
+    width.type = centre.type = "range";
+    width.min = "8"; width.max = "100"; width.step = "1";
+    centre.step = "1";
+    width.setAttribute("aria-label", "몸통 너비");
+    centre.setAttribute("aria-label", "몸통 중심");
+    let bounds = normaliseTorso(value) || normaliseTorso(automatic()) || { left: 0.3, right: 0.7 };
+    let manual = !!normaliseTorso(value);
+    const widthLabel = el("label", "gfx-field"), centreLabel = el("label", "gfx-field");
+    const widthText = el("span"), centreText = el("span");
+    widthLabel.append(widthText, width); centreLabel.append(centreText, centre);
+    const update = () => {
+      const span = (bounds.right - bounds.left) * 100, middle = (bounds.left + bounds.right) * 50;
+      centre.min = String(Math.ceil(span / 2)); centre.max = String(Math.floor(100 - span / 2));
+      width.value = String(Math.round(span)); centre.value = String(Math.round(middle));
+      widthText.textContent = "몸통 너비 " + Math.round(span) + "%";
+      centreText.textContent = "몸통 중심 " + Math.round(middle) + "%";
+      status.textContent = manual ? "직접 지정 · 선택한 의상에 저장" : "자동 추정 · 선택한 의상";
+      preview({ ...bounds });
+    };
+    const change = () => {
+      const span = Math.max(0.08, Math.min(1, Number(width.value) / 100));
+      const middle = Math.max(span / 2, Math.min(1 - span / 2, Number(centre.value) / 100));
+      bounds = { left: middle - span / 2, right: middle + span / 2 }; manual = true; update();
+    };
+    for (const input of [width, centre]) {
+      on(input, "input", change);
+      on(input, "change", () => save({ ...bounds }));
+      on(input, "click", (ev) => ev.stopPropagation());
+      on(input, "keydown", (ev) => ev.stopPropagation());
+    }
+    const reset = chip("몸통 너비 자동으로", () => {
+      bounds = normaliseTorso(automatic()) || { left: 0.3, right: 0.7 }; manual = false; update(); save(null);
+    });
+    wrap._gfxRefreshAutomatic = () => {
+      if (manual) return;
+      bounds = normaliseTorso(automatic()) || bounds; update();
+    };
+    wrap.append(hint("몸통 너비 · 스토리 겹침 기준", ""), status, widthLabel, centreLabel, reset,
+      hint("그림의 표시 범위를 몸통에 맞추세요. 너비가 넓을수록 옆 인물과 멀어집니다. 그림 크기는 바뀌지 않습니다.", ""));
+    update();
+    return wrap;
+  }
   function storyCastRoles(names, protagonist, allies) {
     // Companions join the player's side only when someone else is across from them.
     const together = names.includes(protagonist) && names.some((name) => name !== protagonist && !allies.has(name));
@@ -2554,93 +2625,105 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       for (let i = 0; i < bins.length; i++) { sum += bins[i]; if (sum >= upperMass * q) return (i + 0.5) / bins.length; }
       return 1;
     };
-    return { left: quantile(0.08), right: quantile(0.92), cx: moment / mass,
+    return { left: quantile(0.08), right: quantile(0.92), headLeft: quantile(0.22), headRight: quantile(0.78), cx: moment / mass,
       mass: mass / (Math.ceil(width / step) * Math.ceil(height / step)) };
   }
   function castPositions(widths, groups, profiles = []) {
-    const half = widths.map((w) => w / 2);
+    if (!widths.length) return [];
     const body = widths.map((w, i) => profiles[i] || { left: -w / 2, right: w / 2, cx: 0, mass: 1 });
-    const same = widths.slice(1).map((_, i) => groups[i] === groups[i + 1]);
-    const narrow = widths.slice(1).map((w, i) => Math.min(w, widths[i]));
-    const bodyNarrow = same.map((_, i) => Math.min(body[i].right - body[i].left, body[i + 1].right - body[i + 1].left));
-    const distance = (i, overlap) => half[i] + half[i + 1] - narrow[i] * overlap;
-    const preferred = same.map((yes, i) => {
-      // Keep the requested close companion spacing. Ordinary actors protect the
-      // upper body instead of using the width of a weapon, tail or transparent box.
-      if (yes && groups[i] === "a") return distance(i, 0.55);
-      if (profiles[i] && profiles[i + 1]) return Math.max(2, body[i].right - body[i + 1].left - (yes ? bodyNarrow[i] * 0.08 : -5));
-      return yes ? distance(i, 0.25) : distance(i, 0) + 5;
+    const core = body.map((p, i) => {
+      const mid = (p.left + p.right) / 2;
+      const radius = profiles[i] ? (p.right - p.left) * 0.32 : widths[i] * 0.25;
+      return { left: p.headLeft ?? mid - radius, right: p.headRight ?? mid + radius };
     });
-    const crowded = same.map((yes, i) => {
-      if (!yes) return preferred[i];
-      if (groups[i] === "a") return distance(i, 0.60);
-      return profiles[i] && profiles[i + 1]
-        ? Math.max(2, body[i].right - body[i + 1].left - bodyNarrow[i] * 0.35)
-        : distance(i, 0.55);
-    });
-    const minimum = narrow.map((w) => Math.min(2, w * 0.12));
-    const pack = (steps, reverse = false) => {
-      const xs = Array(widths.length);
-      if (reverse) {
-        xs[xs.length - 1] = 96 - half.at(-1);
-        for (let i = xs.length - 2; i >= 0; i--) xs[i] = Math.min(96 - half[i], xs[i + 1] - steps[i]);
-      } else {
-        xs[0] = 4 + half[0];
-        for (let i = 1; i < widths.length; i++) xs[i] = Math.max(4 + half[i], xs[i - 1] + steps[i - 1]);
+    const a = widths.map((_, i) => i).filter((i) => groups[i] === "a");
+    const b = widths.map((_, i) => i).filter((i) => groups[i] !== "a");
+    const both = a.length && b.length;
+    const division = 100 / ((1 + Math.sqrt(5)) / 2 + 1);
+    const result = Array(widths.length);
+    const solve = (indices, lo, hi, anchor, ally) => {
+      if (!indices.length) return;
+      // The gutter protects the dense upper bodies. Wider manual torso settings
+      // change spacing without also shrinking the group's usable territory.
+      const bounds = indices.map((i) => ({ ...core[i] }));
+      const preferred = indices.slice(1).map((i, k) => {
+        const previous = indices[k];
+        const narrow = Math.min(body[previous].right - body[previous].left, body[i].right - body[i].left);
+        return Math.max(1, body[previous].right - body[i].left - narrow * (ally ? 0.55 : 0.18));
+      });
+      const minimum = preferred.map((d, k) => {
+        const narrow = Math.min(bounds[k].right - bounds[k].left, bounds[k + 1].right - bounds[k + 1].left);
+        return Math.min(d, Math.max(1, bounds[k].right - bounds[k + 1].left - narrow * (ally ? 0.40 : 0.35)));
+      });
+      if (!ally && indices.length >= 3 && !indices.some((i) => body[i].manual)) {
+        const target = Math.max(0, hi - lo - bounds.at(-1).right + bounds[0].left) * 0.92;
+        const slack = Math.max(0, target - preferred.reduce((sum, d) => sum + d, 0));
+        preferred.forEach((d, k) => { preferred[k] = d + slack / preferred.length; });
       }
-      return xs;
+      const pack = (steps, reverse = false) => {
+        const xs = Array(indices.length);
+        if (reverse) {
+          xs[xs.length - 1] = hi - bounds.at(-1).right;
+          for (let k = xs.length - 2; k >= 0; k--) xs[k] = Math.min(hi - bounds[k].right, xs[k + 1] - steps[k]);
+        } else {
+          xs[0] = lo - bounds[0].left;
+          for (let k = 1; k < xs.length; k++) xs[k] = Math.max(lo - bounds[k].left, xs[k - 1] + steps[k - 1]);
+        }
+        return xs;
+      };
+      const fits = (xs) => xs.every((x, k) => x + bounds[k].left >= lo - 1e-7 && x + bounds[k].right <= hi + 1e-7);
+      if (!fits(pack(preferred.map(() => 0)))) {
+        // An individual oversized drawing cannot fit its territory at full size.
+        // Let the outer edge extend, preserving the team gutter and cast order.
+        const needed = Math.max(...bounds.map((p) => p.right)) - Math.min(...bounds.map((p) => p.left));
+        const extra = Math.max(0, needed - (hi - lo)) + 1;
+        if (ally) lo -= extra; else hi += extra;
+      }
+      let steps = preferred;
+      if (!fits(pack(steps))) {
+        if (fits(pack(minimum))) {
+          let low = 0, high = 1;
+          for (let k = 0; k < 40; k++) {
+            const t = (low + high) / 2;
+            if (fits(pack(preferred.map((d, i) => d + (minimum[i] - d) * t)))) high = t; else low = t;
+          }
+          steps = preferred.map((d, i) => d + (minimum[i] - d) * high);
+        } else {
+          // Include intermediate wide cores in the feasibility check, too.
+          let low = 0, high = 1;
+          for (let k = 0; k < 40; k++) {
+            const scale = (low + high) / 2;
+            if (fits(pack(minimum.map((d) => d * scale)))) low = scale; else high = scale;
+          }
+          steps = minimum.map((d) => d * low);
+        }
+      }
+      const left = pack(steps), right = pack(steps, true);
+      const mass = indices.reduce((sum, i) => sum + body[i].mass, 0);
+      const moment = (xs) => xs.reduce((sum, x, k) => sum + (x + body[indices[k]].cx) * body[indices[k]].mass, 0) / mass;
+      const min = moment(left), max = moment(right);
+      const blend = max - min > 1e-7 ? Math.max(0, Math.min(1, (anchor - min) / (max - min))) : 0.5;
+      indices.forEach((i, k) => { result[i] = left[k] + (right[k] - left[k]) * blend; });
     };
-    const fits = (xs) => xs.every((x, i) => x - half[i] >= 4 - 1e-7 && x + half[i] <= 96 + 1e-7);
-    let steps = preferred, xs = pack(steps);
-    for (const target of [crowded, minimum]) {
-      if (fits(xs)) break;
-      if (!fits(pack(target))) { steps = target; xs = pack(steps); continue; }
-      let lo = 0, hi = 1;
-      for (let k = 0; k < 40; k++) {
-        const t = (lo + hi) / 2;
-        if (fits(pack(steps.map((d, i) => d + (target[i] - d) * t)))) hi = t;
-        else lo = t;
-      }
-      steps = steps.map((d, i) => d + (target[i] - d) * hi);
-      xs = pack(steps);
-    }
-    if (!fits(xs)) {
-      // A drawing wider than the stage cannot fit at its original size.
-      const left = Math.min(...xs.map((x, i) => x - half[i]));
-      const right = Math.max(...xs.map((x, i) => x + half[i]));
-      return xs.map((x) => x + (100 - left - right) / 2);
-    }
-    const totalMass = body.reduce((sum, p) => sum + p.mass, 0);
-    const moment = (positions) => positions.reduce((sum, x, i) => sum + (x + body[i].cx) * body[i].mass, 0) / totalMass;
-    const targetCentre = groups.filter((g) => g === "a").length > 1 && groups.includes("b") ? 48 : 50;
-    const balanceable = (distances) => {
-      const lo = pack(distances), hi = pack(distances, true);
-      return fits(lo) && fits(hi) && moment(lo) <= targetCentre && moment(hi) >= targetCentre;
-    };
-    // More actors use the available width. Expand NPC spacing first, preserving
-    // close companions, but stop before the added spread would unbalance the stage.
-    if (widths.length >= 4 && balanceable(steps)) {
-      const expanded = (extra) => steps.map((d, i) => d + extra * (same[i] ? groups[i] === "a" ? 0 : 1 : 0.35));
-      let lo = 0, hi = 100;
-      for (let k = 0; k < 40; k++) {
-        const mid = (lo + hi) / 2;
-        if (balanceable(expanded(mid))) lo = mid; else hi = mid;
-      }
-      // Leave a little room to move as images/participants change.
-      steps = expanded(lo * 0.92);
-    }
-    const low = pack(steps), high = pack(steps, true);
-    const minMoment = moment(low), maxMoment = moment(high);
-    const blend = maxMoment - minMoment > 1e-7 ? Math.max(0, Math.min(1, (targetCentre - minMoment) / (maxMoment - minMoment))) : 0.5;
-    return low.map((x, i) => x + (high[i] - x) * blend);
+    if (both) {
+      // Unequal territories with a dedicated gutter, not mirrored outer actors.
+      // The larger NPC group owns the golden-ratio share on the right.
+      const leftEnd = division - 3, rightStart = division + 3;
+      solve(a, 2, leftEnd, 2 + (leftEnd - 2) * 0.61803398875, true);
+      solve(b, rightStart, 98, (rightStart + 98) / 2, false);
+    } else solve(a.length ? a : b, 2, 98, 50, !!a.length);
+    return result;
   }
   function projectSpriteProfile(profile, width, height, flip) {
     if (!profile) return null;
     return {
       left: ((flip ? 1 - profile.right : profile.left) - 0.5) * width,
       right: ((flip ? 1 - profile.left : profile.right) - 0.5) * width,
+      headLeft: ((flip ? 1 - (profile.headRight ?? profile.right) : (profile.headLeft ?? profile.left)) - 0.5) * width,
+      headRight: ((flip ? 1 - (profile.headLeft ?? profile.left) : (profile.headRight ?? profile.right)) - 0.5) * width,
       cx: (profile.cx - 0.5) * width * (flip ? -1 : 1),
       mass: Math.max(0.001, profile.mass * width * height),
+      manual: !!profile.manual,
     };
   }
   function layoutCast(layer) {
@@ -2661,13 +2744,16 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const profiles = nodes.map((n, i) => {
         const img = n.querySelector('img');
         if (!img || img.hidden || !img.naturalWidth || !img.naturalHeight) return null;
-        const baked = bakedMap.get(img.dataset.raw);
-        if (!baked || typeof baked !== "object" || img.getAttribute('src') !== baked.url) return null;
+        const cached = bakedMap.get(img.dataset.raw);
+        const baked = cached && typeof cached === "object" && img.getAttribute('src') === cached.url ? cached : null;
+        const torso = torsoForSprite(sdEntry(n.dataset.name), img.dataset.raw);
+        const profile = applyTorsoProfile(baked?.profile || null, torso, baked || {});
+        if (!profile) return null;
         const ar = img.naturalWidth / img.naturalHeight;
         const scale = widths[i] / n.offsetWidth;
         const pictureWidth = Math.min(n.offsetWidth, n.offsetHeight * ar) * scale;
         const pictureHeight = Math.min(n.offsetHeight, n.offsetWidth / ar) * scale;
-        return projectSpriteProfile(baked.profile, pictureWidth, pictureHeight, img.style.scale === "-1 1");
+        return projectSpriteProfile(profile, pictureWidth, pictureHeight, img.style.scale === "-1 1");
       });
       // Portraits or failed canvas reads still have visible rectangular weight.
       // Use the same area units when only part of the cast has measured SD art.
@@ -2681,7 +2767,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const previous = castLayoutStates.get(layer);
       if (previous?.signature === signature && nodes.every((n) => previous.nodes.has(n))) return;
       // Solve the whole line-up once. No history-dependent nudges or post-fit offsets:
-      // every sprite, including a wide one in the middle, participates in the bounds.
+      // upper-body clearance takes priority over keeping every drawing on screen.
       const placed = castPositions(widths, nodes.map((n) => n.dataset.group || "b"), profiles);
       const fit = 1;
       nodes.forEach((n, i) => {
@@ -2774,7 +2860,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // A new place (or scene) keeps whoever is still there standing; only those not in it step out (below). The
     // layer used to be emptied and rebuilt here, so everyone vanished and popped back in once their pictures loaded.
     if (layer.getAttribute("data-scene") !== snapshot.sceneKey) layer.setAttribute("data-scene", snapshot.sceneKey);
-    const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, storySd(s.name, s.portrait), sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, faceOf(s.name)].join("~")).join(";");
+    const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, storySd(s.name, s.portrait), sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, JSON.stringify(torsoForSprite(sdEntry(s.name), storySd(s.name, s.portrait))), faceOf(s.name)].join("~")).join(";");
     if (layer.getAttribute("data-key") === key) return;
     layer.setAttribute("data-key", key);
     vnCast.renderedKey = key;
@@ -4184,7 +4270,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const look = allOutfits.includes(sdEditLook) ? sdEditLook : "";
       const lookUrl = look ? sdVariant(e, look)?.url : e.url;
       const lookName = (k) => w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === k)?.name || "의상 " + (allOutfits.indexOf(k) + 1);
-      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
+      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(e.torso || null), JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
       const promptKey = JSON.stringify([e.appearance, e.prompt, e.promptContext, prefs.gen.template]);
       if (box.getAttribute("data-key") === key && box.getAttribute("data-prompt-key") === promptKey) continue;
       if (box.contains(root.activeElement) && root.activeElement?.matches("input, textarea")) continue;
@@ -4231,13 +4317,26 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       box.onkeydown = (ev) => { if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); close(); } };
       selectTab(sdEditTab);
       let side = panels.pose;
+      const automaticTorso = () => {
+        const baked = lookUrl && bakeInfo(lookUrl);
+        return baked?.profile ? normaliseTorso({ left: (baked.profile.left - baked.ox) / baked.mx, right: (baked.profile.right - baked.ox) / baked.mx }) || { left: 0.3, right: 0.7 } : { left: 0.3, right: 0.7 };
+      };
+      let torsoDraft = normaliseTorso(lookOf(c.name, look).torso) || automaticTorso();
+      let paintTorsoGuide = () => {};
       if (lookUrl) {
         const img = el("img");
         img.src = lookUrl;
         img.alt = c.name;
         img.draggable = false;
         pad.append(img);
+        const torsoGuide = el("div", "gfx-torso-guide");
+        torsoGuide.setAttribute("aria-hidden", "true");
+        pad.append(torsoGuide);
+        paintTorsoGuide = () => {
+          torsoGuide.style.cssText = "left:" + (img.offsetLeft + torsoDraft.left * img.offsetWidth) + "px;top:" + (img.offsetTop + img.offsetHeight * 0.12) + "px;width:" + ((torsoDraft.right - torsoDraft.left) * img.offsetWidth) + "px;height:" + (img.offsetHeight * 0.7) + "px";
+        };
         const marks = () => {
+          paintTorsoGuide();
           for (const m of pad.querySelectorAll(".mark")) m.remove();
           for (const p of cheeksOf(c.name, look) || []) {
             const m = el("i", "mark");
@@ -4299,6 +4398,18 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         tall.append(b);
       }
       side.append(tall);
+      if (lookUrl) {
+        const torsoControls = createTorsoControls({
+        value: lookOf(c.name, look).torso,
+        automatic: automaticTorso,
+        preview: (bounds) => { torsoDraft = bounds; paintTorsoGuide(); },
+        save: (torso) => saveLook(c.name, look, { torso }).then(() => {
+          refresh(); setEditNote(torso ? "몸통 너비를 저장했습니다" : "몸통 너비를 자동으로 되돌렸습니다", true);
+        }),
+        });
+        side.append(torsoControls);
+        bakeQueue.then(() => { if (torsoControls.isConnected) torsoControls._gfxRefreshAutomatic(); });
+      }
       side = panels.wardrobe;
       const outfits = Array.from(w.outfits.get(c.name) || []);
       const outfitName = (key, i) => w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === key)?.name || "의상 " + (i + 1);
