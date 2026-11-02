@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.39 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.41 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -2628,6 +2628,15 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     return { left: quantile(0.08), right: quantile(0.92), headLeft: quantile(0.22), headRight: quantile(0.78), cx: moment / mass,
       mass: mass / (Math.ceil(width / step) * Math.ceil(height / step)) };
   }
+  function castComposition(count) {
+    const golden = 100 / ((1 + Math.sqrt(5)) / 2 + 1);
+    const progress = Math.max(0, Math.min(1, (count - 2) / 6));
+    return {
+      division: 50 + (golden - 50) * progress,
+      leftAnchor: 30 + (2 + (golden - 5) * 0.61803398875 - 30) * progress,
+      rightAnchor: 70 + ((golden + 101) / 2 - 70) * progress,
+    };
+  }
   function castPositions(widths, groups, profiles = []) {
     if (!widths.length) return [];
     const body = widths.map((w, i) => profiles[i] || { left: -w / 2, right: w / 2, cx: 0, mass: 1 });
@@ -2639,7 +2648,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const a = widths.map((_, i) => i).filter((i) => groups[i] === "a");
     const b = widths.map((_, i) => i).filter((i) => groups[i] !== "a");
     const both = a.length && b.length;
-    const division = 100 / ((1 + Math.sqrt(5)) / 2 + 1);
+    const composition = castComposition(widths.length);
+    const division = composition.division;
     const result = Array(widths.length);
     const solve = (indices, lo, hi, anchor, ally) => {
       if (!indices.length) return;
@@ -2705,12 +2715,17 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const blend = max - min > 1e-7 ? Math.max(0, Math.min(1, (anchor - min) / (max - min))) : 0.5;
       indices.forEach((i, k) => { result[i] = left[k] + (right[k] - left[k]) * blend; });
     };
-    if (both) {
-      // Unequal territories with a dedicated gutter, not mirrored outer actors.
-      // The larger NPC group owns the golden-ratio share on the right.
+    if (widths.length === 2) {
+      // A two-person conversation is balanced around the middle. Drawing weight
+      // and companion settings must not turn it into the larger-cast composition.
+      solve([0], 2, 47, 30, groups[0] === "a");
+      solve([1], 53, 98, 70, groups[1] === "a");
+    } else if (both) {
+      // The territories gradually change from equal halves at two actors to the
+      // golden division at eight. Anchors also move gradually, without a 2→3 jump.
       const leftEnd = division - 3, rightStart = division + 3;
-      solve(a, 2, leftEnd, 2 + (leftEnd - 2) * 0.61803398875, true);
-      solve(b, rightStart, 98, (rightStart + 98) / 2, false);
+      solve(a, 2, leftEnd, composition.leftAnchor, true);
+      solve(b, rightStart, 98, composition.rightAnchor, false);
     } else solve(a.length ? a : b, 2, 98, 50, !!a.length);
     return result;
   }
