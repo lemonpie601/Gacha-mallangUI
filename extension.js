@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.30 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.35 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1995,7 +1995,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const blob = await new Promise((res) => crop.toBlob(res, "image/png"));
       if (!blob) throw Error("no blob");
       // A point of the raw art (0–1) lands at (ox + x·mx, oy + y·my) of the baked one.
-      const info = { url: URL.createObjectURL(blob), mx: W / kw, ox: (pad - x0) / kw, my: Hh / kh, oy: (pad - y0) / kh, hf: Math.min(1, kh / Hh) };
+      const info = { url: URL.createObjectURL(blob), mx: W / kw, ox: (pad - x0) / kw, my: Hh / kh, oy: (pad - y0) / kh, hf: Math.min(1, kh / Hh),
+        profile: measureSpriteProfile(rawAlpha, x0, y0, kw, kh) };
       bakedMap.set(url, info);
       // Every sprite already on screen with the raw art swaps to the baked one in place: no rebuild, no restart.
       for (const img of gameRoot()?.querySelectorAll("img[data-raw]") || []) if (img.dataset.raw === url) setSprite(img, url, img.style.scale === "-1 1");
@@ -2517,11 +2518,131 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const place = segments.slice(0, at + 1).reverse().find((s) => s?.place)?.place || "";
     return { mode, sceneKey: caption + "|" + place + "|" + bg, place: place || caption.split(/\s*·\s*/)[0] || "", slots: visibleSlots };
   }
-  /* The line-up stands by each character's real width, not on even fifths of the stage: a small gap between
-   * neighbours, the group centred, and a slight overlap when the stage is full. Run after the sprites know
-   * their size (once per frame for the whole layer). */
+  /* Upper-body pixel bounds guide spacing; opaque area and its horizontal moment balance
+   * the stage. Full image bounds still keep accessories on screen without resizing.
+   * Run after the sprites know their size, once per frame for the whole layer. */
   const castLayoutQueued = new WeakSet();
   const castLayoutStates = new WeakMap();
+  let castResizeObserver = null;
+  function storyCastRoles(names, protagonist, allies) {
+    // Companions join the player's side only when someone else is across from them.
+    const together = names.includes(protagonist) && names.some((name) => name !== protagonist && !allies.has(name));
+    return new Map(names.map((name) => {
+      const rank = name === protagonist ? 0 : together && allies.has(name) ? 1 : 2;
+      return [name, { rank, group: rank < 2 ? "a" : "b", face: rank < 2 ? "right" : "left" }];
+    }));
+  }
+  // Read once during baking, before outline/shadow pixels are added. Upper-body
+  // quantiles ignore empty margins and give thin weapons less influence than the body.
+  function measureSpriteProfile(image, x0 = 0, y0 = 0, width = image.width, height = image.height) {
+    const bins = new Float64Array(128);
+    const step = Math.max(1, Math.ceil(Math.max(width, height) / 160));
+    let mass = 0, moment = 0, upperMass = 0;
+    for (let y = y0; y < y0 + height; y += step) {
+      const fy = (y - y0 + 0.5) / height;
+      for (let x = x0; x < x0 + width; x += step) {
+        const alpha = image.data[(y * image.width + x) * 4 + 3];
+        if (alpha <= 128) continue;
+        const fx = (x - x0 + 0.5) / width, weight = alpha / 255;
+        mass += weight; moment += fx * weight;
+        if (fy >= 0.12 && fy <= 0.62) { bins[Math.min(127, Math.floor(fx * 128))] += weight; upperMass += weight; }
+      }
+    }
+    if (!mass || !upperMass) return null;
+    const quantile = (q) => {
+      let sum = 0;
+      for (let i = 0; i < bins.length; i++) { sum += bins[i]; if (sum >= upperMass * q) return (i + 0.5) / bins.length; }
+      return 1;
+    };
+    return { left: quantile(0.08), right: quantile(0.92), cx: moment / mass,
+      mass: mass / (Math.ceil(width / step) * Math.ceil(height / step)) };
+  }
+  function castPositions(widths, groups, profiles = []) {
+    const half = widths.map((w) => w / 2);
+    const body = widths.map((w, i) => profiles[i] || { left: -w / 2, right: w / 2, cx: 0, mass: 1 });
+    const same = widths.slice(1).map((_, i) => groups[i] === groups[i + 1]);
+    const narrow = widths.slice(1).map((w, i) => Math.min(w, widths[i]));
+    const bodyNarrow = same.map((_, i) => Math.min(body[i].right - body[i].left, body[i + 1].right - body[i + 1].left));
+    const distance = (i, overlap) => half[i] + half[i + 1] - narrow[i] * overlap;
+    const preferred = same.map((yes, i) => {
+      // Keep the requested close companion spacing. Ordinary actors protect the
+      // upper body instead of using the width of a weapon, tail or transparent box.
+      if (yes && groups[i] === "a") return distance(i, 0.55);
+      if (profiles[i] && profiles[i + 1]) return Math.max(2, body[i].right - body[i + 1].left - (yes ? bodyNarrow[i] * 0.08 : -5));
+      return yes ? distance(i, 0.25) : distance(i, 0) + 5;
+    });
+    const crowded = same.map((yes, i) => {
+      if (!yes) return preferred[i];
+      if (groups[i] === "a") return distance(i, 0.60);
+      return profiles[i] && profiles[i + 1]
+        ? Math.max(2, body[i].right - body[i + 1].left - bodyNarrow[i] * 0.35)
+        : distance(i, 0.55);
+    });
+    const minimum = narrow.map((w) => Math.min(2, w * 0.12));
+    const pack = (steps, reverse = false) => {
+      const xs = Array(widths.length);
+      if (reverse) {
+        xs[xs.length - 1] = 96 - half.at(-1);
+        for (let i = xs.length - 2; i >= 0; i--) xs[i] = Math.min(96 - half[i], xs[i + 1] - steps[i]);
+      } else {
+        xs[0] = 4 + half[0];
+        for (let i = 1; i < widths.length; i++) xs[i] = Math.max(4 + half[i], xs[i - 1] + steps[i - 1]);
+      }
+      return xs;
+    };
+    const fits = (xs) => xs.every((x, i) => x - half[i] >= 4 - 1e-7 && x + half[i] <= 96 + 1e-7);
+    let steps = preferred, xs = pack(steps);
+    for (const target of [crowded, minimum]) {
+      if (fits(xs)) break;
+      if (!fits(pack(target))) { steps = target; xs = pack(steps); continue; }
+      let lo = 0, hi = 1;
+      for (let k = 0; k < 40; k++) {
+        const t = (lo + hi) / 2;
+        if (fits(pack(steps.map((d, i) => d + (target[i] - d) * t)))) hi = t;
+        else lo = t;
+      }
+      steps = steps.map((d, i) => d + (target[i] - d) * hi);
+      xs = pack(steps);
+    }
+    if (!fits(xs)) {
+      // A drawing wider than the stage cannot fit at its original size.
+      const left = Math.min(...xs.map((x, i) => x - half[i]));
+      const right = Math.max(...xs.map((x, i) => x + half[i]));
+      return xs.map((x) => x + (100 - left - right) / 2);
+    }
+    const totalMass = body.reduce((sum, p) => sum + p.mass, 0);
+    const moment = (positions) => positions.reduce((sum, x, i) => sum + (x + body[i].cx) * body[i].mass, 0) / totalMass;
+    const targetCentre = groups.filter((g) => g === "a").length > 1 && groups.includes("b") ? 48 : 50;
+    const balanceable = (distances) => {
+      const lo = pack(distances), hi = pack(distances, true);
+      return fits(lo) && fits(hi) && moment(lo) <= targetCentre && moment(hi) >= targetCentre;
+    };
+    // More actors use the available width. Expand NPC spacing first, preserving
+    // close companions, but stop before the added spread would unbalance the stage.
+    if (widths.length >= 4 && balanceable(steps)) {
+      const expanded = (extra) => steps.map((d, i) => d + extra * (same[i] ? groups[i] === "a" ? 0 : 1 : 0.35));
+      let lo = 0, hi = 100;
+      for (let k = 0; k < 40; k++) {
+        const mid = (lo + hi) / 2;
+        if (balanceable(expanded(mid))) lo = mid; else hi = mid;
+      }
+      // Leave a little room to move as images/participants change.
+      steps = expanded(lo * 0.92);
+    }
+    const low = pack(steps), high = pack(steps, true);
+    const minMoment = moment(low), maxMoment = moment(high);
+    const blend = maxMoment - minMoment > 1e-7 ? Math.max(0, Math.min(1, (targetCentre - minMoment) / (maxMoment - minMoment))) : 0.5;
+    return low.map((x, i) => x + (high[i] - x) * blend);
+  }
+  function projectSpriteProfile(profile, width, height, flip) {
+    if (!profile) return null;
+    return {
+      left: ((flip ? 1 - profile.right : profile.left) - 0.5) * width,
+      right: ((flip ? 1 - profile.left : profile.right) - 0.5) * width,
+      cx: (profile.cx - 0.5) * width * (flip ? -1 : 1),
+      mass: Math.max(0.001, profile.mass * width * height),
+    };
+  }
   function layoutCast(layer) {
     if (castLayoutQueued.has(layer)) return;
     castLayoutQueued.add(layer);
@@ -2537,89 +2658,34 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       })) return;
       const widths = nodes.map((n) => n.offsetWidth * (Number(getComputedStyle(n).getPropertyValue("--hf")) || 1) / W * 100);
       if (widths.some((w) => !w)) return;
+      const profiles = nodes.map((n, i) => {
+        const img = n.querySelector('img');
+        if (!img || img.hidden || !img.naturalWidth || !img.naturalHeight) return null;
+        const baked = bakedMap.get(img.dataset.raw);
+        if (!baked || typeof baked !== "object" || img.getAttribute('src') !== baked.url) return null;
+        const ar = img.naturalWidth / img.naturalHeight;
+        const scale = widths[i] / n.offsetWidth;
+        const pictureWidth = Math.min(n.offsetWidth, n.offsetHeight * ar) * scale;
+        const pictureHeight = Math.min(n.offsetHeight, n.offsetWidth / ar) * scale;
+        return projectSpriteProfile(baked.profile, pictureWidth, pictureHeight, img.style.scale === "-1 1");
+      });
+      // Portraits or failed canvas reads still have visible rectangular weight.
+      // Use the same area units when only part of the cast has measured SD art.
+      const measured = profiles.some(Boolean);
+      if (measured) profiles.forEach((p, i) => {
+        if (!p) profiles[i] = { left: -widths[i] / 2, right: widths[i] / 2, cx: 0, mass: widths[i] * widths[i] / (Number(nodes[i].style.aspectRatio) || 0.68) };
+      });
       // Speaking and line progression must not recalculate the cast's positions.
       // Reflow only for membership, sprite dimensions or viewport changes.
-      const signature = JSON.stringify([W, nodes.map((n, i) => [n.dataset.name || n.dataset.i, n.dataset.group, widths[i]]).sort((a, b) => String(a[0]).localeCompare(String(b[0])))]);
+      const signature = JSON.stringify([W, nodes.map((n, i) => [n.dataset.name || n.dataset.i, n.dataset.group, widths[i], profiles[i]])]);
       const previous = castLayoutStates.get(layer);
       if (previous?.signature === signature && nodes.every((n) => previous.nodes.has(n))) return;
-      // Same people on the same stage, only a picture's size changed (a late picture took its real proportions):
-      // the size is corrected where they stand; nobody moves.
-      const members = JSON.stringify([W, nodes.map((n) => [n.dataset.name || n.dataset.i, n.dataset.group])]);
-      if (previous?.members === members && nodes.every((n) => previous.nodes.has(n) && previous.positions.has(n.dataset.name || n.dataset.i))) {
-        castLayoutStates.set(layer, { ...previous, signature });
-        return;
-      }
-
-      // Count everyone except the protagonist, including those standing beside them.
-      const groupOf = (n) => n.dataset.group || "b";
-      const otherCount = nodes.filter((n) => !("protagonist" in n.dataset)).length;
-      const rightCount = nodes.filter((n) => groupOf(n) === "b").length;
-      const total = widths.reduce((a, b) => a + b, 0);
-      const joins = nodes.slice(1).map((n, i) => groupOf(n) === groupOf(nodes[i]) ? "in" : "between");
-      const pairW = joins.map((_, i) => Math.min(widths[i], widths[i + 1]));
-      // Keep faces readable while gradually increasing overlap with the cast count.
-      const ratio = Math.min(0.38, 0.16 + 0.07 * Math.max(0, otherCount - 2)), apart = 5;
-      // The protagonist's side (the protagonist and those set to stand by them) stands nearly shoulder to shoulder:
-      // at most 25% of the narrower one overlaps, so the one beside the protagonist is not half hidden behind them.
-      const overlapAt = (i) => pairW[i] * (groupOf(nodes[i]) === "a" ? Math.min(ratio, 0.25) : ratio);
-      const span = () => total + joins.reduce((s, j, i) => s + (j === "in" ? -overlapAt(i) : apart), 0);
-      const groupSpan = (group) => widths.reduce((s, w, i) => s + (groupOf(nodes[i]) === group ? w - (joins[i] === "in" ? overlapAt(i) : 0) : 0), 0);
-      // Fit all centres as one group; individually clamping them collapsed neighbouring slots.
-      const rightShift = Math.min(6, Math.max(0, rightCount - 1) * 1.5);
+      // Solve the whole line-up once. No history-dependent nudges or post-fit offsets:
+      // every sprite, including a wide one in the middle, participates in the bounds.
+      const placed = castPositions(widths, nodes.map((n) => n.dataset.group || "b"), profiles);
       const fit = 1;
-      let x = 50 - span() * fit / 2;
-      // Mirror the centres of the two visible groups, accounting for the allies' combined width.
-      if (rightCount && rightCount < nodes.length) x -= (groupSpan("a") - groupSpan("b")) / 4;
-      let centers = nodes.map((n, i) => {
-        const center = x + widths[i] * fit / 2 + (groupOf(n) === "b" ? rightShift * fit : 0);
-        x += (widths[i] + (i < joins.length ? (joins[i] === "in" ? -overlapAt(i) : apart) : 0)) * fit;
-        return center;
-      });
-      // Compress positions uniformly, never the characters. Keep ordering and avoid per-node clamps.
-      const low = Math.min(35, 4 + widths[0] / 2);
-      const high = Math.max(65, 96 - widths.at(-1) / 2);
-      const spread = centers.at(-1) - centers[0];
-      // A full stage used to pin the protagonist on the left bound from two others on, so two, three and four
-      // others all left them on the same spot. The bound now comes closer one step per extra character: two others
-      // 12% in from it, three 6%, four or more on it — the protagonist visibly steps left as the cast grows.
-      const anchor = Math.min(centers[0] > low ? centers[0] : Infinity, low + Math.max(0, 4 - otherCount) * 6);
-      if (spread > high - anchor) centers = centers.map((c) => anchor + (c - centers[0]) * (high - anchor) / spread);
-      const left = Math.min(...centers.map((c, i) => c - widths[i] * fit / 2));
-      const right = Math.max(...centers.map((c, i) => c + widths[i] * fit / 2));
-      const shift = right - left > 92 ? 50 - (left + right) / 2 : left < 4 ? 4 - left : right > 96 ? 96 - right : 0;
-      // Bring a two-person opposing team closer without moving its midpoint or the protagonist team.
-      if (rightCount === 2) {
-        const indices = nodes.map((n, i) => groupOf(n) === "b" ? i : -1).filter((i) => i >= 0);
-        const middle = (centers[indices[0]] + centers[indices[1]]) / 2;
-        for (const i of indices) centers[i] = middle + (centers[i] - middle) * 0.85;
-      }
-      // Shift only the opposing group, after fitting so centring cannot cancel it.
-      // Three/four/five opponents move an additional 2.5/4/6 percent to the right.
-      let placed = nodes.map((n, i) => centers[i] + shift + (groupOf(n) === "b" ? (rightCount === 3 ? 2.5 : Math.min(6, Math.max(0, rightCount - 2) * 2)) : 0));
-      const keyOf = (n) => n.dataset.name || n.dataset.i;
-      // Someone joins the opposing side: the protagonist's side takes its place for the larger cast (a step left),
-      // those already there step a little right and the newcomers fill in up to the stage edge — while everyone
-      // still fits on the stage without crowding more than half a sprite; otherwise the whole cast is laid out afresh.
-      if (previous && previous.W === W && previous.rightCount > 0 && rightCount > previous.rightCount) {
-        const right = nodes.map((n, i) => groupOf(n) === "b" ? i : -1).filter((i) => i >= 0);
-        const kept = placed.slice();
-        const nudge = Math.min(2, 0.75 * (rightCount - previous.rightCount));
-        const stay = right.filter((i) => previous.positions.has(keyOf(nodes[i])));
-        const fresh = right.filter((i) => !previous.positions.has(keyOf(nodes[i])));
-        for (const i of stay) kept[i] = previous.positions.get(keyOf(nodes[i])) + nudge;
-        const from = stay.length ? kept[stay.at(-1)] : placed[right[0]];
-        const to = Math.max(from, 98 - widths[right.at(-1)] / 2);
-        fresh.forEach((i, k) => { kept[i] = stay.length ? from + (to - from) * (k + 1) / fresh.length : from + (to - from) * k / Math.max(1, fresh.length - 1); });
-        // Neighbours may overlap by at most half of the narrower one (a fresh line-up overlaps up to 38%).
-        const roomy = kept.slice(1).every((x, i) => x - kept[i] >= Math.min(widths[i], widths[i + 1]) * 0.5);
-        const onStage = kept.every((c, i) => c - widths[i] / 2 >= 0 && c + widths[i] / 2 <= 100);
-        if (onStage && roomy) placed = kept;
-      }
-      const settled = new Map();
       nodes.forEach((n, i) => {
         const center = placed[i];
-        const key = keyOf(n);
-        settled.set(key, center);
         n.style.setProperty("--cast-order", String(i + 1));
         n.style.setProperty("--cast-fit", fit.toFixed(3));
         n.dataset.x = center.toFixed(2);
@@ -2627,7 +2693,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         if (!n.dataset.placed) { n.dataset.placed = "1"; n.style.transition = "none"; requestAnimationFrame(() => { n.style.transition = ""; }); }
         n.style.left = center.toFixed(2) + "%";
       });
-      castLayoutStates.set(layer, { signature, members, nodes: new Set(nodes), W, rightCount, positions: settled });
+      castLayoutStates.set(layer, { signature, nodes: new Set(nodes) });
     });
   }
   const storyScenes = new WeakMap();
@@ -2685,6 +2751,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const stage = vn;
     let layer = stage && stage.querySelector(":scope > .gfx-vn-cast");
     if (!vn || !enabled || snapshot.mode === "cg" || !snapshot.slots.length) {
+      castResizeObserver?.disconnect();
+      castResizeObserver = null;
       layer?.remove();
       vnCast.renderedKey = "";
       return;
@@ -2692,10 +2760,16 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (!layer) {
       layer = el("div", "gfx-vn-cast");
       stage.prepend(layer);
+      castResizeObserver?.disconnect();
+      const castLayer = layer;
+      castResizeObserver = new ResizeObserver(() => layoutCast(castLayer));
+      castResizeObserver.observe(layer);
     }
     const prota = protagonistName();
-    // Left to right: the protagonist, those set to stand by them (주인공 옆), then everyone else.
-    const rank = (n) => (n === prota ? 0 : sdEntry(n).ally ? 1 : 2);
+    // With no opposing cast, companions use ordinary NPC positions and facing.
+    const names = snapshot.slots.map((s) => s.name);
+    const roles = storyCastRoles(names, prota, new Set(names.filter((name) => sdEntry(name).ally)));
+    const rank = (n) => roles.get(n).rank;
     const slots = snapshot.slots.slice().sort((a, b) => rank(a.name) - rank(b.name));
     // A new place (or scene) keeps whoever is still there standing; only those not in it step out (below). The
     // layer used to be emptied and rebuilt here, so everyone vanished and popped back in once their pictures loaded.
@@ -2723,7 +2797,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         // Pushed out: the newcomer steps in as the one leaving fades, not on top of them in the same frame.
         if (layer.querySelector(":scope > .who[data-leaving]")) n.style.animationDelay = "180ms";
         // Never left hidden: if the line-up could not measure it (stage hidden), it shows where it is.
-        // A stalled image gets one fixed fallback box; late decoding cannot move the cast again.
+        // A stalled image gets a fallback box; late decoding reflows with its real width.
         setTimeout(() => { if (n.isConnected && !n.dataset.placed) { n.setAttribute('data-image-error', ''); layoutCast(layer); } }, 1500);
         n.setAttribute("data-slot", slot.id);
         n.setAttribute("data-name", name);
@@ -2737,7 +2811,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       }
       n.setAttribute("data-name", name);
       n.dataset.i = String(i);
-      n.dataset.group = rank(name) < 2 ? "a" : "b";
+      n.dataset.group = roles.get(name).group;
       n.toggleAttribute("data-protagonist", name === prota);
       // Where they stand comes from layoutCast; a newcomer starts at its even share until its size is known.
       if (!n.style.left) { n.dataset.x = String(xs[i]); n.style.left = xs[i] + "%"; }
@@ -2755,7 +2829,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       im.classList.toggle("portrait", !sd);
       // Facing follows the side of the stage, but only turns when the character crosses to the other side:
       // stepping in from the middle keeps the way they already look (a sudden mirror read as a jump).
-      const face = n.dataset.group === "a" ? "right" : "left";
+      const face = roles.get(name).face;
       n.dataset.face = face;
       if (sd) setSprite(im, sd, needFlip(name, face));
       else {
@@ -2766,7 +2840,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const fit = () => {
         // The box always takes the shown picture's proportions. One placed in the fallback box after a stall
         // (or on the raw picture) used to keep the wrong box for good: a wide sprite stood visibly smaller on its
-        // first appearance than on later ones. layoutCast keeps where it stands when only the size changes.
+        // first appearance than on later ones. Reflow with the corrected width to keep neighbours clear.
         if (im.naturalWidth && im.naturalHeight) {
           const ar = im.classList.contains("portrait") ? im.naturalWidth / im.naturalHeight : Math.min(1.1, im.naturalWidth / im.naturalHeight);
           if (Math.abs((parseFloat(n.style.aspectRatio) || 0) - ar) > 0.005) n.style.aspectRatio = String(ar);
@@ -4813,6 +4887,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     clearInterval(loadTick);
     clearInterval(syncTick);
     storySceneObserver?.disconnect(); storySceneTargets = [];
+    castResizeObserver?.disconnect(); castResizeObserver = null;
     clearInterval(chatter);
     clearInterval(retryTimer);
     pageObserver.disconnect();
