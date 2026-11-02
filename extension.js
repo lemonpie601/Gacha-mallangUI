@@ -2222,7 +2222,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   function paintScroll(root, enabled) {
     const h = host();
     const view = h && h._hudView;
-    const spots = { chapters: [".sel-scroll", ".btn-go", ".btn-enter"], chapter: [".cap-scroll", "[data-play]", "[data-replay]"] };
+    // A finished character story card (.ch-card.bond.cleared) also carries .btn-go ("Enter" to read again) and
+    // sits above the current chapter, so it must not count as the next thing to play.
+    const spots = { chapters: [".sel-scroll", ".ch-card:not(.cleared) .btn-go", ".btn-enter"], chapter: [".cap-scroll", "[data-play]", "[data-replay]"] };
     const spot = spots[view];
     if (!enabled || !spot) { if (!spot) scrolledFor = ""; return; }
     const key = view + ":" + (view === "chapter" ? String(h._planChapter ?? "") + ":" + (h._difficulty || "") : "");
