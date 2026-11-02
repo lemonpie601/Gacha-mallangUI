@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.38 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.39 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -2649,11 +2649,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const preferred = indices.slice(1).map((i, k) => {
         const previous = indices[k];
         const narrow = Math.min(body[previous].right - body[previous].left, body[i].right - body[i].left);
-        return Math.max(1, body[previous].right - body[i].left - narrow * (ally ? 0.55 : 0.18));
+        return Math.max(1, body[previous].right - body[i].left - narrow * (ally ? 0.35 : 0.18));
       });
       const minimum = preferred.map((d, k) => {
         const narrow = Math.min(bounds[k].right - bounds[k].left, bounds[k + 1].right - bounds[k + 1].left);
-        return Math.min(d, Math.max(1, bounds[k].right - bounds[k + 1].left - narrow * (ally ? 0.40 : 0.35)));
+        return Math.min(d, Math.max(1, bounds[k].right - bounds[k + 1].left - narrow * (ally ? 0.25 : 0.35)));
       });
       if (!ally && indices.length >= 3 && !indices.some((i) => body[i].manual)) {
         const target = Math.max(0, hi - lo - bounds.at(-1).right + bounds[0].left) * 0.92;
