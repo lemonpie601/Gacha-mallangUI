@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.41 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.42 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1618,10 +1618,20 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
   /* Switch to a drawing from the vault: the one in use goes back into the vault. key "" is the base look. */
   async function useSd(name, key, url) {
     const e = sdEntry(name), cur = key ? sdVariant(e, key) || {} : e;
-    const history = [{ url: cur.url, at: cur.at || 0 }, ...(cur.history || [])].filter((h) => h.url && h.url !== url).slice(0, 8);
-    const ent = { ...cur, url, at: Date.now(), history };
-    await saveSdEntry(name, key ? { variants: { ...(e.variants || {}), [key]: ent } } : ent);
+    const history = sdHistory(cur, url);
+    const ent = { ...cur, url, imageRemoved: false, at: Date.now(), history };
+    const saving = saveSdEntry(name, key ? { variants: { ...(e.variants || {}), [key]: ent } } : ent);
     paintSettings(); refreshSprites(); refresh();
+    await saving;
+  }
+  // Keep every distinct drawing until the player explicitly removes it.
+  function sdHistory(entry, selectedUrl) {
+    const seen = new Set([selectedUrl]);
+    return [{ url: entry?.url, at: entry?.at || 0 }, ...(entry?.history || [])].filter((h) => {
+      if (!h?.url || seen.has(h.url)) return false;
+      seen.add(h.url);
+      return true;
+    });
   }
   async function dropSd(name, key, url) {
     const e = sdEntry(name), cur = key ? sdVariant(e, key) || {} : e;
@@ -1676,7 +1686,7 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
       let changed = false;
       if (w && w.state === "ready" && !sdReadOk.has(w.id)) { sdReadOk.add(w.id); w.sd = withBackup("sd:" + w.id, { ...(stored["sd:" + w.id] || {}), ...w.sd }); storePatch({ ["sd:" + w.id]: w.sd }); changed = true; }
       else if (w && stored["sd:" + w.id]) {
-        const next = withBackup("sd:" + w.id, { ...stored["sd:" + w.id], ...(pending["sd:" + w.id] || {}) });
+        const next = withBackup("sd:" + w.id, mergeSdMaps(mergeSdMaps(stored["sd:" + w.id], w.sd), pending["sd:" + w.id]));
         if (JSON.stringify(next) !== JSON.stringify(w.sd)) { w.sd = next; changed = true; }
       }
       const editing = gameRoot()?.activeElement?.matches("input, textarea, select");
@@ -4466,6 +4476,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         side.append(looks);
       }
       vault("SD 보관함 · " + (look ? lookName(look) : "기본"), look);
+      side.append(chip("이 의상의 이전 SD 복구", () => recoverSdVault(c.name, look)));
       const lookActions = el("div", "st-chips");
       lookActions.append(chip("선택한 의상 SD " + (lookUrl ? "다시 그리기" : "만들기"), () => makeSd(c, look)));
       if (look && lookUrl) lookActions.append(chip("선택한 의상 SD 지우기", () => removeSdVariant(c.name, look)));
@@ -4710,14 +4721,38 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const saved = await up.json().catch(() => null);
       if (!up.ok || !saved || !saved.url) throw Error((saved && saved.error) || "갤러리 저장 실패 (HTTP " + up.status + ")");
       const old = w.sd[card.name] || {};
-      // The drawing it replaces goes into the vault (newest first, 8 at most); lines and cheeks stay as they were.
-      const prevOf = (ent) => [ent?.url ? { url: ent.url, at: ent.at || 0 } : null, ...(ent?.history || [])].filter((h) => h && h.url && h.url !== saved.url).slice(0, 8);
+      // Preserve all earlier drawings; lines and cheeks stay as they were.
+      const prevOf = (ent) => sdHistory(ent, saved.url);
       const oldVariant = variantKey ? sdVariant(old, variantKey) : null;
       const next = variantKey
         ? { ...old, variants: { ...(old.variants || {}), [variantKey]: { ...oldVariant, url: saved.url, imageRemoved: false, at: Date.now(), history: prevOf(oldVariant) } } }
         : { ...old, url: saved.url, imageRemoved: false, at: Date.now(), history: prevOf(old) };
       w.sd = { ...w.sd, [card.name]: { ...next, _editedAt: Date.now(), _deleted: false } };
       if (!(await storePatch({ ["sd:" + w.id]: w.sd }))) w.note = "그림은 갤러리에 저장했고 이 브라우저에 보관했습니다. 서버 기록은 다시 시도합니다 (" + lastStoreError + ").";
+  }
+  async function recoverSdVault(name, key) {
+    const w = world();
+    if (!w || recovering) return;
+    recovering = true;
+    try {
+      const res = await fetch("/api/global-gallery", { credentials: "same-origin" });
+      if (!res.ok) throw Error("HTTP " + res.status);
+      const list = await res.json();
+      const tags = ["[gfx-world:" + encodeURIComponent(w.id) + "]", "[gfx-character:" + encodeURIComponent(name) + "]", "[gfx-look:" + encodeURIComponent(key) + "]"];
+      const matches = (Array.isArray(list) ? list : []).filter((g) => g?.url && tags.every((tag) => String(g.prompt || "").includes(tag)))
+        .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+      // Read the current entry after the request, so a selection made meanwhile stays selected.
+      const e = w.sd[name] || {}, cur = key ? sdVariant(e, key) || {} : e;
+      const known = new Set([cur.url, ...(cur.history || []).map((h) => h.url)]);
+      const added = matches.filter((g) => { if (known.has(g.url)) return false; known.add(g.url); return true; });
+      if (!added.length) { w.note = "이 의상에서 추가로 복구할 SD가 없습니다."; return; }
+      const url = cur.url || added[0].url;
+      const ent = { ...cur, url, history: sdHistory({ ...cur, history: [...(cur.history || []), ...added.map((g) => ({ url: g.url, at: Date.parse(g.createdAt) || 0 }))] }, url) };
+      w.sd = { ...w.sd, [name]: { ...e, ...(key ? { variants: { ...(e.variants || {}), [key]: ent } } : ent), _editedAt: Date.now(), _deleted: false } };
+      const ok = await storePatch({ ["sd:" + w.id]: w.sd });
+      if (world() === w) w.note = "이전 SD " + added.length + "개를 복구했습니다." + (ok ? "" : " (이 브라우저에 보관, 서버 저장은 다시 시도합니다)");
+    } catch (e) { w.note = "이전 SD 복구 실패: " + e.message; }
+    finally { recovering = false; refresh(); }
   }
   /* An SD this extension drew is in the gallery with its prompt, which holds the character's appearance text;
    * that is enough to tell whose it is. The newest picture wins. */
