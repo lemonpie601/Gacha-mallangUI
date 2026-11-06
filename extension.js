@@ -1456,8 +1456,8 @@ ${T} .gf-mute, ${T} .gf-fs-exit, ${T} .gf-runs-bar {
   border-radius: 12px !important; clip-path: none !important; box-shadow: 0 0.18em 0 var(--gfx-line) !important; }
 ${T} :is(.gf-mute, .gf-fs-exit):hover { background: color-mix(in srgb, var(--gfx-card) 85%, var(--gfx-pick)) !important; }
 /* Story: 1.27 gives the title its own row above the art (--forge-scene-top) and, inside Marinara's Home tab,
- * stretches the dialogue box edge to edge. Keep the 말랑 look: the title floats over the art and the box is centred. */
-${T} .vn > .vn-top { position: absolute; top: 0; left: 0; right: 0; z-index: 7; }
+ * stretches the dialogue box edge to edge. Keep the 말랑 look: the art runs up behind the title and the box is centred.
+ * The title row and the cast area are left exactly as the game lays them out, so SD figures do not move or resize. */
 ${T} .gf-stage > .gf-view .vn-scene { top: 0 !important; }
 ${T} .vn-dock { width: min(88%, calc(var(--f) * 160)) !important; max-width: none; margin: 0 auto !important; }
 @media (max-width: 720px) { ${T} .vn-dock { width: 100% !important; } }
