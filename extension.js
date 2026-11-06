@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.48 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.49 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1461,6 +1461,18 @@ ${T} :is(.gf-mute, .gf-fs-exit):hover { background: color-mix(in srgb, var(--gfx
 ${T} .gf-stage > .gf-view .vn-scene { top: 0 !important; }
 ${T} .vn-dock { width: min(88%, calc(var(--f) * 160)) !important; max-width: none; margin: 0 auto !important; }
 @media (max-width: 720px) { ${T} .vn-dock { width: 100% !important; } }
+/* Story: the sound and fullscreen buttons sit over the art, so they are small see-through circles instead of solid
+ * cards stuck to each other and to the edge. */
+${T} .vn-top > :is(.gf-mute-chapter, .gf-fs-chapter) {
+  width: 36px !important; height: 36px !important; min-height: 0 !important; padding: 0 !important;
+  display: inline-grid !important; place-items: center !important;
+  background: rgba(18, 20, 38, .32) !important; color: rgba(255, 255, 255, .9) !important;
+  border: 1.5px solid rgba(255, 255, 255, .28) !important; border-radius: 50% !important; box-shadow: none !important;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: .8; transition: opacity .15s, background .15s; }
+${T} .vn-top > .gf-mute-chapter { right: 58px !important; }
+${T} .vn-top > .gf-fs-chapter { right: 14px !important; }
+${T} .vn-top > :is(.gf-mute-chapter, .gf-fs-chapter):is(:hover, :focus-visible) { opacity: 1; background: rgba(18, 20, 38, .55) !important; }
+${T} .vn-top > :is(.gf-mute-chapter, .gf-fs-chapter) svg { width: 16px !important; height: 16px !important; }
 /* Formation editor: the bench, filters and team presets (they kept the game's square, thin-ruled look). */
 ${T} .fm-body .picker {
   background: color-mix(in srgb, var(--gfx-card) 92%, transparent) !important; border: 2.5px solid var(--gfx-line) !important;
