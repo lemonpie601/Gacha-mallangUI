@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.45 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.46 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -58,6 +58,7 @@
     ["sticker", "스티커 초상", "스토리 초상화에 흰 테두리와 외곽선을 둘러 스티커처럼 보이게 합니다."],
     ["motion", "말랑 움직임", "초상과 SD 캐릭터가 숨 쉬듯 움직이고, 등장할 때 통 튀어나옵니다."],
     ["storySd", "스토리에 SD", "SD 캐릭터를 만든 인물은 스토리에서 초상 대신 SD 스탠딩으로 나옵니다."],
+    ["emote", "표정 이모티콘", "대사의 감정(기쁨 · 분노 · 슬픔 · 두려움)에 맞춰 말하는 캐릭터 머리 위에 이모티콘이 뜨고 SD가 그 감정대로 움직입니다. 가챠 포지 표정 초상화가 켜진 세계에서 동작합니다."],
     ["battleSd", "전투에 SD", "SD 캐릭터를 만든 인물은 전투 카드 위에 SD로 서 있습니다."],
     ["loading", "로딩 화면", "불러오는 동안 SD 캐릭터와 팁이 나오는 로딩 화면을 띄웁니다."],
   ];
@@ -70,7 +71,7 @@
     ["attend", "출석 이벤트", "7일 출석판을 도장 찍는 출석부로 바꾸고, 캐릭터가 옆에서 반겨 줍니다."],
     ["autoScroll", "스토리 자동 스크롤", "챕터 목록과 챕터 지도를 열면 지금 할 차례(계속 · 플레이)로 바로 내려갑니다."],
   ];
-  const DEFAULT_OPTS = { box: true, sticker: true, motion: true, storySd: true, battleSd: true, loading: true,
+  const DEFAULT_OPTS = { box: true, sticker: true, motion: true, storySd: true, emote: true, battleSd: true, loading: true,
     field: true, team: true, lobby: true, hidePlate: true, attend: true, autoScroll: true };
   const LOBBY_LINES = ["반가워!", "오늘도 힘내자~", "말랑말랑…", "간식 없어?", "같이 모험 가자!", "쿨쿨…", "볼 꼬집지 마!", "어디 가?", "히히, 들켰다!", "출석 도장 찍었어?"];
   const OLD_GEN_TEMPLATE = "5::chibi, chibi only::, solo, Transparent background, full body, standing, looking at viewer, {appearance}";
@@ -1554,6 +1555,43 @@ ${T} .vn .vn-choices[data-forge-choice-canon] {
   background: var(--gfx-card) !important; color: var(--gfx-text) !important; border: 2.5px solid var(--gfx-line) !important;
   border-radius: var(--radius) !important; clip-path: none !important; box-shadow: 0 .3em 0 var(--gfx-line) !important;
   font-family: var(--display) !important; text-align: center; }
+/* Expression emotes (Gacha Forge 1.27 Expression portraits): a balloon by the speaker's head. Kenney's Emotes
+ * Pack art, given the sticker outline the SDs wear. Only the one speaking shows it. */
+.gfx-vn-cast .gfx-emote { position: absolute; top: 1%; left: 60%; width: 24%; aspect-ratio: 36 / 44; z-index: 3; pointer-events: none;
+  filter: drop-shadow(0 0 1.5px var(--gfx-line)) drop-shadow(0 .12em 0 color-mix(in srgb, var(--gfx-line) 55%, transparent));
+  transform-origin: 20% 100%; transition: opacity 200ms ease;
+  /* backwards, not both: a held end state would override the hidden rule below for one who stopped speaking. */
+  animation: gfx-emote-pop 420ms cubic-bezier(.3, 1.6, .5, 1) backwards; }
+.gfx-vn-cast .who[data-face="left"] .gfx-emote { left: 16%; transform-origin: 80% 100%; }
+.gfx-vn-cast .who:not([data-speaking]) .gfx-emote { opacity: 0; }
+.gfx-vn-cast .gfx-emote svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes gfx-emote-pop { from { opacity: 0; scale: .2; rotate: -18deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+/* The sprite acts the line out: translate and rotate only, because the picture's scale property is its mirror. */
+${H("[data-gfx-motion]")} .gfx-vn-cast .who[data-expr="anger"] img { animation: gfx-talk-hop 380ms ease, gfx-emo-shake 120ms ease-in-out 4; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .who[data-expr="fear"] img { animation: gfx-talk-hop 380ms ease, gfx-emo-tremble 90ms linear 8; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .who[data-expr="sadness"] img { animation: gfx-emo-droop 600ms ease forwards; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .who[data-expr="joy"] img { animation: gfx-emo-bounce 420ms cubic-bezier(.3, 1.4, .5, 1) 2; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .gfx-emote[data-expr="anger"] svg { animation: gfx-emo-throb 520ms ease-in-out infinite alternate; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .gfx-emote[data-expr="fear"] svg { animation: gfx-emo-drip 1.4s ease-in-out infinite; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .gfx-emote[data-expr="sadness"] svg { animation: gfx-emo-sway 2.4s ease-in-out infinite; }
+${H("[data-gfx-motion]")} .gfx-vn-cast .gfx-emote[data-expr="joy"] svg { animation: gfx-emo-wiggle 900ms ease-in-out infinite; }
+@keyframes gfx-emo-shake { 0%, 100% { translate: 0 0; } 25% { translate: -1.5% 0; rotate: -1deg; } 75% { translate: 1.5% 0; rotate: 1deg; } }
+@keyframes gfx-emo-tremble { 0%, 100% { translate: 0 0; } 50% { translate: .8% .4%; } }
+@keyframes gfx-emo-droop { to { translate: 0 2.5%; rotate: -1.5deg; } }
+@keyframes gfx-emo-bounce { 0%, 100% { translate: 0 0; } 45% { translate: 0 -6%; } }
+@keyframes gfx-emo-throb { from { scale: 1; } to { scale: 1.12; } }
+@keyframes gfx-emo-drip { 0%, 100% { translate: 0 0; } 50% { translate: 0 6%; } }
+@keyframes gfx-emo-sway { 0%, 100% { rotate: -4deg; } 50% { rotate: 4deg; } }
+@keyframes gfx-emo-wiggle { 0%, 100% { rotate: 0deg; } 25% { rotate: -8deg; } 75% { rotate: 8deg; } }
+@media (prefers-reduced-motion: reduce) { .gfx-vn-cast .gfx-emote, .gfx-vn-cast .gfx-emote svg, .gfx-vn-cast .who[data-expr] img { animation: none !important; } }
+/* SD editor → 표정: four cells, the expression picture over its name and buttons. */
+.gfx-expr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 8px 0; }
+.gfx-expr-cell { display: grid; gap: 6px; justify-items: center; padding: 8px; border: 2px solid var(--gfx-line); border-radius: 14px; background: var(--gfx-card); color: var(--gfx-text); }
+.gfx-expr-fig { width: 100%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 10px; background: color-mix(in srgb, var(--gfx-ink) 60%, transparent); overflow: hidden; }
+.gfx-expr-fig img { width: 100%; height: 100%; object-fit: contain; }
+.gfx-expr-fig span { color: var(--steel-faint, var(--gfx-text)); opacity: .7; }
+.gfx-expr-cell b { font-family: var(--display); }
+.gfx-expr-cell .st-chips { justify-content: center; }
 `;
 
 const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); if (!m) return 1; const n = parseInt(m[1], 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
@@ -1771,6 +1809,64 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
     const e = sdEntry(name), pick = e.story === "base" ? e.url : e.story && sdVariant(e, e.story)?.url;
     return pick || sdUrl(name, portrait);
   };
+  /* ── Expression portraits (Gacha Forge 1.27) ──
+   * The game swaps a speaking character's plate picture for one of four expression images; the cast entry keeps
+   * the neutral picture in .art and the four in .expressions. Those images are not portraits of a new look: they
+   * map back to the character and to its neutral picture (else the SD fell back to the base look, and the image
+   * could be filed as an outfit). An SD look can carry its own four: entry.expressions / variant.expressions. */
+  const EXPRS = [["joy", "기쁨"], ["anger", "분노"], ["sadness", "슬픔"], ["fear", "두려움"]];
+  const EXPR_TAGS = {
+    joy: "happy, smile, open mouth, closed eyes, blush, ^_^",
+    anger: "angry, furrowed brow, v-shaped eyebrows, frown, clenched teeth, pout",
+    sadness: "sad, teary eyes, tears, frown, downturned eyes, looking down",
+    fear: "scared, worried, wide-eyed, sweatdrop, open mouth, trembling",
+  };
+  const isExpr = (x) => EXPRS.some(([k]) => k === x);
+  const exprLabel = (x) => EXPRS.find(([k]) => k === x)?.[1] || "";
+  let exprCastRef, exprIndexMap = new Map();
+  function exprIndex() {
+    const cast = host()?._beatCast;
+    if (cast !== exprCastRef) {
+      exprCastRef = cast;
+      exprIndexMap = new Map();
+      for (const c of Array.isArray(cast) ? cast : []) for (const [k, u] of Object.entries(c?.expressions || {}))
+        if (isExpr(k) && typeof u === "string" && u) exprIndexMap.set(pathOf(u), { name: String(c.name || ""), neutral: String(c.art || ""), expr: k });
+    }
+    return exprIndexMap;
+  }
+  const exprOfUrl = (url) => (url ? exprIndex().get(pathOf(url)) || null : null);
+  const neutralPortrait = (url) => exprOfUrl(url)?.neutral || url || "";
+  // The look the story shows for a character ("" = base): the same choice storySd makes.
+  const storyLookKey = (name, portrait = "") => {
+    const e = sdEntry(name);
+    if (e.story === "base") return "";
+    if (e.story && sdVariant(e, e.story)?.url) return e.story;
+    const p = portrait || world()?.cards.find((c) => c.name === name)?.portrait || "";
+    const k = p && pathOf(p);
+    return k && sdVariant(e, k)?.url ? k : "";
+  };
+  const exprSd = (name, key, expr) => ((key ? sdVariant(sdEntry(name), key) : sdEntry(name))?.expressions?.[expr]?.url) || "";
+  const storySdFor = (name, portrait = "", expr = "") => (expr && exprSd(name, storyLookKey(name, portrait), expr)) || storySd(name, portrait);
+  /* Emote balloons over a speaking character: "Emotes Pack" by Kenney (www.kenney.nl), CC0 1.0 public domain.
+   * Taken from the pack's vector sheet (happy face, sad face, anger mark, sweat drops); gradient ids prefixed. */
+  const EMOTE_SVG = {
+    "joy": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"138 58 36 44\"><defs><linearGradient gradientUnits=\"userSpaceOnUse\" x1=\"-819.2\" x2=\"819.2\" spreadMethod=\"pad\" gradientTransform=\"matrix(0 -0.003662109375 0.003662109375 0 156 95)\" id=\"gfxemo-joy-3\"> <stop offset=\"0\" stop-color=\"#FFFFFF\"/> <stop offset=\"1\" stop-color=\"#E2E2E2\"/> </linearGradient></defs><path stroke=\"none\" fill=\"#FFFFFF\" d=\"M144 60 L168 60 Q172 60 172 64 L172 88 Q172 92 168 92 L144 92 Q140 92 140 88 L140 64 Q140 60 144 60\"/><path stroke=\"none\" fill=\"url(#gfxemo-joy-3)\" d=\"M162 92 L156 98 150 92 162 92\"/><path stroke=\"none\" fill=\"#312D2D\" d=\"M160.35 81.2 L160.45 81.15 Q158.55 83 155.95 83 153.4 83 151.5 81.2 L151.4 81.1 Q150.6 80.15 150.1 79.05 149.85 78.45 150.15 77.9 150.4 77.35 151.05 77.1 L152.25 77.15 153.15 77.95 153.85 79.1 153.85 79.15 Q154.75 80 155.95 80 157.15 80 157.95 79.15 L158 79.1 158.8 78.05 Q158.95 77.45 159.6 77.15 L160.85 77.1 Q161.45 77.25 161.8 77.85 162.1 78.4 161.9 79 161.4 80.2 160.35 81.2 M151 72 Q151.85 72 152.4 72.6 153 73.1 153 74 153 74.9 152.4 75.5 151.85 76 151 76 150.05 76 149.55 75.5 149 74.9 149 74 149 73.1 149.55 72.6 150.05 72 151 72 M161 72 Q161.85 72 162.4 72.6 163 73.1 163 74 163 74.9 162.4 75.5 161.85 76 161 76 160.05 76 159.55 75.5 159 74.9 159 74 159 73.1 159.55 72.6 160.05 72 161 72\"/></svg>",
+    "sadness": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"178 58 36 44\"><defs><linearGradient gradientUnits=\"userSpaceOnUse\" x1=\"-819.2\" x2=\"819.2\" spreadMethod=\"pad\" gradientTransform=\"matrix(0 -0.003662109375 0.003662109375 0 196 95)\" id=\"gfxemo-sadness-14\"> <stop offset=\"0\" stop-color=\"#FFFFFF\"/> <stop offset=\"1\" stop-color=\"#E2E2E2\"/> </linearGradient></defs><path stroke=\"none\" fill=\"#FFFFFF\" d=\"M184 60 L208 60 Q212 60 212 64 L212 88 Q212 92 208 92 L184 92 Q180 92 180 88 L180 64 Q180 60 184 60\"/><path stroke=\"none\" fill=\"url(#gfxemo-sadness-14)\" d=\"M202 92 L196 98 190 92 202 92\"/><path stroke=\"none\" fill=\"#312D2D\" d=\"M191 72 Q191.85 72 192.4 72.6 193 73.1 193 74 193 74.9 192.4 75.5 191.85 76 191 76 190.05 76 189.55 75.5 189 74.9 189 74 189 73.1 189.55 72.6 190.05 72 191 72 M200.35 78.8 Q201.4 79.8 201.9 81 202.1 81.6 201.8 82.15 L200.85 82.9 199.6 82.85 Q198.95 82.55 198.8 81.95 L198 80.9 197.95 80.85 Q197.15 80 195.95 80 194.75 80 193.85 80.85 L193.85 80.9 193.15 82.05 192.25 82.85 191.05 82.9 190.15 82.1 Q189.85 81.55 190.1 80.95 190.6 79.85 191.4 78.9 L191.5 78.8 Q193.4 77 195.95 77 198.55 77 200.45 78.85 L200.35 78.8 M201 72 Q201.85 72 202.4 72.6 203 73.1 203 74 203 74.9 202.4 75.5 201.85 76 201 76 200.05 76 199.55 75.5 199 74.9 199 74 199 73.1 199.55 72.6 200.05 72 201 72\"/></svg>",
+    "anger": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"98 98 36 44\"><defs><linearGradient gradientUnits=\"userSpaceOnUse\" x1=\"-819.2\" x2=\"819.2\" spreadMethod=\"pad\" gradientTransform=\"matrix(0 -0.003662109375 0.003662109375 0 116 135)\" id=\"gfxemo-anger-2\"> <stop offset=\"0\" stop-color=\"#FFFFFF\"/> <stop offset=\"1\" stop-color=\"#E2E2E2\"/> </linearGradient></defs><path stroke=\"none\" fill=\"#FFFFFF\" d=\"M104 100 L128 100 Q132 100 132 104 L132 128 Q132 132 128 132 L104 132 Q100 132 100 128 L100 104 Q100 100 104 100\"/><path stroke=\"none\" fill=\"url(#gfxemo-anger-2)\" d=\"M122 132 L116 138 110 132 122 132\"/><path stroke=\"none\" fill=\"#FF3300\" d=\"M113.05 108 L114.65 108 114.9 108.1 115 108.35 115 114.6 114.9 114.9 114.65 115 108.4 115 108.1 114.9 108 114.6 108 113.05 108.1 112.75 108.4 112.65 111.35 112.65 112.7 111.35 112.7 108.35 112.8 108.1 113.05 108 M118.95 108 L119.2 108.1 119.3 108.35 119.3 111.35 120.65 112.65 123.6 112.65 123.9 112.75 124 113.05 124 114.6 123.9 114.9 123.6 115 117.35 115 117.1 114.9 117 114.6 117 108.35 117.1 108.1 117.35 108 118.95 108 M118.95 124 L117.35 124 117.1 123.9 117 123.65 117 117.4 117.1 117.1 117.35 117 123.6 117 123.9 117.1 124 117.4 124 118.95 123.9 119.25 123.6 119.35 120.65 119.35 119.3 120.65 119.3 123.65 119.2 123.9 118.95 124 M113.05 124 L112.8 123.9 112.7 123.65 112.7 120.65 111.35 119.35 108.4 119.35 108.1 119.25 108 118.95 108 117.4 108.1 117.1 108.4 117 114.65 117 114.9 117.1 115 117.4 115 123.65 114.9 123.9 114.65 124 113.05 124\"/></svg>",
+    "fear": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"58 98 36 44\"><defs><linearGradient gradientUnits=\"userSpaceOnUse\" x1=\"-819.2\" x2=\"819.2\" spreadMethod=\"pad\" gradientTransform=\"matrix(0 -0.003662109375 0.003662109375 0 76 135)\" id=\"gfxemo-fear-24\"> <stop offset=\"0\" stop-color=\"#FFFFFF\"/> <stop offset=\"1\" stop-color=\"#E2E2E2\"/> </linearGradient></defs><path stroke=\"none\" fill=\"#FFFFFF\" d=\"M64 100 L88 100 Q92 100 92 104 L92 128 Q92 132 88 132 L64 132 Q60 132 60 128 L60 104 Q60 100 64 100\"/><path stroke=\"none\" fill=\"url(#gfxemo-fear-24)\" d=\"M82 132 L76 138 70 132 82 132\"/><path stroke=\"none\" fill=\"#3498DB\" d=\"M68.45 121.6 Q67 120.15 67 118.3 L67.05 118.05 71.05 107.6 71.4 107.2 72 107 72.6 107.2 72.95 107.6 76.95 118.05 77 118.3 Q77 120.15 75.6 121.6 74.1 123 72 123 69.95 123.05 68.45 121.6 M80.9 125.15 Q80 124.25 80 123.1 L80.05 122.95 82.45 116.4 82.65 116.15 83 116 Q83.2 116 83.35 116.15 L83.6 116.4 86 122.95 86 123.1 Q86 124.25 85.15 125.15 84.25 126 83 126 81.8 126.05 80.9 125.15\"/></svg>"
+  };
+  function paintEmote(n, expr) {
+    expr = prefs.opts.emote && isExpr(expr) ? expr : "";
+    if ((n.getAttribute("data-expr") || "") === expr) return;
+    if (expr) n.setAttribute("data-expr", expr); else n.removeAttribute("data-expr");
+    n.querySelector(":scope > .gfx-emote")?.remove();
+    if (!expr) return;
+    const b = el("div", "gfx-emote");
+    b.dataset.expr = expr;
+    b.setAttribute("aria-hidden", "true");
+    b.innerHTML = EMOTE_SVG[expr];
+    n.append(b);
+  }
   const anySd = () => {
     const w = world();
     if (!w) return [];
@@ -2152,6 +2248,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     for (const [n, e] of Object.entries(w.sd)) {
       if (e && e.url === url) return n;
       if (Object.values(e?.variants || {}).some((v) => (typeof v === "string" ? v : v?.url) === url)) return n;
+      if ([e, ...Object.values(e?.variants || {})].some((v) => v && typeof v === "object" && Object.values(v.expressions || {}).some((x) => x?.url === url))) return n;
     }
     return "";
   }
@@ -2193,6 +2290,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const path = pathOf(img.getAttribute("src"));
     const known = w.byPortrait.get(path);
     if (known) return known;
+    const shown = exprOfUrl(path);
+    if (shown?.name) return shown.name;
     const cast = host()?._beatCast;
     const actor = Array.isArray(cast) && cast.find((c) => c?.art && pathOf(c.art) === path);
     if (actor?.name) { w.byPortrait.set(path, actor.name); return actor.name; }
@@ -2627,7 +2726,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     } else if (mode !== "cg") {
       for (const [i, plate] of open.entries()) {
         const image = activePlateImage(plate);
-        const portrait = image?.getAttribute("src") || "";
+        // An expression picture stands for its neutral one: the outfit is the same, not a new look.
+        const portrait = neutralPortrait(image?.getAttribute("src") || "");
         const exact = nameFromImg(image);
         const name = exact || (open.length === 1 ? speaker : "");
         if (!name || slots.some((s) => s.name === name)) continue;
@@ -2651,6 +2751,15 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const count = (vn.querySelector(".vn-count")?.textContent || "").match(/\d+/);
     const at = count ? Math.max(0, Number(count[0]) - 1) : Number(h?._beatAt) || 0;
     const place = segments.slice(0, at + 1).reverse().find((s) => s?.place)?.place || "";
+    // Each slot's expression: the expression picture the game put on its plate, else (for the one speaking) the
+    // emotion the line is tagged with, so the emoticon works before the expression pictures are painted.
+    const line = segments[at], lineSpeaker = String(line?.speaker || "").trim();
+    for (const s of visibleSlots) {
+      const shown = s.plate ? exprOfUrl(activePlateImage(s.plate)?.getAttribute("src") || "") : null;
+      s.expr = shown && shown.name === s.name ? shown.expr : "";
+      if (!s.expr && speaker && s.name === speaker && isExpr(line?.expression)
+        && (lineSpeaker === speaker || (speaker === heroName && /^(you|player|protagonist|나|주인공)$/i.test(lineSpeaker)) || speaker.split(/s+/).includes(lineSpeaker))) s.expr = line.expression;
+    }
     return { mode, sceneKey: caption + "|" + place + "|" + bg, place: place || caption.split(/\s*·\s*/)[0] || "", slots: visibleSlots };
   }
   /* Torso bounds guide overlap within two independently placed golden-ratio groups.
@@ -3006,7 +3115,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // A new place (or scene) keeps whoever is still there standing; only those not in it step out (below). The
     // layer used to be emptied and rebuilt here, so everyone vanished and popped back in once their pictures loaded.
     if (layer.getAttribute("data-scene") !== snapshot.sceneKey) layer.setAttribute("data-scene", snapshot.sceneKey);
-    const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, storySd(s.name, s.portrait), sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, JSON.stringify(torsoForSprite(sdEntry(s.name), storySd(s.name, s.portrait))), faceOf(s.name)].join("~")).join(";");
+    const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, storySdFor(s.name, s.portrait, s.expr), prefs.opts.emote ? s.expr || "" : "", sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, JSON.stringify(torsoForSprite(sdEntry(s.name), storySd(s.name, s.portrait))), faceOf(s.name)].join("~")).join(";");
     if (layer.getAttribute("data-key") === key) return;
     layer.setAttribute("data-key", key);
     vnCast.renderedKey = key;
@@ -3048,7 +3157,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       // Where they stand comes from layoutCast; a newcomer starts at its even share until its size is known.
       if (!n.style.left) { n.dataset.x = String(xs[i]); n.style.left = xs[i] + "%"; }
       const im = n.querySelector("img");
-      const sd = storySd(name, slot.portrait);
+      const sd = storySdFor(name, slot.portrait, slot.expr);
       let placeholder = n.querySelector(".gfx-vn-placeholder");
       if (!sd && !slot.portrait) {
         im.hidden = true;
@@ -3088,6 +3197,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         if (speaking) { n.setAttribute("data-speaking", ""); n.removeAttribute("data-hop"); void n.offsetWidth; n.setAttribute("data-hop", ""); }
         else n.removeAttribute("data-speaking");
       }
+      paintEmote(n, slot.expr);
     });
   }
 
@@ -4437,7 +4547,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const look = allOutfits.includes(sdEditLook) ? sdEditLook : "";
       const lookUrl = look ? sdVariant(e, look)?.url : e.url;
       const lookName = (k) => w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === k)?.name || "의상 " + (allOutfits.indexOf(k) + 1);
-      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(e.torso || null), JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
+      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.expressions || {}), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(e.torso || null), JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
       const promptKey = JSON.stringify([e.appearance, e.prompt, e.promptContext, prefs.gen.template]);
       if (box.getAttribute("data-key") === key && box.getAttribute("data-prompt-key") === promptKey) continue;
       if (box.contains(root.activeElement) && root.activeElement?.matches("input, textarea")) continue;
@@ -4458,7 +4568,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const nav = el("div", "gfx-sd-edit-tabs");
       nav.setAttribute("role", "tablist");
       const panels = {};
-      const tabs = [["pose", "볼·배치"], ["wardrobe", "의상·보관함"], ["prompt", "프롬프트"], ["lines", "대사"]];
+      const tabs = [["pose", "볼·배치"], ["wardrobe", "의상·보관함"], ["face", "표정"], ["prompt", "프롬프트"], ["lines", "대사"]];
       const selectTab = (id) => {
         sdEditTab = id; box.dataset.editTab = id;
         for (const [key, panel] of Object.entries(panels)) panel.hidden = key !== id;
@@ -4475,7 +4585,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(ev.key)) return;
           ev.preventDefault(); ev.stopPropagation();
           const index = tabs.findIndex(([key]) => key === id);
-          const next = ev.key === "Home" ? 0 : ev.key === "End" ? 3 : (index + (ev.key === "ArrowRight" ? 1 : 3)) % 4;
+          const next = ev.key === "Home" ? 0 : ev.key === "End" ? tabs.length - 1 : (index + (ev.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;
           selectTab(tabs[next][0]); nav.children[next].focus();
         });
         nav.append(b); content.append(panel);
@@ -4662,6 +4772,28 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       side.append(field("캐릭터 외형 프롬프트", e.appearance || e.promptContext?.appearance || w.details.get(c.name)?.appearance, (v) => saveSdEntry(c.name, { appearance: v }).then(() => { linesRev++; paintSettings(); setEditNote("저장했습니다", true); }), 4000));
       side.append(field("선택한 모습의 SD 생성 프롬프트 (비우면 자동 구성)", sdPrompt(c, w.details.get(c.name) || {}, look),
         (v) => saveLook(c.name, look, { prompt: v }).then(() => setEditNote("생성 프롬프트를 저장했습니다", true)), 12000));
+      // Expression SDs of the selected look: the story swaps to one when a line carries that emotion.
+      side = panels.face;
+      side.append(hint("스토리 대사의 감정에 맞춰 바뀌는 SD입니다. 가챠 포지 [자료 → 이미지 → Expression portraits]를 켠 세계에서 동작하며, 선택한 모습(" + (look ? lookName(look) : "기본") + ")의 SD를 바탕으로 그립니다. 한 장마다 이미지 연결 사용량이 듭니다.", ""));
+      if (!lookUrl) side.append(hint("먼저 이 모습의 SD를 그려 주세요.", ""));
+      const faces = lookOf(c.name, look).expressions || {};
+      const grid = el("div", "gfx-expr-grid");
+      for (const [k, label] of EXPRS) {
+        const u = faces[k]?.url, cell = el("div", "gfx-expr-cell"), fig = el("div", "gfx-expr-fig");
+        if (u) { const im = el("img"); im.src = u; im.alt = label; im.loading = "lazy"; im.draggable = false; fig.append(im); }
+        else fig.append(el("span", "", "없음"));
+        cell.append(fig, el("b", "", label));
+        const row = el("div", "st-chips");
+        const draw = chip(u ? "다시 그리기" : "그리기", () => makeSd(c, look, k));
+        if (!lookUrl) draw.disabled = true;
+        row.append(draw);
+        if (u) row.append(chip("지우기", () => dropExpr(c.name, look, k)));
+        cell.append(row);
+        grid.append(cell);
+      }
+      side.append(grid);
+      const missing = EXPRS.filter(([k]) => !faces[k]?.url).length;
+      if (missing) { const all = chip("없는 표정 " + missing + "장 모두 그리기", () => makeExprs(c, look)); if (!lookUrl) all.disabled = true; side.append(all); }
       side = panels.lines;
       side.append(chip("이 캐릭터 대사 전체 재생성", () => makeLines(false, c.name)));
       const lines = Array.isArray(e.lines) ? e.lines.slice(0, 3) : [];
@@ -4783,12 +4915,20 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     const appearance = String(outfit?.prompt || [entry.appearance || unit?.appearance, outfit?.outfitLine, ...(outfit?.outfitTags || [])].filter(Boolean).join(", ")).trim();
     return appearance ? prefs.gen.template.replace(/\{appearance\}/g, appearance).replace(/\{name\}/g, card.name).replace(/\s+/g, " ").trim() : "";
   }
-  async function makeSd(card, variantKey = "") {
+  async function urlToDataUrl(url) {
+    const blob = await fetch(url, { credentials: "same-origin" }).then((r) => { if (!r.ok) throw Error("HTTP " + r.status); return r.blob(); });
+    return await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); });
+  }
+  // expr: one of EXPRS — an expression SD of this look, drawn from its SD (sent as a reference picture where the
+  // image connection takes one) with the expression's tags added to the look's own prompt.
+  async function makeSd(card, variantKey = "", expr = "") {
     const w = world();
     if (!w || w.busy.has(card.name)) return;
     const connId = gameRoot()?.querySelector("[data-gfx-conn]")?.value || prefs.gen.connectionId || host()?._run?.images?.connectionId || "";
     const conn = (connections || []).find((c) => c.id === connId);
     if (!conn) { w.note = "이미지 연결을 골라 주세요."; paintSettings(); return; }
+    if (expr && !(variantKey ? sdVariant(sdEntry(card.name), variantKey)?.url : sdEntry(card.name).url)) { w.note = "먼저 이 모습의 SD를 그려 주세요."; paintSettings(); return; }
+    const who = card.name + (expr ? " · " + exprLabel(expr) : "");
     w.busy.add(card.name);
     w.note = "";
     paintSettings();
@@ -4796,35 +4936,41 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     let release = () => {};
     genChain = new Promise((res) => { release = res; });
     try {
-      w.note = card.name + " — 앞의 그림을 기다리는 중…";
+      w.note = who + " — 앞의 그림을 기다리는 중…";
       paintSettings();
       await before;
       if (disposed) return;
       // A random 3–7s wait before each request, so a batch of SDs is not fired at the image service back to back.
       const wait = 3000 + Math.round(Math.random() * 4000);
-      w.note = card.name + " — " + (wait / 1000).toFixed(1) + "초 뒤에 그립니다.";
+      w.note = who + " — " + (wait / 1000).toFixed(1) + "초 뒤에 그립니다.";
       paintSettings();
       await new Promise((res) => setTimeout(res, wait));
       if (disposed) return;
-      w.note = card.name + " 그리는 중…";
+      w.note = who + " 그리는 중…";
       paintSettings();
       const u = { unit: await unitOf(card, w) };
       await sharePromptContext(w, card, u.unit);
-      const prompt = sdPrompt(card, u.unit, variantKey);
-      if (!prompt) throw Error("외형 정보가 없습니다. SD 편집에서 생성 프롬프트를 입력해 주세요.");
+      const base = sdPrompt(card, u.unit, variantKey);
+      if (!base) throw Error("외형 정보가 없습니다. SD 편집에서 생성 프롬프트를 입력해 주세요.");
+      const prompt = expr ? base + ", " + EXPR_TAGS[expr] : base;
       const [width, height] = prefs.gen.size.split("x").map(Number);
-      const res = await fetch("/api/characters/avatar-generation", {
+      let refs = [];
+      if (expr) { try { refs = [await urlToDataUrl(variantKey ? sdVariant(sdEntry(card.name), variantKey).url : sdEntry(card.name).url)]; } catch {} }
+      const draw = (referenceImages) => fetch("/api/characters/avatar-generation", {
         method: "POST", credentials: "same-origin", headers: JSON_HEADERS,
         body: JSON.stringify({
           connectionId: conn.id, name: "gfx-sd", appearance: prompt, purpose: "avatar", width, height,
           promptOverrides: [{ id: "avatar:gfx-sd", prompt, negativePrompt: prefs.gen.negative }],
+          ...(referenceImages.length ? { referenceImages } : {}),
         }),
-      });
-      const data = await res.json().catch(() => null);
+      }).then(async (r) => ({ res: r, data: await r.json().catch(() => null) }));
+      let { res, data } = await draw(refs);
+      // A connection that refuses reference pictures still draws from the prompt alone.
+      if (refs.length && (!res.ok || !data?.image)) ({ res, data } = await draw([]));
       if (!res.ok || !data || !data.image) throw Error((data && data.error) || "HTTP " + res.status);
-      await storeSdImage(w, card, variantKey, dataUrlToBlob(data.image), prompt, conn.model || "unknown", width, height);
+      await storeSdImage(w, card, variantKey, dataUrlToBlob(data.image), prompt, conn.model || "unknown", width, height, expr);
     } catch (e) {
-      w.note = card.name + " 그리기 실패: " + e.message;
+      w.note = who + " 그리기 실패: " + e.message;
     } finally {
       release();
       w.busy.delete(card.name);
@@ -4851,9 +4997,9 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       refresh();
     }
   }
-  async function storeSdImage(w, card, variantKey, blob, prompt, model, width, height) {
+  async function storeSdImage(w, card, variantKey, blob, prompt, model, width, height, expr = "") {
       const form = new FormData();
-      form.append("prompt", "[gfx-world:" + encodeURIComponent(w.id) + "] [gfx-character:" + encodeURIComponent(card.name) + "] [gfx-look:" + encodeURIComponent(variantKey) + "] " + prompt);
+      form.append("prompt", "[gfx-world:" + encodeURIComponent(w.id) + "] [gfx-character:" + encodeURIComponent(card.name) + "] [gfx-look:" + encodeURIComponent(variantKey) + "] " + (expr ? "[gfx-expr:" + expr + "] " : "") + prompt);
       form.append("provider", "image_generation");
       form.append("model", model);
       if (width) form.append("width", String(width));
@@ -4863,6 +5009,15 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const saved = await up.json().catch(() => null);
       if (!up.ok || !saved || !saved.url) throw Error((saved && saved.error) || "갤러리 저장 실패 (HTTP " + up.status + ")");
       const old = w.sd[card.name] || {};
+      if (expr) {
+        // An expression SD sits with its look; the look's own picture and vault stay as they were.
+        const ent = variantKey ? sdVariant(old, variantKey) || {} : old;
+        const expressions = { ...(ent.expressions || {}), [expr]: { url: saved.url, at: Date.now() } };
+        const nextE = variantKey ? { ...old, variants: { ...(old.variants || {}), [variantKey]: { ...ent, expressions } } } : { ...old, expressions };
+        w.sd = { ...w.sd, [card.name]: { ...nextE, _editedAt: Date.now(), _deleted: false } };
+        if (!(await storePatch({ ["sd:" + w.id]: w.sd }))) w.note = "그림은 갤러리에 저장했고 이 브라우저에 보관했습니다. 서버 기록은 다시 시도합니다 (" + lastStoreError + ").";
+        return;
+      }
       // Preserve all earlier drawings; lines and cheeks stay as they were.
       const prevOf = (ent) => sdHistory(ent, saved.url);
       const oldVariant = variantKey ? sdVariant(old, variantKey) : null;
@@ -4881,7 +5036,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       if (!res.ok) throw Error("HTTP " + res.status);
       const list = await res.json();
       const tags = ["[gfx-world:" + encodeURIComponent(w.id) + "]", "[gfx-character:" + encodeURIComponent(name) + "]", "[gfx-look:" + encodeURIComponent(key) + "]"];
-      const matches = (Array.isArray(list) ? list : []).filter((g) => g?.url && tags.every((tag) => String(g.prompt || "").includes(tag)))
+      const matches = (Array.isArray(list) ? list : []).filter((g) => g?.url && tags.every((tag) => String(g.prompt || "").includes(tag)) && !String(g.prompt || "").includes("[gfx-expr:"))
         .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
       // Read the current entry after the request, so a selection made meanwhile stays selected.
       const e = w.sd[name] || {}, cur = key ? sdVariant(e, key) || {} : e;
@@ -4900,7 +5055,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
    * that is enough to tell whose it is. The newest picture wins. */
   function galleryMatchesWorld(g, id, name) {
     const prompt = String(g?.prompt || "");
-    return prompt.includes("[gfx-world:" + encodeURIComponent(id) + "]") && prompt.includes("[gfx-character:" + encodeURIComponent(name) + "]") && prompt.includes("[gfx-look:]");
+    return prompt.includes("[gfx-world:" + encodeURIComponent(id) + "]") && prompt.includes("[gfx-character:" + encodeURIComponent(name) + "]") && prompt.includes("[gfx-look:]") && !prompt.includes("[gfx-expr:");
   }
   let recovering = false;
   async function recoverSd(quiet) {
@@ -4947,6 +5102,19 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     w.sd = next;
     await storePatch({ ["sd:" + w.id]: w.sd });
     refresh();
+  }
+  async function dropExpr(name, look, expr) {
+    const ent = lookOf(name, look), expressions = { ...(ent.expressions || {}) };
+    delete expressions[expr];
+    await saveLook(name, look, { expressions });
+    paintSettings(); refresh();
+  }
+  async function makeExprs(card, look) {
+    for (const [k] of EXPRS) {
+      if (disposed || !current) break;
+      if (lookOf(card.name, look).expressions?.[k]?.url) continue;
+      await makeSd(card, look, k);
+    }
   }
   async function removeSdVariant(name, variantKey) {
     const w = world(), old = w?.sd[name];
