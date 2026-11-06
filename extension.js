@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.42 — personal extension for Gacha Forge 1.8.13 on Marinara Engine.
+/* Gacha UI Style v1.12.43 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1433,6 +1433,61 @@ ${F} .arena .cbt .aff-badge { visibility: hidden !important; }
 .gfx-prompt-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 @media(max-width:720px) { .gfx-sd-edit:not([hidden]) { inset: 4px !important; width: calc(100vw - 8px) !important; height: calc(100dvh - 8px) !important; grid-template-columns: minmax(80px,.55fr) minmax(0,1.45fr); } .gfx-sd-edit[data-edit-tab="prompt"] > .gfx-cheek-pad { display:none; } .gfx-sd-edit[data-edit-tab="prompt"] > .gfx-sd-edit-content { grid-column: 1 / -1; } .gfx-sd-edit-header b { font-size: 16px; } }
 @media(max-width:560px) { .gfx-sd-edit:not([hidden]) { grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto auto minmax(90px,26dvh) minmax(0,1fr); padding: 8px; gap: 6px; } .gfx-sd-edit > .gfx-cheek-pad { grid-column: 1; grid-row: 4; } .gfx-sd-edit > .gfx-sd-edit-content { grid-column: 1; grid-row: 5; } .gfx-sd-edit[data-edit-tab="prompt"]:not([hidden]) { grid-template-rows: auto auto auto minmax(0,1fr); } .gfx-sd-edit[data-edit-tab="prompt"] > .gfx-sd-edit-content { grid-row: 4; } .gfx-sd-edit-tabs { gap: 4px; } .gfx-sd-edit-tabs button { font-size: 12px; padding: .5em 0; white-space: nowrap; } .gfx-sd-edit-header > button { min-height: 36px; } .gfx-sd-edit-side[data-panel="lines"] { grid-template-columns: minmax(0,1fr); } .gfx-sd-edit-side[data-panel="lines"] > * { grid-column: 1 !important; grid-row: auto !important; } }
+
+/* ── Gacha Forge 1.27 (Marinara 2.5.2): screens and pieces that arrived after 1.8.13 ── */
+/* Home: the new left column (unit messages, the affinity wheel) sits where the lobby's [✥ 배치] and the codex
+ * button were. Both now start under that column; paintLobby measures it into --gfx-tools-top. */
+.gfx-lobby:not([data-edit]) .gfx-lobby-tools { top: var(--gfx-tools-top, 10.5%) !important; }
+.gfx-lobby:not([data-edit]) > .gmm-codex-btn { top: calc(var(--gfx-tools-top, 10.5%) + var(--f, 10px) * 2.6) !important; }
+${T} .gf-home-affinities {
+  background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important; border-radius: var(--radius-sm) !important;
+  box-shadow: 0 0.22em 0 var(--gfx-line) !important; color: var(--gfx-text) !important; }
+${T} .hm-chat { border-radius: 999px !important; }
+/* Top bar: the sound and leave-fullscreen buttons. */
+${T} .gf-mute, ${T} .gf-fs-exit, ${T} .gf-runs-bar {
+  background: var(--gfx-card) !important; color: var(--gfx-text) !important; border: 2px solid var(--gfx-line) !important;
+  border-radius: 12px !important; clip-path: none !important; box-shadow: 0 0.18em 0 var(--gfx-line) !important; }
+${T} :is(.gf-mute, .gf-fs-exit):hover { background: color-mix(in srgb, var(--gfx-card) 85%, var(--gfx-pick)) !important; }
+/* Formation editor: the bench, filters and team presets (they kept the game's square, thin-ruled look). */
+${T} .fm-body .picker {
+  background: color-mix(in srgb, var(--gfx-card) 92%, transparent) !important; border: 2.5px solid var(--gfx-line) !important;
+  border-radius: var(--radius) !important; clip-path: none !important;
+  box-shadow: 0 0.3em 0 var(--gfx-line), inset 0 -0.25em 0 color-mix(in srgb, var(--gfx-line) 10%, transparent) !important; }
+/* The preset strip runs along the bottom of the formation screen (outside .fm-body): a bar, not a card. */
+${T} .screen:has(> .fm-body) > .presets {
+  background: color-mix(in srgb, var(--gfx-card) 94%, transparent) !important; border: 0 !important;
+  border-top: 2.5px solid var(--gfx-line) !important; border-radius: 0 !important; clip-path: none !important; }
+${T} .screen:has(> .fm-body) > .presets .lab { font-family: var(--display) !important; color: var(--gfx-text) !important; }
+${T} .fm-body .picker-head .t { font-family: var(--display) !important; color: var(--gfx-text) !important; }
+${T} .fm-body .filters .chip, ${T} .presets .preset {
+  background: var(--gfx-card) !important; color: var(--gfx-text) !important; border: 2px solid var(--gfx-line) !important;
+  border-radius: 999px !important; clip-path: none !important; box-shadow: 0 0.16em 0 var(--gfx-line) !important; }
+${T} .fm-body .filters .chip[aria-pressed="true"], ${T} .presets .preset[aria-pressed="true"] {
+  background: var(--gfx-pick) !important; color: var(--gfx-pick-text, var(--gfx-line)) !important; }
+${T} .presets .preset :is(.x, .cp) { color: inherit !important; }
+${T} .presets .preset .x { opacity: 0.7; }
+${T} .fm-body .bench .b { border: 2px solid var(--gfx-line) !important; background: var(--gfx-card) !important; color: var(--gfx-text) !important; }
+${T} .b-ic {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--gfx-sky1) 70%, var(--gfx-card)), color-mix(in srgb, var(--gfx-sky2) 70%, var(--gfx-card))) !important;
+  border: 2px solid var(--gfx-line) !important; border-radius: 12px !important; color: var(--gfx-line) !important; }
+${T} .b-ic .aff { border-color: var(--gfx-card) !important; }
+${T} .slot-meta { background-image: none !important; }
+${T} .fm-body .hint { background: color-mix(in srgb, var(--gfx-card) 88%, transparent) !important; color: var(--gfx-text) !important;
+  border: 2px solid var(--gfx-line) !important; }
+/* Formation combat: the plan panel, its chips and the income/bank rows follow the sticker cards. */
+${T} .gf-fplan-main {
+  background: var(--gfx-card) !important; color: var(--gfx-text) !important; border: 2.5px solid var(--gfx-line) !important;
+  border-radius: var(--radius) !important; clip-path: none !important; box-shadow: 0 0.3em 0 var(--gfx-line) !important; }
+${T} .gf-fpick { border-radius: 12px !important; border-width: 2px !important; }
+${T} .gf-fpick:hover { background: color-mix(in srgb, var(--gfx-card) 80%, var(--gfx-pick)) !important; border-color: var(--gfx-line) !important; }
+${T} .gf-fclear { background: var(--gfx-card) !important; border: 2px solid var(--gfx-line) !important; border-radius: 50% !important;
+  color: var(--gfx-text) !important; box-shadow: 0 0.14em 0 var(--gfx-line) !important; }
+/* The fight button is this mode's 전투 시작: the same yellow slab as the other start buttons. */
+${T} .gf-ffight {
+  background: linear-gradient(180deg, #FFDC5E, #FFB81C) !important; color: #3B2610 !important; text-shadow: 0 0.06em 0 #FFF0B0 !important;
+  border: 3px solid #3B2610 !important; border-radius: 14px !important; clip-path: none !important;
+  box-shadow: 0 0.28em 0 #8A5A00, inset 0 -0.25em 0 rgba(170, 110, 0, 0.35), inset 0 0.2em 0 rgba(255, 255, 255, 0.55) !important; }
+${T} .gf-fgen { text-shadow: 0 0 3px var(--gfx-line) !important; }
 `;
 
 const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); if (!m) return 1; const n = parseInt(m[1], 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
@@ -3421,6 +3476,27 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const scene = screen.querySelector(":scope > .hm-scene");
       if (!lobby.isConnected) { if (scene) scene.after(lobby); else screen.append(lobby); }
       startRoam(lobby);
+    }
+    if (enabled) for (const screen of root.querySelectorAll(".hm-screen")) placeLobbyTools(screen);
+  }
+  /* Gacha Forge 1.27 put a column (unit messages, the affinity wheel) in the lobby's top-left corner, right where
+   * [✥ 배치] and the codex button sit. Start them under whatever that column shows; without it, the old 10.5%. */
+  function placeLobbyTools(screen) {
+    const lobby = screen.querySelector(":scope > .gfx-lobby");
+    if (!lobby) return;
+    const column = screen.querySelector(".gf-home-column");
+    let top = "";
+    if (column) {
+      const base = lobby.getBoundingClientRect();
+      let bottom = 0;
+      for (const child of column.children) {
+        const r = child.getBoundingClientRect();
+        if (r.width && r.height && r.left < base.left + base.width * 0.4) bottom = Math.max(bottom, r.bottom - base.top);
+      }
+      if (bottom > 0 && base.height > 0) top = Math.round(bottom + 8) + "px";
+    }
+    if (lobby.style.getPropertyValue("--gfx-tools-top") !== top) {
+      if (top) lobby.style.setProperty("--gfx-tools-top", top); else lobby.style.removeProperty("--gfx-tools-top");
     }
   }
   /* ── Lobby roaming ──
