@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.44 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.45 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -593,6 +593,8 @@ ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) > :is(.gch-opt, .vn-choice
 .vn[data-gfx-choice] .vn-choices .vn-choice-option:hover,
 .vn[data-gfx-choice] .vn-choices > button:hover {
   background: var(--gfx-pick) !important; translate: 0 calc(var(--f, 10px) * -0.18); scale: 1.015;
+  /* The pick colour is light on 밤하늘 while the card text is white: use the text colour picked for it. */
+  color: var(--gfx-pick-text, var(--gfx-line)) !important;
 }
 .vn[data-gfx-choice] .vn-choices .vn-choice:active,
 .vn[data-gfx-choice] .vn-choices .vn-choice-option:active,
@@ -1533,6 +1535,9 @@ ${T} .vn .vn-choices .vn-choice-option::after {
   content: "▶"; margin-left: auto; padding-left: .6em; font-size: .7em; opacity: 0; translate: -.4em 0;
   transition: opacity .14s ease, translate .14s ease; }
 ${T} .vn .vn-choices .vn-choice-option:hover:not(:disabled)::after { opacity: .85; translate: 0 0; }
+/* Hover on the pick colour: its own readable text colour (white card text vanished on 밤하늘's light pick). */
+${T} .vn .vn-choices .vn-choice-option:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--gfx-pick) !important; color: var(--gfx-pick-text, var(--gfx-line)) !important; }
 ${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option { animation: gfx-opt-pop .32s cubic-bezier(.3, 1.5, .5, 1) both; }
 ${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option:nth-child(2) { animation-delay: .06s; }
 ${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option:nth-child(3) { animation-delay: .12s; }
