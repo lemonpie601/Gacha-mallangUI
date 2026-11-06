@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.47 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.48 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1455,6 +1455,12 @@ ${T} .gf-mute, ${T} .gf-fs-exit, ${T} .gf-runs-bar {
   background: var(--gfx-card) !important; color: var(--gfx-text) !important; border: 2px solid var(--gfx-line) !important;
   border-radius: 12px !important; clip-path: none !important; box-shadow: 0 0.18em 0 var(--gfx-line) !important; }
 ${T} :is(.gf-mute, .gf-fs-exit):hover { background: color-mix(in srgb, var(--gfx-card) 85%, var(--gfx-pick)) !important; }
+/* Story: 1.27 gives the title its own row above the art (--forge-scene-top) and, inside Marinara's Home tab,
+ * stretches the dialogue box edge to edge. Keep the 말랑 look: the title floats over the art and the box is centred. */
+${T} .vn > .vn-top { position: absolute; top: 0; left: 0; right: 0; z-index: 7; }
+${T} .gf-stage > .gf-view .vn-scene { top: 0 !important; }
+${T} .vn-dock { width: min(88%, calc(var(--f) * 160)) !important; max-width: none; margin: 0 auto !important; }
+@media (max-width: 720px) { ${T} .vn-dock { width: 100% !important; } }
 /* Formation editor: the bench, filters and team presets (they kept the game's square, thin-ruled look). */
 ${T} .fm-body .picker {
   background: color-mix(in srgb, var(--gfx-card) 92%, transparent) !important; border: 2.5px solid var(--gfx-line) !important;
