@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.43 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.44 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -576,10 +576,12 @@ ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) > :is(.gch-opt, .vn-choice
   width: min(60%, calc(var(--f, 10px) * 56)); min-width: min(100%, calc(var(--f, 10px) * 30)); margin-inline: auto !important;
 }
 .vn[data-gfx-choice] .vn-choices .vn-choice,
+.vn[data-gfx-choice] .vn-choices .vn-choice-option,
 .vn[data-gfx-choice] .vn-choices > button {
   justify-content: center; text-align: center; font-size: .92em;
 }
 .vn[data-gfx-choice] .vn-choices .vn-choice,
+.vn[data-gfx-choice] .vn-choices .vn-choice-option,
 .vn[data-gfx-choice] .vn-choices > button {
   border: calc(var(--f, 10px) * 0.28) solid var(--gfx-line) !important; border-radius: 999px !important;
   background: color-mix(in srgb, var(--gfx-card) 92%, white) !important; color: var(--gfx-text) !important;
@@ -588,10 +590,12 @@ ${T} .vn[data-gfx-choice] :is(.gch-menu, .vn-choices) > :is(.gch-opt, .vn-choice
   transition: translate .14s ease, scale .14s ease, box-shadow .14s ease, background .14s ease;
 }
 .vn[data-gfx-choice] .vn-choices .vn-choice:hover,
+.vn[data-gfx-choice] .vn-choices .vn-choice-option:hover,
 .vn[data-gfx-choice] .vn-choices > button:hover {
   background: var(--gfx-pick) !important; translate: 0 calc(var(--f, 10px) * -0.18); scale: 1.015;
 }
 .vn[data-gfx-choice] .vn-choices .vn-choice:active,
+.vn[data-gfx-choice] .vn-choices .vn-choice-option:active,
 .vn[data-gfx-choice] .vn-choices > button:active {
   translate: 0 calc(var(--f, 10px) * 0.34); scale: .985; box-shadow: 0 calc(var(--f, 10px) * 0.14) 0 var(--gfx-line) !important;
 }
@@ -1488,6 +1492,63 @@ ${T} .gf-ffight {
   border: 3px solid #3B2610 !important; border-radius: 14px !important; clip-path: none !important;
   box-shadow: 0 0.28em 0 #8A5A00, inset 0 -0.25em 0 rgba(170, 110, 0, 0.35), inset 0 0.2em 0 rgba(255, 255, 255, 0.55) !important; }
 ${T} .gf-fgen { text-shadow: 0 0 3px var(--gfx-line) !important; }
+/* Gacha Forge's own player choices (1.27): section.vn-choices > p.vn-choice-heading + .vn-choice-options > button.
+ * The game draws a dark box holding an English question and a two-column grid of square buttons. Here: no box,
+ * the question as a small Korean speech bubble, and a narrow centred column of numbered sticker cards that pop in
+ * one after another. The English heading text is hidden (font-size 0) and replaced by the bubble's own text. */
+${T} .vn .vn-choices[data-forge-choices] {
+  background: transparent !important; border: 0 !important; clip-path: none !important; box-shadow: none !important;
+  border-radius: 0 !important; justify-items: center; overflow: visible !important;
+  width: min(54%, calc(var(--f, 10px) * 50)) !important; min-width: min(92%, calc(var(--f, 10px) * 30)) !important;
+  gap: calc(var(--f, 10px) * 0.9) !important; padding: calc(var(--f, 10px) * 0.4) 0 calc(var(--f, 10px) * 0.8) !important; }
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-heading {
+  position: relative; justify-self: center; margin: 0 0 calc(var(--f, 10px) * 0.5) !important; padding: 0 !important;
+  font-size: 0 !important; line-height: 0 !important; color: transparent !important; background: none; border: 0; }
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-heading::before {
+  content: "어떻게 할까?"; display: inline-block; padding: .35em 1.2em .3em;
+  font: 400 max(13px, calc(var(--f, 10px) * 1.45))/1.3 var(--display); color: #3B2A33;
+  background: #FFFDF6; border: 2.5px solid var(--gfx-line); border-radius: 999px; box-shadow: 0 .2em 0 var(--gfx-line); }
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-heading:first-child::after {
+  content: ""; position: absolute; left: 50%; bottom: calc(var(--f, 10px) * -0.5); width: calc(var(--f, 10px) * 0.8); height: calc(var(--f, 10px) * 0.8);
+  translate: -50% 0; rotate: 45deg; background: #FFFDF6; border: solid var(--gfx-line); border-width: 0 2.5px 2.5px 0; }
+/* The second heading is the game's "this decision shapes the next chapter" warning on a big choice. */
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-heading + .vn-choice-heading { margin-top: calc(var(--f, 10px) * -0.2) !important; }
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-heading + .vn-choice-heading::before {
+  content: "⚠ 다음 챕터가 바뀌는 선택 · 되돌릴 수 없어요"; padding: .25em 1em; font-size: max(11px, calc(var(--f, 10px) * 1.05));
+  font-family: var(--body); background: #FFE7A3; color: #5A3A10; box-shadow: 0 .14em 0 var(--gfx-line); }
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-options {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: calc(var(--f, 10px) * 0.95) !important;
+  width: 100%; counter-reset: gfx-opt; }
+${T} .vn .vn-choices .vn-choice-option {
+  counter-increment: gfx-opt; position: relative; display: flex !important; align-items: center; gap: .7em;
+  width: 100%; min-height: max(34px, calc(var(--f, 10px) * 4.2)) !important; clip-path: none !important;
+  padding: .55em 1.3em .55em .6em !important; text-align: left !important; justify-content: flex-start !important;
+  border-radius: 18px !important; background: var(--gfx-card) !important;
+  font-family: var(--display) !important; font-size: max(12px, calc(var(--f, 10px) * 1.45)) !important; line-height: 1.35 !important; }
+${T} .vn .vn-choices .vn-choice-option::before {
+  content: counter(gfx-opt); flex: none; display: grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%;
+  background: var(--gfx-accent); color: var(--gfx-accent-text, #fff); border: 2px solid var(--gfx-line);
+  font-size: .85em; line-height: 1; box-shadow: inset 0 -.15em 0 #0002; }
+${T} .vn .vn-choices .vn-choice-option::after {
+  content: "▶"; margin-left: auto; padding-left: .6em; font-size: .7em; opacity: 0; translate: -.4em 0;
+  transition: opacity .14s ease, translate .14s ease; }
+${T} .vn .vn-choices .vn-choice-option:hover:not(:disabled)::after { opacity: .85; translate: 0 0; }
+${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option { animation: gfx-opt-pop .32s cubic-bezier(.3, 1.5, .5, 1) both; }
+${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option:nth-child(2) { animation-delay: .06s; }
+${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option:nth-child(3) { animation-delay: .12s; }
+${H("[data-gfx-motion]")} .vn .vn-choices .vn-choice-option:nth-child(4) { animation-delay: .18s; }
+@keyframes gfx-opt-pop { from { opacity: 0; translate: 0 .6em; scale: .94; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@media (prefers-reduced-motion: reduce) { ${T} .vn .vn-choices .vn-choice-option { animation: none !important; } }
+${T} .vn .vn-choices .vn-choice-option:focus-visible { outline: none; box-shadow: 0 calc(var(--f, 10px) * 0.5) 0 var(--gfx-line), 0 0 0 3px var(--gfx-accent) !important; }
+${T} .vn .vn-choices .vn-choice-option:disabled { opacity: .6; cursor: wait; translate: none !important; scale: none !important; }
+${T} .vn .vn-choices[data-forge-choices] > .vn-choice-status:not([hidden]) {
+  justify-self: center; margin: 0 !important; padding: .2em 1em; border-radius: 999px; background: var(--gfx-card);
+  color: var(--gfx-text) !important; border: 2px solid var(--gfx-line); font-family: var(--display) !important; }
+/* A big choice already made: one line saying what was chosen, as a sticker card on the dialogue box. */
+${T} .vn .vn-choices[data-forge-choice-canon] {
+  background: var(--gfx-card) !important; color: var(--gfx-text) !important; border: 2.5px solid var(--gfx-line) !important;
+  border-radius: var(--radius) !important; clip-path: none !important; box-shadow: 0 .3em 0 var(--gfx-line) !important;
+  font-family: var(--display) !important; text-align: center; }
 `;
 
 const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); if (!m) return 1; const n = parseInt(m[1], 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
