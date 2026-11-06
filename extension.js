@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.46 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.47 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1403,8 +1403,8 @@ ${T} .forge-center::before { content: "Now Loading · 이야기를 준비하고 
 .gfx-sd-edit:not([hidden]) { position: fixed; inset: 12px; z-index: 2147483005; margin: 0; padding: 16px; box-sizing: border-box; border: 3px solid var(--gfx-line); border-radius: 22px; background: var(--gfx-card); color: var(--gfx-text); box-shadow: 0 0 0 100vmax #0008; font-size: clamp(15px, 1.4vw, 19px); display: grid; grid-template-columns: minmax(200px, .9fr) minmax(340px, 1.3fr); grid-template-rows: auto auto auto minmax(0, 1fr); gap: 12px; overflow: hidden; align-items: stretch; }
 .gfx-sd-edit-header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 1em; }
 .gfx-sd-edit-header b { font-size: 1.2em; }
-.gfx-sd-edit-tabs { grid-column: 2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.gfx-sd-edit-tabs button { font: inherit; padding: .55em .2em; }
+.gfx-sd-edit-tabs { grid-column: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.gfx-sd-edit-tabs button { font: inherit; padding: .55em .2em; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gfx-sd-edit-tabs [aria-selected="true"] { background: var(--gfx-pick) !important; color: var(--gfx-pick-text) !important; }
 .gfx-sd-edit > .gfx-cheek-pad { grid-column: 1; grid-row: 3 / 5; position: relative; top: auto; width: 100%; height: 100%; min-height: 0; }
 .gfx-sd-edit-content { grid-column: 2; grid-row: 4; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
