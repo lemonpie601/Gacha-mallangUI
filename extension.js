@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.50 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.51 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -151,8 +151,9 @@
     const lobbyScale = typeof p.lobbyScale === "number" && Number.isFinite(p.lobbyScale) ? Math.min(2, Math.max(0.5, p.lobbyScale)) : 1;
     const storyCast = Number.isInteger(p.storyCast) && p.storyCast >= 2 && p.storyCast <= 10 ? p.storyCast : 3;
     const boxOpacity = typeof p.boxOpacity === "number" && Number.isFinite(p.boxOpacity) ? Math.min(100, Math.max(20, Math.round(p.boxOpacity))) : 95;
+    const emoteSize = [0.7, 1, 1.35].includes(p.emoteSize) ? p.emoteSize : 1;
     const style = typeof p.style === "string" ? p.style : undefined;
-    return { questViews: Object.fromEntries(Object.entries(p.questViews || {}).filter(([k,v]) => k && typeof v === "boolean")), font: FONT_CHOICES.includes(p.font) ? p.font : "Jua", colors, preset: typeof p.preset === "string" ? p.preset : "", opts, gen, home, homeScene, lobbyScale, storyCast, boxOpacity, style };
+    return { questViews: Object.fromEntries(Object.entries(p.questViews || {}).filter(([k,v]) => k && typeof v === "boolean")), font: FONT_CHOICES.includes(p.font) ? p.font : "Jua", colors, preset: typeof p.preset === "string" ? p.preset : "", opts, gen, home, homeScene, lobbyScale, storyCast, boxOpacity, emoteSize, style };
   }
   let prefs = normalizePrefs((() => { try { return JSON.parse(localStorage.getItem(CACHE) || "null"); } catch { return null; } })());
 
@@ -1111,6 +1112,7 @@ ${T} :is(.vn-dock, .vn-bar) { overflow-x: clip !important; }
 .gfx-cheek-pad[data-mode="preview"] .gfx-torso-guide { display: none; }
 .gfx-torso-controls { display: grid; gap: .45em; padding: .7em; border: 2px solid var(--gfx-line); border-radius: 12px; }
 .gfx-torso-controls input[type="range"] { width: 100%; accent-color: var(--gfx-accent); }
+.gfx-cheek-pad .mark.head { border: 2.5px dashed var(--gfx-accent) !important; background: color-mix(in srgb, var(--gfx-accent) 12%, transparent) !important; }
 .gfx-cheek-pad .mark { position: absolute; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
   border: 2px dashed var(--coral); background: color-mix(in srgb, var(--coral) 22%, transparent); }
 .gfx-sd-edit-side { display: flex; flex-direction: column; gap: 0.2em; min-width: 0; }
@@ -1576,12 +1578,12 @@ ${T} .vn .vn-choices[data-forge-choice-canon] {
 /* Expression emotes (Gacha Forge 1.27 Expression portraits): a manga mark by the speaker's temple, no balloon,
  * in the white sticker outline the SDs wear. Kenney's Emotes Pack symbols. Only the one speaking shows it, mirrored
  * for a character turned the other way. */
-.gfx-vn-cast .gfx-emote { position: absolute; top: 4%; left: 70%; width: 32%; aspect-ratio: 1; z-index: 3; pointer-events: none; rotate: 12deg;
+.gfx-vn-cast .gfx-emote { position: absolute; left: var(--ex, 70%); top: var(--ey, 6%); width: var(--ew, 21%); translate: -50% -50%; aspect-ratio: 1; z-index: 3; pointer-events: none; rotate: 12deg;
   filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 0 1.2px var(--gfx-line));
   transform-origin: 30% 80%; transition: opacity 200ms ease;
   /* backwards, not both: a held end state would override the hidden rule below for one who stopped speaking. */
   animation: gfx-emote-pop 380ms cubic-bezier(.3, 1.6, .5, 1) backwards; }
-.gfx-vn-cast .who[data-face="left"] .gfx-emote { left: -2%; rotate: -12deg; transform-origin: 70% 80%; }
+.gfx-vn-cast .gfx-emote[data-side="left"] { rotate: -12deg; transform-origin: 70% 80%; }
 .gfx-vn-cast .who:not([data-speaking]) .gfx-emote { opacity: 0; }
 .gfx-vn-cast .gfx-emote svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes gfx-emote-pop { from { opacity: 0; scale: .2; } 60% { opacity: 1; scale: 1.15; } to { opacity: 1; scale: 1; } }
@@ -1870,23 +1872,46 @@ const lum = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "")); i
    * CC0 1.0 public domain. The symbols of the pack's vector sheet without their balloons: sparkles (joy), anger
    * mark, gloom cloud (sadness), sweat drops (fear). */
   const EMOTE_SVG = {
-    "joy": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"340 60 32 32\"><path stroke=\"none\" fill=\"#FF9900\" d=\"M348.7 76.7 L348 77 347.3 76.7 Q347 76.4 347 76 347 75.6 347.3 75.3 L348.6 74 347.3 72.7 Q347 72.4 347 72 347 71.6 347.3 71.3 347.6 71 348 71 348.4 71 348.7 71.3 L350 72.6 351.3 71.3 Q351.6 71 352 71 352.4 71 352.7 71.3 L353 72 352.7 72.7 351.4 74 352.7 75.3 353 76 352.7 76.7 352 77 351.3 76.7 350 75.4 348.7 76.7 M353 82.5 Q353 83.15 352.55 83.55 352.15 84 351.5 84 350.9 84 350.45 83.55 350 83.15 350 82.5 350 81.9 350.45 81.45 350.9 81 351.5 81 352.15 81 352.55 81.45 353 81.9 353 82.5 M363 69.5 L362.55 70.55 361.5 71 Q360.9 71 360.45 70.55 360 70.15 360 69.5 360 68.9 360.45 68.45 360.9 68 361.5 68 362.15 68 362.55 68.45 363 68.9 363 69.5 M360.7 84.7 L360 85 Q359.6 85 359.3 84.7 359 84.4 359 84 359 83.6 359.3 83.3 L360.6 82 359.3 80.7 Q359 80.4 359 80 359 79.6 359.3 79.3 359.6 79 360 79 360.4 79 360.7 79.3 L362 80.6 363.3 79.3 Q363.6 79 364 79 364.4 79 364.7 79.3 L365 80 364.7 80.7 363.4 82 364.7 83.3 365 84 364.7 84.7 364 85 Q363.6 85 363.3 84.7 L362 83.4 360.7 84.7\"/></svg>",
-    "anger": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"100 100 32 32\"><path stroke=\"none\" fill=\"#FF3300\" d=\"M113.05 108 L114.65 108 114.9 108.1 115 108.35 115 114.6 114.9 114.9 114.65 115 108.4 115 108.1 114.9 108 114.6 108 113.05 108.1 112.75 108.4 112.65 111.35 112.65 112.7 111.35 112.7 108.35 112.8 108.1 113.05 108 M118.95 108 L119.2 108.1 119.3 108.35 119.3 111.35 120.65 112.65 123.6 112.65 123.9 112.75 124 113.05 124 114.6 123.9 114.9 123.6 115 117.35 115 117.1 114.9 117 114.6 117 108.35 117.1 108.1 117.35 108 118.95 108 M118.95 124 L117.35 124 117.1 123.9 117 123.65 117 117.4 117.1 117.1 117.35 117 123.6 117 123.9 117.1 124 117.4 124 118.95 123.9 119.25 123.6 119.35 120.65 119.35 119.3 120.65 119.3 123.65 119.2 123.9 118.95 124 M113.05 124 L112.8 123.9 112.7 123.65 112.7 120.65 111.35 119.35 108.4 119.35 108.1 119.25 108 118.95 108 117.4 108.1 117.1 108.4 117 114.65 117 114.9 117.1 115 117.4 115 123.65 114.9 123.9 114.65 124 113.05 124\"/></svg>",
-    "sadness": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"380 100 32 32\"><path stroke=\"none\" fill=\"#666666\" d=\"M401.7 122.6 Q399.3 125 396 125 392.7 125 390.4 122.6 L389.8 121.95 389 122 Q386.95 122 385.5 120.5 384 119.05 384 117 384 114.9 385.5 113.4 386.95 112 389 112 L389.75 112.05 390.4 111.3 Q392.7 109 396 109 399.3 109 401.7 111.3 L402.35 112.05 403 112 Q405.05 112 406.55 113.4 408 114.9 408 117 408 119.05 406.55 120.5 405.05 122 403 122 L402.3 121.95 401.7 122.6\"/></svg>",
-    "fear": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"60 100 32 32\"><path stroke=\"none\" fill=\"#3498DB\" d=\"M68.45 121.6 Q67 120.15 67 118.3 L67.05 118.05 71.05 107.6 71.4 107.2 72 107 72.6 107.2 72.95 107.6 76.95 118.05 77 118.3 Q77 120.15 75.6 121.6 74.1 123 72 123 69.95 123.05 68.45 121.6 M80.9 125.15 Q80 124.25 80 123.1 L80.05 122.95 82.45 116.4 82.65 116.15 83 116 Q83.2 116 83.35 116.15 L83.6 116.4 86 122.95 86 123.1 Q86 124.25 85.15 125.15 84.25 126 83 126 81.8 126.05 80.9 125.15\"/></svg>"
+    "joy": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"346 66.5 20 20\"><path stroke=\"none\" fill=\"#FF9900\" d=\"M348.7 76.7 L348 77 347.3 76.7 Q347 76.4 347 76 347 75.6 347.3 75.3 L348.6 74 347.3 72.7 Q347 72.4 347 72 347 71.6 347.3 71.3 347.6 71 348 71 348.4 71 348.7 71.3 L350 72.6 351.3 71.3 Q351.6 71 352 71 352.4 71 352.7 71.3 L353 72 352.7 72.7 351.4 74 352.7 75.3 353 76 352.7 76.7 352 77 351.3 76.7 350 75.4 348.7 76.7 M353 82.5 Q353 83.15 352.55 83.55 352.15 84 351.5 84 350.9 84 350.45 83.55 350 83.15 350 82.5 350 81.9 350.45 81.45 350.9 81 351.5 81 352.15 81 352.55 81.45 353 81.9 353 82.5 M363 69.5 L362.55 70.55 361.5 71 Q360.9 71 360.45 70.55 360 70.15 360 69.5 360 68.9 360.45 68.45 360.9 68 361.5 68 362.15 68 362.55 68.45 363 68.9 363 69.5 M360.7 84.7 L360 85 Q359.6 85 359.3 84.7 359 84.4 359 84 359 83.6 359.3 83.3 L360.6 82 359.3 80.7 Q359 80.4 359 80 359 79.6 359.3 79.3 359.6 79 360 79 360.4 79 360.7 79.3 L362 80.6 363.3 79.3 Q363.6 79 364 79 364.4 79 364.7 79.3 L365 80 364.7 80.7 363.4 82 364.7 83.3 365 84 364.7 84.7 364 85 Q363.6 85 363.3 84.7 L362 83.4 360.7 84.7\"/></svg>",
+    "anger": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"107 107 18 18\"><path stroke=\"none\" fill=\"#FF3300\" d=\"M113.05 108 L114.65 108 114.9 108.1 115 108.35 115 114.6 114.9 114.9 114.65 115 108.4 115 108.1 114.9 108 114.6 108 113.05 108.1 112.75 108.4 112.65 111.35 112.65 112.7 111.35 112.7 108.35 112.8 108.1 113.05 108 M118.95 108 L119.2 108.1 119.3 108.35 119.3 111.35 120.65 112.65 123.6 112.65 123.9 112.75 124 113.05 124 114.6 123.9 114.9 123.6 115 117.35 115 117.1 114.9 117 114.6 117 108.35 117.1 108.1 117.35 108 118.95 108 M118.95 124 L117.35 124 117.1 123.9 117 123.65 117 117.4 117.1 117.1 117.35 117 123.6 117 123.9 117.1 124 117.4 124 118.95 123.9 119.25 123.6 119.35 120.65 119.35 119.3 120.65 119.3 123.65 119.2 123.9 118.95 124 M113.05 124 L112.8 123.9 112.7 123.65 112.7 120.65 111.35 119.35 108.4 119.35 108.1 119.25 108 118.95 108 117.4 108.1 117.1 108.4 117 114.65 117 114.9 117.1 115 117.4 115 123.65 114.9 123.9 114.65 124 113.05 124\"/></svg>",
+    "sadness": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"383 104 26 26\"><path stroke=\"none\" fill=\"#666666\" d=\"M401.7 122.6 Q399.3 125 396 125 392.7 125 390.4 122.6 L389.8 121.95 389 122 Q386.95 122 385.5 120.5 384 119.05 384 117 384 114.9 385.5 113.4 386.95 112 389 112 L389.75 112.05 390.4 111.3 Q392.7 109 396 109 399.3 109 401.7 111.3 L402.35 112.05 403 112 Q405.05 112 406.55 113.4 408 114.9 408 117 408 119.05 406.55 120.5 405.05 122 403 122 L402.3 121.95 401.7 122.6\"/></svg>",
+    "fear": "<svg aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"65.97 106 21.049999999999997 21.049999999999997\"><path stroke=\"none\" fill=\"#3498DB\" d=\"M68.45 121.6 Q67 120.15 67 118.3 L67.05 118.05 71.05 107.6 71.4 107.2 72 107 72.6 107.2 72.95 107.6 76.95 118.05 77 118.3 Q77 120.15 75.6 121.6 74.1 123 72 123 69.95 123.05 68.45 121.6 M80.9 125.15 Q80 124.25 80 123.1 L80.05 122.95 82.45 116.4 82.65 116.15 83 116 Q83.2 116 83.35 116.15 L83.6 116.4 86 122.95 86 123.1 Q86 124.25 85.15 125.15 84.25 126 83 126 81.8 126.05 80.9 125.15\"/></svg>"
   };
   function paintEmote(n, expr) {
     expr = prefs.opts.emote && isExpr(expr) ? expr : "";
-    if ((n.getAttribute("data-expr") || "") === expr) return;
-    if (expr) n.setAttribute("data-expr", expr); else n.removeAttribute("data-expr");
-    n.querySelector(":scope > .gfx-emote")?.remove();
-    if (!expr) return;
-    const b = el("div", "gfx-emote");
-    b.dataset.expr = expr;
-    b.setAttribute("aria-hidden", "true");
-    b.innerHTML = EMOTE_SVG[expr];
-    n.append(b);
+    if ((n.getAttribute("data-expr") || "") !== expr) {
+      if (expr) n.setAttribute("data-expr", expr); else n.removeAttribute("data-expr");
+      n.querySelector(".gfx-emote")?.remove();
+      if (expr) {
+        const mark = el("div", "gfx-emote");
+        mark.dataset.expr = expr;
+        mark.setAttribute("aria-hidden", "true");
+        mark.innerHTML = EMOTE_SVG[expr];
+        // Inside the body: the mark breathes, scales with 키 and stands where the picture stands.
+        (n.querySelector(":scope > .body") || n).append(mark);
+      }
+    }
+    placeEmote(n);
   }
+  /* By the head: its set centre and size (raw picture shares, mapped onto the outlined picture the way cheeks are),
+   * else a chibi's usual head. On the side the character faces; sized from the head times 표정 기호 크기. */
+  function placeEmote(n) {
+    const mark = n.querySelector(".gfx-emote"), im = n.querySelector(".body > img");
+    if (!mark || !im) return;
+    // An outfit without its own head borrows the base look's; neither set: a chibi's usual head.
+    const who = n.getAttribute("data-name") || "", raw = headOf(who, n.dataset.look || "") || headOf(who, "");
+    const mx = Number(im.dataset.mx), my = Number(im.dataset.my), ox = Number(im.dataset.ox) || 0, oy = Number(im.dataset.oy) || 0;
+    let h = raw || { x: 0.5, y: 0.24, r: 0.2 };
+    if (raw && mx && my) h = { x: ox + raw.x * mx, y: oy + raw.y * my, r: raw.r * mx };
+    const x = im.style.scale === "-1 1" ? 1 - h.x : h.x, side = n.dataset.face === "left" ? -1 : 1;
+    const aspect = im.offsetWidth && im.offsetHeight ? im.offsetWidth / im.offsetHeight : 0.68;
+    const set = (k, v) => { if (mark.style.getPropertyValue(k) !== v) mark.style.setProperty(k, v); };
+    set("--ex", ((x + side * h.r * 1.05) * 100).toFixed(2) + "%");
+    set("--ey", ((h.y - h.r * 0.6 * aspect) * 100).toFixed(2) + "%");
+    set("--ew", (h.r * 1.2 * (prefs.emoteSize || 1) * 100).toFixed(2) + "%");
+    if (mark.dataset.side !== (side < 0 ? "left" : "right")) mark.dataset.side = side < 0 ? "left" : "right";
+  }
+
   const anySd = () => {
     const w = world();
     if (!w) return [];
@@ -3136,7 +3161,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     // layer used to be emptied and rebuilt here, so everyone vanished and popped back in once their pictures loaded.
     if (layer.getAttribute("data-scene") !== snapshot.sceneKey) layer.setAttribute("data-scene", snapshot.sceneKey);
     const key = snapshot.sceneKey + "|" + speaker + "|" + slots.map((s) => [s.id, s.name, s.portrait, storySdFor(s.name, s.portrait, s.expr), prefs.opts.emote ? s.expr || "" : "", sdEntry(s.name).tall || 1, sdEntry(s.name).ally ? 1 : 0, JSON.stringify(torsoForSprite(sdEntry(s.name), storySd(s.name, s.portrait))), faceOf(s.name)].join("~")).join(";");
-    if (layer.getAttribute("data-key") === key) return;
+    // Same line-up: only the marks follow a changed head or size setting.
+    if (layer.getAttribute("data-key") === key) { for (const w of layer.querySelectorAll(":scope > .who")) placeEmote(w); return; }
     layer.setAttribute("data-key", key);
     vnCast.renderedKey = key;
     const xs = CAST_X[slots.length] || slots.map((_, i) => 10 + i * 80 / Math.max(1, slots.length - 1));
@@ -3207,6 +3233,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
           if (Math.abs((parseFloat(n.style.aspectRatio) || 0) - ar) > 0.005) n.style.aspectRatio = String(ar);
         }
         layoutCast(layer);
+        placeEmote(n);
       };
       // onload, not a one-off listener: a sprite swapped in later (after its picture decoded) refits too.
       im.onload = fit;
@@ -3217,6 +3244,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         if (speaking) { n.setAttribute("data-speaking", ""); n.removeAttribute("data-hop"); void n.offsetWidth; n.setAttribute("data-hop", ""); }
         else n.removeAttribute("data-speaking");
       }
+      n.dataset.look = storyLookKey(name, slot.portrait);
       paintEmote(n, slot.expr);
     });
   }
@@ -3314,6 +3342,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     return Array.isArray(c) && c.length ? c : null;
   };
   const cheekR = (name, look = "") => { const r = Number(lookOf(name, look).cheekR); return r > 0 ? r : 0.04; };
+  /* The head of an SD look: centre and radius as shares of the picture's width/height (radius of its width), set in
+   * SD 편집 → 볼·배치. Emote marks sit by it and scale with it; it can drive head motions later. */
+  const HEAD_SIZES = [[0.14, "머리 작게"], [0.2, "보통"], [0.27, "머리 크게"]];
+  const headOf = (name, look = "") => {
+    const h = lookOf(name, look).head;
+    return h && [h.x, h.y, h.r].every((v) => Number.isFinite(v)) ? { x: h.x, y: h.y, r: h.r } : null;
+  };
   // Edits for one look of a character: the base entry, or that outfit inside variants.
   function saveLook(name, look, patch) {
     if (!look) return saveSdEntry(name, patch);
@@ -4419,7 +4454,10 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     on(boxRange, "change", () => savePrefs());
     on(boxRow, "click", (e) => e.stopPropagation());
     boxRow.append(boxRange, boxValue);
+    const emoteSizes = el("div", "st-chips");
+    for (const [v, label] of [[0.7, "작게"], [1, "보통"], [1.35, "크게"]]) emoteSizes.append(chip(label, () => { prefs.emoteSize = v; savePrefs(); paintSettings(); refresh(); }, { "data-gfx-emote-size": String(v) }));
     p.append(grid, hint("스토리에 한 번에 서는 최대 인원 (넘으면 가장 오래 말하지 않은 인물이 물러납니다)"), cast,
+      hint("표정 기호 크기 (머리 크기에 맞춘 뒤 곱합니다. 머리 위치는 SD 편집 → 볼·배치에서 정합니다)"), emoteSizes,
       hint("대사칸 불투명도 (낮출수록 배경이 비쳐 보입니다)"), boxRow);
     return p;
   }
@@ -4567,7 +4605,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const look = allOutfits.includes(sdEditLook) ? sdEditLook : "";
       const lookUrl = look ? sdVariant(e, look)?.url : e.url;
       const lookName = (k) => w.details.get(c.name)?.outfits?.find((o) => pathOf(o.url) === k)?.name || "의상 " + (allOutfits.indexOf(k) + 1);
-      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.expressions || {}), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(e.torso || null), JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
+      const key = c ? [c.name, look, e.url || "", JSON.stringify(e.variants || {}), JSON.stringify(e.expressions || {}), JSON.stringify(e.head || null), JSON.stringify(e.history || []), e.lobby || "", e.story || "", Array.from(w.outfits.get(c.name) || []).join(","), JSON.stringify(e.cheeks || []), cheekR(c.name), faceOf(c.name), e.tall || 1, JSON.stringify(e.torso || null), JSON.stringify(w.details.get(c.name) || {}), linesRev].join("|") : "";
       const promptKey = JSON.stringify([e.appearance, e.prompt, e.promptContext, prefs.gen.template]);
       if (box.getAttribute("data-key") === key && box.getAttribute("data-prompt-key") === promptKey) continue;
       if (box.contains(root.activeElement) && root.activeElement?.matches("input, textarea")) continue;
@@ -4640,6 +4678,12 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
             m.style.cssText = "left:" + (img.offsetLeft + p.x * img.offsetWidth) + "px;top:" + (img.offsetTop + p.y * img.offsetHeight) + "px;width:" + cheekR(c.name, look) * 2 * img.offsetWidth + "px";
             pad.append(m);
           }
+          const head = headOf(c.name, look);
+          if (head) {
+            const m = el("i", "mark head");
+            m.style.cssText = "left:" + (img.offsetLeft + head.x * img.offsetWidth) + "px;top:" + (img.offsetTop + head.y * img.offsetHeight) + "px;width:" + head.r * 2 * img.offsetWidth + "px";
+            pad.append(m);
+          }
         };
         if (img.complete) requestAnimationFrame(marks); else img.addEventListener("load", marks, { once: true });
         const markerRO = new ResizeObserver(marks);
@@ -4654,8 +4698,15 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
           ev.stopPropagation();
           if (pinched || pad.dataset.mode === "preview") { pinched = false; return; }
           const r = img.getBoundingClientRect();
+          if (!r.width || !r.height) return;
           const p = { x: +((ev.clientX - r.left) / r.width).toFixed(3), y: +((ev.clientY - r.top) / r.height).toFixed(3) };
-          if (p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1) return;
+          if (!(p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)) return;
+          if (pad.dataset.mode === "head") {
+            saveLook(c.name, look, { head: { ...p, r: headOf(c.name, look)?.r || 0.2 } }).then(() => { refresh(); setEditNote("머리 위치를 저장했습니다", true); });
+            sdEditKey = "";
+            paintSettings();
+            return;
+          }
           const now = (cheeksOf(c.name, look) || []).slice();
           // Two cheeks at most: a third tap moves the nearer one.
           if (now.length >= 2) now.splice(now.findIndex((q, i, a) => Math.hypot(q.x - p.x, q.y - p.y) === Math.min(...a.map((z) => Math.hypot(z.x - p.x, z.y - p.y)))), 1, p);
@@ -4679,6 +4730,25 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       }
       size.append(chip("볼 지우기", () => saveLook(c.name, look, { cheeks: [] }).then(() => paintSettings())));
       side.append(size);
+      // The head: one tap on the picture after this button sets its centre; the chips set its size.
+      const headRow = el("div", "st-chips");
+      const headPick = chip(headOf(c.name, look) ? "머리 위치 다시 정하기" : "머리 위치 정하기", () => {
+        const on = pad.dataset.mode !== "head";
+        pad.dataset.mode = on ? "head" : "edit";
+        headPick.setAttribute("aria-pressed", String(on));
+        setEditNote(on ? "그림에서 머리 한가운데를 누르세요" : "", true);
+      });
+      headRow.append(headPick);
+      for (const [r, label] of HEAD_SIZES) {
+        const b = chip(label, () => {
+          const hd = headOf(c.name, look) || { x: 0.5, y: 0.26 };
+          saveLook(c.name, look, { head: { x: hd.x, y: hd.y, r } }).then(() => { paintSettings(); refresh(); });
+        });
+        b.setAttribute("aria-pressed", String(Math.abs((headOf(c.name, look)?.r || -1) - r) < 0.001));
+        headRow.append(b);
+      }
+      if (headOf(c.name, look)) headRow.append(chip("머리 자동", () => saveLook(c.name, look, { head: null }).then(() => { paintSettings(); refresh(); })));
+      side.append(hint("머리 위치 (표정 기호가 머리 옆에 붙고 머리 크기만큼 커집니다. 정하지 않으면 그림 위쪽 가운데로 추정합니다)", ""), headRow);
       side.append(hint("그림 속 캐릭터가 바라보는 쪽", ""));
       const face = el("div", "st-chips");
       for (const [f, label] of [["left", "← 왼쪽을 봄"], ["front", "정면"], ["right", "오른쪽을 봄 →"]]) {
@@ -4863,6 +4933,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (!root) return;
     for (const b of root.querySelectorAll("[data-gfx-preset]")) b.setAttribute("aria-pressed", String(b.getAttribute("data-gfx-preset") === prefs.preset));
     for (const b of root.querySelectorAll("[data-gfx-cast]")) b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-gfx-cast")) === castMax()));
+    for (const b of root.querySelectorAll("[data-gfx-emote-size]")) b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-gfx-emote-size")) === prefs.emoteSize));
     for (const i of root.querySelectorAll("[data-gfx-color]")) { const v = prefs.colors[i.getAttribute("data-gfx-color")]; if (i.value.toUpperCase() !== v) i.value = v; }
     for (const b of root.querySelectorAll("[data-gfx-opt]")) b.setAttribute("aria-pressed", String(!!prefs.opts[b.getAttribute("data-gfx-opt")]));
     for (const b of root.querySelectorAll("[data-gfx-size]")) b.setAttribute("aria-pressed", String(b.getAttribute("data-gfx-size") === prefs.gen.size));
