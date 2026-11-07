@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.51 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.52 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -151,7 +151,7 @@
     const lobbyScale = typeof p.lobbyScale === "number" && Number.isFinite(p.lobbyScale) ? Math.min(2, Math.max(0.5, p.lobbyScale)) : 1;
     const storyCast = Number.isInteger(p.storyCast) && p.storyCast >= 2 && p.storyCast <= 10 ? p.storyCast : 3;
     const boxOpacity = typeof p.boxOpacity === "number" && Number.isFinite(p.boxOpacity) ? Math.min(100, Math.max(20, Math.round(p.boxOpacity))) : 95;
-    const emoteSize = [0.7, 1, 1.35].includes(p.emoteSize) ? p.emoteSize : 1;
+    const emoteSize = typeof p.emoteSize === "number" && Number.isFinite(p.emoteSize) ? Math.min(2.5, Math.max(0.4, Math.round(p.emoteSize * 20) / 20)) : 1;
     const style = typeof p.style === "string" ? p.style : undefined;
     return { questViews: Object.fromEntries(Object.entries(p.questViews || {}).filter(([k,v]) => k && typeof v === "boolean")), font: FONT_CHOICES.includes(p.font) ? p.font : "Jua", colors, preset: typeof p.preset === "string" ? p.preset : "", opts, gen, home, homeScene, lobbyScale, storyCast, boxOpacity, emoteSize, style };
   }
@@ -1112,9 +1112,31 @@ ${T} :is(.vn-dock, .vn-bar) { overflow-x: clip !important; }
 .gfx-cheek-pad[data-mode="preview"] .gfx-torso-guide { display: none; }
 .gfx-torso-controls { display: grid; gap: .45em; padding: .7em; border: 2px solid var(--gfx-line); border-radius: 12px; }
 .gfx-torso-controls input[type="range"] { width: 100%; accent-color: var(--gfx-accent); }
-.gfx-cheek-pad .mark.head { border: 2.5px dashed var(--gfx-accent) !important; background: color-mix(in srgb, var(--gfx-accent) 12%, transparent) !important; }
-.gfx-cheek-pad .mark { position: absolute; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
-  border: 2px dashed var(--coral); background: color-mix(in srgb, var(--coral) 22%, transparent); }
+/* 볼·배치 picture markers: drag the circle to move it, its handle to resize it, × to remove a cheek. Ghosts (the other
+   mode's markers, the guessed head) only show where things are. */
+.gfx-cheek-pad .mark { position: absolute; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: auto; cursor: grab; z-index: 3;
+  border: 2.5px solid var(--coral); background: color-mix(in srgb, var(--coral) 22%, transparent); box-shadow: 0 0 0 1.5px #fff8; }
+.gfx-cheek-pad .mark:active { cursor: grabbing; }
+.gfx-cheek-pad .mark:not(.ghost)::before { content: ""; position: absolute; inset: -10px; border-radius: 50%; }
+.gfx-cheek-pad .mark.head { border-color: var(--gfx-accent); background: color-mix(in srgb, var(--gfx-accent) 14%, transparent); }
+.gfx-cheek-pad .mark.ghost { pointer-events: none; border-style: dashed; opacity: .55; box-shadow: none; z-index: 2; }
+.gfx-cheek-pad .mark.ghost.auto::after { content: "자동"; position: absolute; left: 50%; top: 50%; translate: -50% -50%; font: 12px var(--display); color: var(--gfx-text);
+  padding: 0 .4em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-card) 85%, transparent); }
+.gfx-cheek-pad .mark .grip { position: absolute; left: calc(100% + 9px); top: 50%; width: 16px; height: 16px; translate: -50% -50%; border-radius: 50%; cursor: ew-resize;
+  background: var(--gfx-accent); border: 2px solid #fff; box-shadow: 0 0 0 1.5px var(--gfx-line); touch-action: none; }
+.gfx-cheek-pad .mark .del { position: absolute; left: calc(100% + 4px); top: -6px; width: 18px; height: 18px; translate: -50% -50%; border-radius: 50%; display: grid; place-items: center;
+  background: var(--gfx-line); color: #fff; font: 700 13px/1 sans-serif; cursor: pointer; }
+.gfx-cheek-pad .gfx-pad-emote { position: absolute; aspect-ratio: 1; translate: -50% -50%; rotate: 12deg; pointer-events: none; z-index: 3;
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 0 1.2px var(--gfx-line)); }
+.gfx-cheek-pad .gfx-pad-emote[data-side="left"] { rotate: -12deg; }
+.gfx-cheek-pad .gfx-pad-emote svg { display: block; width: 100%; height: 100%; }
+.gfx-cheek-pad[data-mode="preview"] { cursor: pointer; }
+.gfx-pad-modes { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: .3em; }
+.gfx-pad-modes .st-chip { justify-content: center; font-size: 1.05em; }
+.gfx-pad-group { display: grid; gap: .4em; padding: .6em; margin-bottom: .5em; border: 2px solid var(--gfx-line); border-radius: 12px; }
+.gfx-pad-group[hidden] { display: none; }
+.gfx-emote-size { display: flex; align-items: center; gap: .6em; }
+.gfx-emote-size input { flex: 1; accent-color: var(--gfx-accent); }
 .gfx-sd-edit-side { display: flex; flex-direction: column; gap: 0.2em; min-width: 0; }
 .gfx-sd-edit-side > b { font-family: var(--display); font-weight: 400; font-size: var(--t-md, 15px); }
 .gfx-field textarea { min-height: 4.2em; resize: vertical; font-family: ui-monospace, Consolas, monospace; }
@@ -3344,7 +3366,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   const cheekR = (name, look = "") => { const r = Number(lookOf(name, look).cheekR); return r > 0 ? r : 0.04; };
   /* The head of an SD look: centre and radius as shares of the picture's width/height (radius of its width), set in
    * SD 편집 → 볼·배치. Emote marks sit by it and scale with it; it can drive head motions later. */
-  const HEAD_SIZES = [[0.14, "머리 작게"], [0.2, "보통"], [0.27, "머리 크게"]];
   const headOf = (name, look = "") => {
     const h = lookOf(name, look).head;
     return h && [h.x, h.y, h.r].every((v) => Number.isFinite(v)) ? { x: h.x, y: h.y, r: h.r } : null;
@@ -4454,10 +4475,17 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     on(boxRange, "change", () => savePrefs());
     on(boxRow, "click", (e) => e.stopPropagation());
     boxRow.append(boxRange, boxValue);
-    const emoteSizes = el("div", "st-chips");
-    for (const [v, label] of [[0.7, "작게"], [1, "보통"], [1.35, "크게"]]) emoteSizes.append(chip(label, () => { prefs.emoteSize = v; savePrefs(); paintSettings(); refresh(); }, { "data-gfx-emote-size": String(v) }));
+    // Emote mark size: a share of the head's size, 40–250%.
+    const emoteSizes = el("label", "gfx-emote-size");
+    const sizeRange = el("input"); sizeRange.type = "range"; sizeRange.min = "40"; sizeRange.max = "250"; sizeRange.step = "5";
+    sizeRange.value = String(Math.round(prefs.emoteSize * 100)); sizeRange.setAttribute("aria-label", "표정 기호 크기");
+    const sizeValue = el("b", "", Math.round(prefs.emoteSize * 100) + "%");
+    on(sizeRange, "input", () => { prefs.emoteSize = Number(sizeRange.value) / 100; sizeValue.textContent = sizeRange.value + "%"; refresh(); });
+    on(sizeRange, "change", () => savePrefs());
+    on(emoteSizes, "click", (e) => e.stopPropagation());
+    emoteSizes.append(sizeRange, sizeValue, chip("100%로", () => { prefs.emoteSize = 1; sizeRange.value = "100"; sizeValue.textContent = "100%"; savePrefs(); refresh(); }));
     p.append(grid, hint("스토리에 한 번에 서는 최대 인원 (넘으면 가장 오래 말하지 않은 인물이 물러납니다)"), cast,
-      hint("표정 기호 크기 (머리 크기에 맞춘 뒤 곱합니다. 머리 위치는 SD 편집 → 볼·배치에서 정합니다)"), emoteSizes,
+      hint("표정 기호 크기 (머리 크기에 맞춘 크기의 몇 %인지. 머리 위치는 SD 편집 → 볼·배치 → 머리에서 정합니다)"), emoteSizes,
       hint("대사칸 불투명도 (낮출수록 배경이 비쳐 보입니다)"), boxRow);
     return p;
   }
@@ -4594,6 +4622,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
   /* ── One character's editor: cheek points on the sprite, its three lines and its pinch reaction ── */
   // linesRev moves when the AI rewrites lines, so the editor shows them; typing never rebuilds it.
   let sdEditing = "", sdEditKey = "", sdEditLook = "", sdEditTab = "pose", linesRev = 0;
+  // The 볼·배치 picture mode (cheek | head | preview) and the emotion its preview shows; kept across repaints.
+  let sdPadMode = "cheek", sdPreviewExpr = "anger";
   function paintSdEditor(root) {
     const w = world();
     const c = w && w.cards.find((x) => x.name === sdEditing);
@@ -4658,6 +4688,28 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       };
       let torsoDraft = normaliseTorso(lookOf(c.name, look).torso) || automaticTorso();
       let paintTorsoGuide = () => {};
+      /* Where things sit on this look's picture, in three modes over one picture: 볼 (cheeks), 머리 (head), 미리보기
+       * (pull the cheeks, see the emote mark). Markers are dragged to move, their edge handle resizes them, × removes a
+       * cheek; a tap on empty picture places a cheek or the head. One save per gesture, when the finger lifts. */
+      const modes = el("div", "st-chips gfx-pad-modes");
+      modes.setAttribute("role", "tablist");
+      const modeGroups = {};
+      const group = (key) => { const g = el("div", "gfx-pad-group"); g.dataset.for = key; modeGroups[key] = g; return g; };
+      const cheekGroup = group("cheek"), headGroup = group("head"), previewGroup = group("preview");
+      let marks = () => {};
+      const setMode = (m) => {
+        sdPadMode = m;
+        pad.dataset.mode = m;
+        for (const b of modes.children) b.setAttribute("aria-pressed", String(b.dataset.mode === m));
+        for (const [k, g] of Object.entries(modeGroups)) g.hidden = k !== m;
+        marks();
+      };
+      for (const [m, label] of [["cheek", "볼"], ["head", "머리"], ["preview", "미리보기"]]) {
+        const b = chip(label, () => setMode(m));
+        b.dataset.mode = m;
+        b.setAttribute("role", "tab");
+        modes.append(b);
+      }
       if (lookUrl) {
         const img = el("img");
         img.src = lookUrl;
@@ -4670,85 +4722,131 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         paintTorsoGuide = () => {
           torsoGuide.style.cssText = "left:" + (img.offsetLeft + torsoDraft.left * img.offsetWidth) + "px;top:" + (img.offsetTop + img.offsetHeight * 0.12) + "px;width:" + ((torsoDraft.right - torsoDraft.left) * img.offsetWidth) + "px;height:" + (img.offsetHeight * 0.7) + "px";
         };
-        const marks = () => {
-          paintTorsoGuide();
-          for (const m of pad.querySelectorAll(".mark")) m.remove();
-          for (const p of cheeksOf(c.name, look) || []) {
-            const m = el("i", "mark");
-            m.style.cssText = "left:" + (img.offsetLeft + p.x * img.offsetWidth) + "px;top:" + (img.offsetTop + p.y * img.offsetHeight) + "px;width:" + cheekR(c.name, look) * 2 * img.offsetWidth + "px";
-            pad.append(m);
+        // Drafts the drag works on; saved on release.
+        let cheeks = (cheeksOf(c.name, look) || []).map((p) => ({ x: p.x, y: p.y }));
+        let cheekRad = cheekR(c.name, look);
+        let head = headOf(c.name, look);
+        // The head the story would use when none is set here: the base look's, else a chibi's usual head (mapped
+        // back from the outlined picture's space, the way the story places it).
+        const autoHead = () => {
+          const base = look ? headOf(c.name, "") : null;
+          if (base) return base;
+          const b = bakeInfo(lookUrl);
+          return b && b.mx && b.my ? { x: (0.5 - b.ox) / b.mx, y: (0.24 - b.oy) / b.my, r: 0.2 / b.mx } : { x: 0.5, y: 0.24, r: 0.2 };
+        };
+        const at = (p, r) => "left:" + (img.offsetLeft + p.x * img.offsetWidth) + "px;top:" + (img.offsetTop + p.y * img.offsetHeight) + "px;width:" + r * 2 * img.offsetWidth + "px";
+        const frac = (ev) => {
+          const r = img.getBoundingClientRect();
+          if (!r.width || !r.height) return null;
+          const p = { x: (ev.clientX - r.left) / r.width, y: (ev.clientY - r.top) / r.height };
+          return p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1 ? p : null;
+        };
+        const round = (v) => +Number(v).toFixed(3);
+        const saveCheeks = () => saveLook(c.name, look, { cheeks: cheeks.map((p) => ({ x: round(p.x), y: round(p.y) })), cheekR: round(cheekRad) }).then(() => setEditNote("볼 위치를 저장했습니다", true));
+        const saveHead = () => saveLook(c.name, look, { head: head ? { x: round(head.x), y: round(head.y), r: round(head.r) } : null }).then(() => { refresh(); setEditNote(head ? "머리 위치를 저장했습니다" : "머리 위치를 자동으로 되돌렸습니다", true); });
+        // Drag a marker (move) or its handle (resize): pointer capture keeps it smooth outside the marker.
+        const drag = (ev, onMove, onDone) => {
+          ev.preventDefault(); ev.stopPropagation();
+          const target = ev.currentTarget;
+          try { target.setPointerCapture(ev.pointerId); } catch {}
+          const move = (e) => { const p = frac(e) || { x: Math.min(1, Math.max(0, (e.clientX - img.getBoundingClientRect().left) / Math.max(1, img.getBoundingClientRect().width))), y: Math.min(1, Math.max(0, (e.clientY - img.getBoundingClientRect().top) / Math.max(1, img.getBoundingClientRect().height))) }; onMove(p); marks(); };
+          const up = () => { target.removeEventListener("pointermove", move); target.removeEventListener("pointerup", up); target.removeEventListener("pointercancel", up); onDone(); };
+          target.addEventListener("pointermove", move);
+          target.addEventListener("pointerup", up);
+          target.addEventListener("pointercancel", up);
+        };
+        const marker = (cls, p, r, { onMove, onResize, onDone, onDelete } = {}) => {
+          const m = el("i", "mark " + cls);
+          m.style.cssText = at(p, r);
+          if (onMove) on(m, "pointerdown", (ev) => drag(ev, onMove, onDone));
+          if (onResize) {
+            const grip = el("b", "grip");
+            grip.title = "끌어서 크기 바꾸기";
+            on(grip, "pointerdown", (ev) => drag(ev, onResize, onDone));
+            m.append(grip);
           }
-          const head = headOf(c.name, look);
-          if (head) {
-            const m = el("i", "mark head");
-            m.style.cssText = "left:" + (img.offsetLeft + head.x * img.offsetWidth) + "px;top:" + (img.offsetTop + head.y * img.offsetHeight) + "px;width:" + head.r * 2 * img.offsetWidth + "px";
-            pad.append(m);
+          if (onDelete) {
+            const x = el("span", "del", "×");
+            x.title = "지우기";
+            on(x, "pointerdown", (ev) => { ev.preventDefault(); ev.stopPropagation(); onDelete(); });
+            m.append(x);
+          }
+          pad.append(m);
+          return m;
+        };
+        const sizeFrom = (center) => (p) => Math.min(0.4, Math.max(0.01, Math.hypot(p.x - center.x, (p.y - center.y) * img.offsetHeight / Math.max(1, img.offsetWidth))));
+        marks = () => {
+          paintTorsoGuide();
+          for (const m of pad.querySelectorAll(".mark, .gfx-pad-emote")) m.remove();
+          const mode = pad.dataset.mode;
+          const shownHead = head || autoHead();
+          if (mode === "cheek") {
+            marker("head ghost", shownHead, shownHead.r);
+            cheeks.forEach((p, i) => marker("cheek", p, cheekRad, {
+              onMove: (q) => { cheeks[i] = q; },
+              onResize: (q) => { cheekRad = Math.min(0.12, sizeFrom(cheeks[i])(q)); },
+              onDone: saveCheeks,
+              onDelete: () => { cheeks.splice(i, 1); marks(); saveCheeks(); },
+            }));
+          } else if (mode === "head") {
+            for (const p of cheeks) marker("cheek ghost", p, cheekRad);
+            if (head) marker("head", head, head.r, {
+              onMove: (q) => { head = { ...head, x: q.x, y: q.y }; },
+              onResize: (q) => { head = { ...head, r: sizeFrom(head)(q) }; },
+              onDone: saveHead,
+            });
+            else marker("head ghost auto", shownHead, shownHead.r);
+          } else {
+            // The mark the story would show for the picked emotion, at its size, by this head.
+            const expr = isExpr(sdPreviewExpr) ? sdPreviewExpr : "anger", side = faceOf(c.name) === "left" ? -1 : 1;
+            const mark = el("div", "gfx-pad-emote");
+            mark.dataset.side = side < 0 ? "left" : "right";
+            mark.innerHTML = EMOTE_SVG[expr];
+            const w = shownHead.r * 1.2 * (prefs.emoteSize || 1);
+            const aspect = img.offsetWidth / Math.max(1, img.offsetHeight);
+            mark.style.cssText = "left:" + (img.offsetLeft + (shownHead.x + side * shownHead.r * 1.05) * img.offsetWidth) + "px;top:" + (img.offsetTop + (shownHead.y - shownHead.r * 0.6 * aspect) * img.offsetHeight) + "px;width:" + w * img.offsetWidth + "px";
+            pad.append(mark);
           }
         };
         if (img.complete) requestAnimationFrame(marks); else img.addEventListener("load", marks, { once: true });
-        const markerRO = new ResizeObserver(marks);
+        const markerRO = new ResizeObserver(() => marks());
         markerRO.observe(pad);
         box._gfxMarkerRO = markerRO;
+        // A tap on the picture itself: a cheek (two at most; a third moves the nearer) or the head's centre.
         let pinched = false;
         on(pad, "pointerdown", (ev) => {
           ev.stopPropagation();
-          if (pad.dataset.mode === "preview") pinched = startPinch(img, ev, cheeksOf(c.name, look), cheekR(c.name, look), pad, (pulled) => { if (pulled) setEditNote(pinchFor(c.name)); }, false);
-        });
-        on(pad, "click", (ev) => {
-          ev.stopPropagation();
-          if (pinched || pad.dataset.mode === "preview") { pinched = false; return; }
-          const r = img.getBoundingClientRect();
-          if (!r.width || !r.height) return;
-          const p = { x: +((ev.clientX - r.left) / r.width).toFixed(3), y: +((ev.clientY - r.top) / r.height).toFixed(3) };
-          if (!(p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)) return;
-          if (pad.dataset.mode === "head") {
-            saveLook(c.name, look, { head: { ...p, r: headOf(c.name, look)?.r || 0.2 } }).then(() => { refresh(); setEditNote("머리 위치를 저장했습니다", true); });
-            sdEditKey = "";
-            paintSettings();
+          const mode = pad.dataset.mode;
+          if (mode === "preview") { pinched = startPinch(img, ev, cheeks.length ? cheeks : null, cheekRad, pad, (pulled) => { if (pulled) setEditNote(pinchFor(c.name)); }, false); return; }
+          const p = frac(ev);
+          if (!p) return;
+          if (mode === "head") {
+            head = { x: p.x, y: p.y, r: head?.r || autoHead().r };
+            marks();
+            drag(ev, (q) => { head = { ...head, x: q.x, y: q.y }; }, saveHead);
             return;
           }
-          const now = (cheeksOf(c.name, look) || []).slice();
-          // Two cheeks at most: a third tap moves the nearer one.
-          if (now.length >= 2) now.splice(now.findIndex((q, i, a) => Math.hypot(q.x - p.x, q.y - p.y) === Math.min(...a.map((z) => Math.hypot(z.x - p.x, z.y - p.y)))), 1, p);
-          else now.push(p);
-          saveLook(c.name, look, { cheeks: now });
-          sdEditKey = "";
-          paintSettings();
+          let i = cheeks.length;
+          if (cheeks.length >= 2) i = cheeks.reduce((best, q, k) => (Math.hypot(q.x - p.x, q.y - p.y) < Math.hypot(cheeks[best].x - p.x, cheeks[best].y - p.y) ? k : best), 0);
+          cheeks[i] = p;
+          marks();
+          drag(ev, (q) => { cheeks[i] = q; }, saveCheeks);
         });
+        on(pad, "click", (ev) => { ev.stopPropagation(); pinched = false; });
+        cheekGroup.append(hint("그림에서 볼을 눌러 두 곳까지 찍으세요. 동그라미를 끌어 옮기고, 오른쪽 손잡이를 끌어 크기를 바꾸고, ×로 지웁니다. 노란 점선은 머리 자리입니다.", ""),
+          chip("볼 모두 지우기", () => { cheeks = []; marks(); saveCheeks(); }));
+        headGroup.append(hint("그림에서 머리 한가운데를 누르거나 끄세요. 원을 끌어 옮기고, 오른쪽 손잡이로 크기를 맞춥니다. 표정 기호가 이 머리 옆에 머리 크기만큼 붙습니다." + (look ? " 이 의상에 정하지 않으면 기본 모습의 머리를 씁니다." : ""), ""),
+          chip("머리 자동으로", () => { head = null; marks(); saveHead(); }));
+        const exprRow = el("div", "st-chips");
+        for (const [k, label] of EXPRS) {
+          const b = chip(label, () => { sdPreviewExpr = k; for (const x of exprRow.children) x.setAttribute("aria-pressed", String(x === b)); marks(); });
+          b.setAttribute("aria-pressed", String(k === sdPreviewExpr));
+          exprRow.append(b);
+        }
+        previewGroup.append(hint("볼을 눌러 당겨 보세요. 아래에서 고른 감정의 표정 기호가 스토리와 같은 자리 · 크기로 보입니다 (크기는 UI 설정 → 표정 기호 크기).", ""), exprRow);
       } else pad.append(el("p", "hint", "먼저 SD를 그려 주세요."));
-      const mode = chip("볼 위치 편집 · 당기기 미리보기로 전환", () => {
-        const preview = pad.dataset.mode !== "preview";
-        pad.dataset.mode = preview ? "preview" : "edit";
-        mode.textContent = preview ? "당기기 미리보기 · 볼 위치 편집으로 전환" : "볼 위치 편집 · 당기기 미리보기로 전환";
-      });
-      side.append(mode, hint("선택한 의상에만 저장됩니다. 그림을 눌러 볼 두 곳을 지정하거나 옮기세요.", ""));
-      const size = el("div", "st-chips");
-      for (const [r, label] of [[0.025, "볼 작게"], [0.04, "보통"], [0.055, "볼 크게"]]) {
-        const b = chip(label, () => { saveLook(c.name, look, { cheekR: r }); sdEditKey = ""; paintSettings(); });
-        b.setAttribute("aria-pressed", String(Math.abs(cheekR(c.name, look) - r) < 0.001));
-        size.append(b);
-      }
-      size.append(chip("볼 지우기", () => saveLook(c.name, look, { cheeks: [] }).then(() => paintSettings())));
-      side.append(size);
-      // The head: one tap on the picture after this button sets its centre; the chips set its size.
-      const headRow = el("div", "st-chips");
-      const headPick = chip(headOf(c.name, look) ? "머리 위치 다시 정하기" : "머리 위치 정하기", () => {
-        const on = pad.dataset.mode !== "head";
-        pad.dataset.mode = on ? "head" : "edit";
-        headPick.setAttribute("aria-pressed", String(on));
-        setEditNote(on ? "그림에서 머리 한가운데를 누르세요" : "", true);
-      });
-      headRow.append(headPick);
-      for (const [r, label] of HEAD_SIZES) {
-        const b = chip(label, () => {
-          const hd = headOf(c.name, look) || { x: 0.5, y: 0.26 };
-          saveLook(c.name, look, { head: { x: hd.x, y: hd.y, r } }).then(() => { paintSettings(); refresh(); });
-        });
-        b.setAttribute("aria-pressed", String(Math.abs((headOf(c.name, look)?.r || -1) - r) < 0.001));
-        headRow.append(b);
-      }
-      if (headOf(c.name, look)) headRow.append(chip("머리 자동", () => saveLook(c.name, look, { head: null }).then(() => { paintSettings(); refresh(); })));
-      side.append(hint("머리 위치 (표정 기호가 머리 옆에 붙고 머리 크기만큼 커집니다. 정하지 않으면 그림 위쪽 가운데로 추정합니다)", ""), headRow);
+      side.append(modes, cheekGroup, headGroup, previewGroup);
+      setMode(["cheek", "head", "preview"].includes(sdPadMode) ? sdPadMode : "cheek");
       side.append(hint("그림 속 캐릭터가 바라보는 쪽", ""));
       const face = el("div", "st-chips");
       for (const [f, label] of [["left", "← 왼쪽을 봄"], ["front", "정면"], ["right", "오른쪽을 봄 →"]]) {
@@ -4933,7 +5031,6 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
     if (!root) return;
     for (const b of root.querySelectorAll("[data-gfx-preset]")) b.setAttribute("aria-pressed", String(b.getAttribute("data-gfx-preset") === prefs.preset));
     for (const b of root.querySelectorAll("[data-gfx-cast]")) b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-gfx-cast")) === castMax()));
-    for (const b of root.querySelectorAll("[data-gfx-emote-size]")) b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-gfx-emote-size")) === prefs.emoteSize));
     for (const i of root.querySelectorAll("[data-gfx-color]")) { const v = prefs.colors[i.getAttribute("data-gfx-color")]; if (i.value.toUpperCase() !== v) i.value = v; }
     for (const b of root.querySelectorAll("[data-gfx-opt]")) b.setAttribute("aria-pressed", String(!!prefs.opts[b.getAttribute("data-gfx-opt")]));
     for (const b of root.querySelectorAll("[data-gfx-size]")) b.setAttribute("aria-pressed", String(b.getAttribute("data-gfx-size") === prefs.gen.size));
