@@ -1,4 +1,4 @@
-/* Gacha UI Style v1.12.53 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
+/* Gacha UI Style v1.12.54 — personal extension for Gacha Forge 1.27 (also 1.8.13) on Marinara Engine 2.5.2.
  * Adds "말랑 · 트릭컬풍" to Settings → 화면 → UI 스타일, next to the game's own five, and while it is on:
  *  - its colours: five presets or eight picked colours (the game's theme tokens are derived from them),
  *  - its shapes: thick outlines, buttons that press down, ribbon name tags, polka-dot ground,
@@ -1122,7 +1122,7 @@ ${T} :is(.vn-dock, .vn-bar) { overflow-x: clip !important; }
 .gfx-cheek-pad .mark.ghost { pointer-events: none; border-style: dashed; opacity: .55; box-shadow: none; z-index: 2; }
 .gfx-cheek-pad .mark.ghost.auto::after { content: "자동"; position: absolute; left: 50%; top: 50%; translate: -50% -50%; font: 12px var(--display); color: var(--gfx-text);
   padding: 0 .4em; border-radius: 999px; background: color-mix(in srgb, var(--gfx-card) 85%, transparent); }
-.gfx-cheek-pad .mark .grip { position: absolute; left: calc(100% + 9px); top: 50%; width: 16px; height: 16px; translate: -50% -50%; border-radius: 50%; cursor: ew-resize;
+.gfx-cheek-pad .mark .grip { position: absolute; left: 100%; top: 50%; width: 16px; height: 16px; translate: -50% -50%; border-radius: 50%; cursor: ew-resize;
   background: var(--gfx-accent); border: 2px solid #fff; box-shadow: 0 0 0 1.5px var(--gfx-line); touch-action: none; }
 .gfx-cheek-pad .mark .del { position: absolute; left: calc(100% + 4px); top: -6px; width: 18px; height: 18px; translate: -50% -50%; border-radius: 50%; display: grid; place-items: center;
   background: var(--gfx-line); color: #fff; font: 700 13px/1 sans-serif; cursor: pointer; }
@@ -1137,8 +1137,10 @@ ${T} :is(.vn-dock, .vn-bar) { overflow-x: clip !important; }
 .gfx-pad-group[hidden] { display: none; }
 /* Cheeks and head are placed on the upper picture shown large. */
 .gfx-cheek-pad { overflow: hidden; }
-.gfx-cheek-pad[data-zoom] img { max-width: none; max-height: none; width: auto; height: 190%; inset: 0 auto auto 50%; margin: 0; translate: -50% 0; }
-.gfx-cheek-pad[data-zoom] .gfx-torso-guide { display: none; }
+.gfx-cheek-pad:not([data-tab="pose"]) :is(.mark, .gfx-pad-emote) { display: none; }
+.gfx-cheek-pad:not([data-tab="stance"]) .gfx-torso-guide { display: none !important; }
+.gfx-cheek-pad:not([data-tab="pose"]) { cursor: default; }
+.gfx-cheek-pad[data-zoom][data-tab="pose"] img { max-width: none; max-height: none; width: auto; height: 190%; inset: 0 auto auto 50%; margin: 0; translate: -50% 0; }
 .gfx-pad-ctl { display: grid; gap: .45em; }
 .gfx-ctl-row { display: flex; align-items: center; gap: .5em; flex-wrap: wrap; }
 .gfx-ctl-row > b { min-width: 2.6em; font-family: var(--display); }
@@ -1438,11 +1440,15 @@ ${T} .forge-center::before { content: "Now Loading · 이야기를 준비하고 
 .gfx-sd-edit:not([hidden]) { position: fixed; inset: 12px; z-index: 2147483005; margin: 0; padding: 16px; box-sizing: border-box; border: 3px solid var(--gfx-line); border-radius: 22px; background: var(--gfx-card); color: var(--gfx-text); box-shadow: 0 0 0 100vmax #0008; font-size: clamp(15px, 1.4vw, 19px); display: grid; grid-template-columns: minmax(200px, .9fr) minmax(340px, 1.3fr); grid-template-rows: auto auto auto minmax(0, 1fr); gap: 12px; overflow: hidden; align-items: stretch; }
 .gfx-sd-edit-header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 1em; }
 .gfx-sd-edit-header b { font-size: 1.2em; }
-.gfx-sd-edit-tabs { grid-column: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.gfx-sd-edit-tabs { grid-column: 2; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
 .gfx-sd-edit-tabs button { font: inherit; padding: .55em .2em; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gfx-sd-edit-tabs [aria-selected="true"] { background: var(--gfx-pick) !important; color: var(--gfx-pick-text) !important; }
 .gfx-sd-edit > .gfx-cheek-pad { grid-column: 1; grid-row: 3 / 5; position: relative; top: auto; width: 100%; height: 100%; min-height: 0; }
 .gfx-sd-edit-content { grid-column: 2; grid-row: 4; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
+/* The save note stays readable: a small card pinned to the bottom of the scrolling column, not drawn over the panel. */
+.gfx-sd-edit-content > .gfx-sd-edit-side { flex: none; }
+.gfx-sd-edit-content > [data-gfx-edit-note] { position: sticky; bottom: 0; margin-top: auto; z-index: 4; padding: .35em .7em; border-radius: 10px; background: var(--gfx-card); border: 2px solid var(--gfx-line); }
+.gfx-sd-edit-content > [data-gfx-edit-note]:empty { display: none; }
 .gfx-sd-edit-content > .gfx-sd-edit-side { display: flex; flex-direction: column; gap: .55em; min-height: 0; flex: 1; }
 .gfx-sd-edit-content > [hidden] { display: none !important; }
 .gfx-sd-edit-side .hint { margin: .2em 0; font-size: .85em; }
@@ -4667,9 +4673,13 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       const nav = el("div", "gfx-sd-edit-tabs");
       nav.setAttribute("role", "tablist");
       const panels = {};
-      const tabs = [["pose", "볼·배치"], ["wardrobe", "의상·보관함"], ["face", "표정"], ["prompt", "프롬프트"], ["lines", "대사"]];
+      // 위치: cheeks · head · preview on the picture. 자세: facing, height, torso width. Then outfits, expressions, prompt, lines.
+      const tabs = [["pose", "위치"], ["stance", "자세"], ["wardrobe", "의상"], ["face", "표정"], ["prompt", "프롬프트"], ["lines", "대사"]];
+      let afterTab = () => {};
       const selectTab = (id) => {
         sdEditTab = id; box.dataset.editTab = id;
+        pad.dataset.tab = id;
+        afterTab();
         for (const [key, panel] of Object.entries(panels)) panel.hidden = key !== id;
         for (const b of nav.children) { const active = b.dataset.tab === id; b.setAttribute("aria-selected", String(active)); b.tabIndex = active ? 0 : -1; }
       };
@@ -4691,7 +4701,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       }
       box.append(header, nav, pad, content);
       box.onkeydown = (ev) => { if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); close(); } };
-      selectTab(sdEditTab);
+      selectTab(tabs.some(([k]) => k === sdEditTab) ? sdEditTab : "pose");
       let side = panels.pose;
       const automaticTorso = () => {
         const baked = lookUrl && bakeInfo(lookUrl);
@@ -4778,7 +4788,21 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
           target.addEventListener("pointerup", up);
           target.addEventListener("pointercancel", up);
         };
-        const marker = (cls, p, r, { onMove, onResize, onDone, onDelete, onWheel } = {}) => {
+        // Markers stay the same elements while they exist (keyed) and are only restyled. Rebuilding them on every
+        // move removed the element that held the pointer capture, so with a real mouse a drag stopped at once.
+        const live = new Map();
+        let used = new Set();
+        const marker = (key, cls, p, r, handlers = {}) => {
+          used.add(key);
+          const old = live.get(key);
+          if (old && old.dataset.cls === cls) { old.style.cssText = at(p, r); return old; }
+          old?.remove();
+          const m = makeMarker(cls, p, r, handlers);
+          m.dataset.cls = cls;
+          live.set(key, m);
+          return m;
+        };
+        const makeMarker = (cls, p, r, { onMove, onResize, onDone, onDelete, onWheel } = {}) => {
           const m = el("i", "mark " + cls);
           m.style.cssText = at(p, r);
           if (onMove) on(m, "pointerdown", (ev) => drag(ev, onMove, onDone));
@@ -4801,27 +4825,28 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         const sizeFrom = (center) => (p) => { const q = pic(); return Math.min(0.4, Math.max(0.01, Math.hypot(p.x - center.x, (p.y - center.y) * q.h / Math.max(1, q.w)))); };
         marks = () => {
           paintTorsoGuide();
-          for (const m of pad.querySelectorAll(".mark, .gfx-pad-emote")) m.remove();
+          used = new Set();
+          for (const m of pad.querySelectorAll(".gfx-pad-emote")) m.remove();
           const mode = pad.dataset.mode;
           const shownHead = head || autoHead();
           if (mode === "cheek") {
-            marker("head ghost", shownHead, shownHead.r);
-            cheeks.forEach((p, i) => marker("cheek", p, cheekRad, {
+            marker("head-ghost", "head ghost", shownHead, shownHead.r);
+            cheeks.forEach((p, i) => marker("cheek" + i, "cheek", p, cheekRad, {
               onMove: (q) => { cheeks[i] = q; },
               onResize: (q) => { cheekRad = Math.min(0.12, sizeFrom(cheeks[i])(q)); },
               onDone: saveCheeks,
-              onDelete: () => { cheeks.splice(i, 1); marks(); paintCtl(); saveCheeks(); },
+              onDelete: () => { cheeks.splice(i, 1); for (const k of ["cheek0", "cheek1"]) { live.get(k)?.remove(); live.delete(k); } marks(); paintCtl(); saveCheeks(); },
               onWheel: (d) => { cheekRad = Math.min(0.12, Math.max(0.01, cheekRad + d * 0.004)); marks(); saveSoon(saveCheeks); },
             }));
           } else if (mode === "head") {
-            for (const p of cheeks) marker("cheek ghost", p, cheekRad);
-            if (head) marker("head", head, head.r, {
+            cheeks.forEach((p, i) => marker("cheek-ghost" + i, "cheek ghost", p, cheekRad));
+            if (head) marker("head", "head", head, head.r, {
               onMove: (q) => { head = { ...head, x: q.x, y: q.y }; },
               onResize: (q) => { head = { ...head, r: sizeFrom(head)(q) }; },
               onDone: saveHead,
               onWheel: (d) => { head = { ...head, r: Math.min(0.4, Math.max(0.04, head.r + d * 0.01)) }; marks(); saveSoon(saveHead); },
             });
-            else marker("head ghost auto", shownHead, shownHead.r);
+            else marker("head-auto", "head ghost auto", shownHead, shownHead.r);
           } else {
             // The mark the story would show for the picked emotion, at its size, by this head.
             const expr = isExpr(sdPreviewExpr) ? sdPreviewExpr : "anger", side = faceOf(c.name) === "left" ? -1 : 1;
@@ -4833,7 +4858,15 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
             mark.style.cssText = "left:" + (q.l + (shownHead.x + side * shownHead.r * 1.05) * q.w) + "px;top:" + (q.t + (shownHead.y - shownHead.r * 0.6 * aspect) * q.h) + "px;width:" + w * q.w + "px";
             pad.append(mark);
           }
+          for (const [key, m] of live) if (!used.has(key)) { m.remove(); live.delete(key); }
+          for (const [lab, v] of [[sizeRows.cheek, cheekRad], [sizeRows.head, head?.r]]) {
+            const input = lab?.isConnected && lab.querySelector("input");
+            if (!input || v == null || input.matches(":focus, :active")) continue;
+            input.value = String(+(v * 100).toFixed(1));
+            lab.querySelector("b").textContent = Math.round(v * 100) + "%";
+          }
         };
+        afterTab = () => requestAnimationFrame(() => marks());
         if (img.complete) requestAnimationFrame(marks); else img.addEventListener("load", marks, { once: true });
         const markerRO = new ResizeObserver(() => marks());
         markerRO.observe(pad);
@@ -4842,6 +4875,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         let pinched = false;
         on(pad, "pointerdown", (ev) => {
           ev.stopPropagation();
+          if (pad.dataset.tab !== "pose") return;
           const mode = pad.dataset.mode;
           if (mode === "preview") { pinched = startPinch(img, ev, cheeks.length ? cheeks : null, cheekRad, pad, (pulled) => { if (pulled) setEditNote(pinchFor(c.name)); }, false); return; }
           const p = frac(ev);
@@ -4885,6 +4919,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
         };
         const zoomChip = () => chip(sdPadZoom ? "전체 그림 보기" : "머리 크게 보기", () => { sdPadZoom = !sdPadZoom; setMode(pad.dataset.mode); paintCtl(); });
         const cheekCtl = el("div", "gfx-pad-ctl"), headCtl = el("div", "gfx-pad-ctl");
+        const sizeRows = { cheek: null, head: null };
         paintCtl = () => {
           cheekCtl.replaceChildren();
           if (!cheeks.length) cheekCtl.append(hint("그림에서 볼을 한 번 눌러 찍으세요 (두 곳까지).", ""));
@@ -4892,10 +4927,11 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
             const row = el("div", "gfx-ctl-row");
             row.append(el("b", "", "볼 " + (i + 1)),
               arrows((dx, dy) => { cheeks[i] = { x: Math.min(1, Math.max(0, cheeks[i].x + dx)), y: Math.min(1, Math.max(0, cheeks[i].y + dy)) }; marks(); saveSoon(saveCheeks); }),
-              chip("지우기", () => { cheeks.splice(i, 1); marks(); paintCtl(); saveCheeks(); }));
+              chip("지우기", () => { cheeks.splice(i, 1); for (const k of ["cheek0", "cheek1"]) { live.get(k)?.remove(); live.delete(k); } marks(); paintCtl(); saveCheeks(); }));
             cheekCtl.append(row);
           });
-          if (cheeks.length) cheekCtl.append(slider("볼 크기", 1, 12, cheekRad, (v) => { cheekRad = v; marks(); saveSoon(saveCheeks); }));
+          sizeRows.cheek = cheeks.length ? slider("볼 크기", 1, 12, cheekRad, (v) => { cheekRad = v; marks(); saveSoon(saveCheeks); }) : null;
+          if (sizeRows.cheek) cheekCtl.append(sizeRows.cheek);
           const tools = el("div", "st-chips");
           tools.append(zoomChip());
           if (cheeks.length) tools.append(chip("볼 모두 지우기", () => { cheeks = []; marks(); paintCtl(); saveCheeks(); }));
@@ -4904,7 +4940,8 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
           if (head) {
             const row = el("div", "gfx-ctl-row");
             row.append(el("b", "", "머리"), arrows((dx, dy) => { head = { ...head, x: Math.min(1, Math.max(0, head.x + dx)), y: Math.min(1, Math.max(0, head.y + dy)) }; marks(); saveSoon(saveHead); }));
-            headCtl.append(row, slider("머리 크기", 4, 40, head.r, (v) => { head = { ...head, r: v }; marks(); saveSoon(saveHead); }));
+            sizeRows.head = slider("머리 크기", 4, 40, head.r, (v) => { head = { ...head, r: v }; marks(); saveSoon(saveHead); });
+            headCtl.append(row, sizeRows.head);
           } else headCtl.append(hint("지금은 자동 자리(점선)를 씁니다. 그림에서 머리 한가운데를 누르거나, [자동 자리에서 시작]을 누른 뒤 화살표로 맞추세요." + (look ? " 이 의상에 정하지 않으면 기본 모습의 머리를 씁니다." : ""), ""));
           const headTools = el("div", "st-chips");
           headTools.append(zoomChip());
@@ -4925,6 +4962,7 @@ ${P}.gfq-01-ask::backdrop{background:#0006}
       } else pad.append(el("p", "hint", "먼저 SD를 그려 주세요."));
       side.append(modes, cheekGroup, headGroup, previewGroup);
       setMode(["cheek", "head", "preview"].includes(sdPadMode) ? sdPadMode : "cheek");
+      side = panels.stance;
       side.append(hint("그림 속 캐릭터가 바라보는 쪽", ""));
       const face = el("div", "st-chips");
       for (const [f, label] of [["left", "← 왼쪽을 봄"], ["front", "정면"], ["right", "오른쪽을 봄 →"]]) {
